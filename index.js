@@ -6,5 +6,5 @@ const port = 3000;
 app.use(express.static(path.join(__dirname, "dist")));
 
 app.listen(port, () => {
-    console.log(`spela spel gratis på http://lokalhost:${port}`)
+    console.log(`spela spel gratis på http://localhost:${port}`)
 });
