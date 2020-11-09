@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/client/main.js',
+    entry: "./src/client/main.ts",
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
@@ -17,5 +17,13 @@ module.exports = {
             Long: "long/index.js",
             ByteBuffer: "bytebuffer/index.js"
         }
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader?configFile=tsconfig.webpack.json'
+            }
+        ]
     }
 };
