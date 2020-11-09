@@ -26,27 +26,28 @@ loader
   .load(setup);
 
 function setup() {
-    add_characther(50, 50, "imgs/baby_yoda.PNG")
+    player = add_characther(50, 50, "imgs/baby_yoda.PNG")
 
     app.ticker.add(delta => gameLoop(delta));
-
+    key_presses();
 }
 function gameLoop(delta){
     state(delta);
 }
 
 function add_characther(x, y, img_filepath){
-    player = new Sprite(
+    characther = new Sprite(
         loader.resources[img_filepath].texture
     );
-    player.position.set(x, y);
-    player.vx = 0;
-    player.vy = 0;
+    characther.position.set(x, y);
+    characther.vx = 0;
+    characther.vy = 0;
     
-    player.scale.set(0.2, 0.2);
-    player.anchor.set(0.5, 0.5);
-    key_presses();
-    app.stage.addChild(player);
+    characther.scale.set(0.2, 0.2);
+    characther.anchor.set(0.5, 0.5);
+    
+    app.stage.addChild(characther);
+    return characther
 }
 
 function play(delta){
