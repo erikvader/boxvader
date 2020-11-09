@@ -1,3 +1,6 @@
+
+let movement_speed = 5; 
+
 let type = "WebGL"
 if(!PIXI.utils.isWebGLSupported()){
     type = "canvas"
@@ -12,7 +15,7 @@ let Application = PIXI.Application,
 
 //Create a Pixi Application
 let app = new Application({width: 512, height: 512});
-let baby_yoda;
+let player;
 
 state = play;
 //Add the canvas that Pixi automatically created for you to the HTML document
@@ -23,17 +26,8 @@ loader
   .load(setup);
 
 function setup() {
-    baby_yoda = new Sprite(
-        loader.resources["imgs/baby_yoda.PNG"].texture
-    );
-    baby_yoda.position.set(50, 96);
-    baby_yoda.vx = 0;
-    baby_yoda.vy = 0;
-    
-    baby_yoda.scale.set(0.2, 0.2);
-    baby_yoda.anchor.set(0.5, 0.5);
-    key_presses();
-    app.stage.addChild(baby_yoda);
+    add_characther(50, 50, "imgs/baby_yoda.PNG")
+
     app.ticker.add(delta => gameLoop(delta));
 
 }
@@ -41,10 +35,24 @@ function gameLoop(delta){
     state(delta);
 }
 
+function add_characther(x, y, img_filepath){
+    player = new Sprite(
+        loader.resources[img_filepath].texture
+    );
+    player.position.set(x, y);
+    player.vx = 0;
+    player.vy = 0;
+    
+    player.scale.set(0.2, 0.2);
+    player.anchor.set(0.5, 0.5);
+    key_presses();
+    app.stage.addChild(player);
+}
+
 function play(delta){
     //Move the cat 1 pixel 
-    baby_yoda.x += baby_yoda.vx;
-    baby_yoda.y += baby_yoda.vy;
+    player.x += player.vx;
+    player.y += player.vy;
   }
 
 
@@ -57,51 +65,51 @@ function key_presses() {
 
     //Left arrow key `press` method
     left.press = () => {
-        //Change the cat's velocity when the key is pressed
-        baby_yoda.vx = -5;
-        baby_yoda.vy = 0;
+        //Change the sprites's velocity when the key is pressed
+        player.vx = -movement_speed;
+        player.vy = 0;
     };
 
     //Left arrow key `release` method
     left.release = () => {
         //If the left arrow has been released, and the right arrow isn't down,
-        //and the cat isn't moving vertically:
-        //Stop the cat
-        if (!right.isDown && baby_yoda.vy === 0) {
-            baby_yoda.vx = 0;
+        //and the sprite isn't moving vertically:
+        //Stop the sprite
+        if (!right.isDown && player.vy === 0) {
+            player.vx = 0;
         }
     };
 
     //Up
     up.press = () => {
-        baby_yoda.vy = -5;
-        baby_yoda.vx = 0;
+        player.vy = -movement_speed;
+        player.vx = 0;
     };
     up.release = () => {
-        if (!down.isDown && baby_yoda.vx === 0) {
-        baby_yoda.vy = 0;
+        if (!down.isDown && player.vx === 0) {
+        player.vy = 0;
         }
     };
 
     //Right
     right.press = () => {
-        baby_yoda.vx = 5;
-        baby_yoda.vy = 0;
+        player.vx = movement_speed;
+        player.vy = 0;
     };
     right.release = () => {
-        if (!left.isDown && baby_yoda.vy === 0) {
-            baby_yoda.vx = 0;
+        if (!left.isDown && player.vy === 0) {
+            player.vx = 0;
         }
     };
 
     //Down
     down.press = () => {
-        baby_yoda.vy = 5;
-        baby_yoda.vx = 0;
+        player.vy = movement_speed;
+        player.vx = 0;
     };
     down.release = () => {
-        if (!up.isDown && baby_yoda.vx === 0) {
-            baby_yoda.vy = 0;
+        if (!up.isDown && player.vx === 0) {
+            player.vy = 0;
         }
     };
 }
