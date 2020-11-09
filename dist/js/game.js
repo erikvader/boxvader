@@ -63,12 +63,13 @@ function key_presses() {
     up = keyboard("ArrowUp"),
     right = keyboard("ArrowRight"),
     down = keyboard("ArrowDown");
-
+    
     //Left arrow key `press` method
     left.press = () => {
         //Change the sprites's velocity when the key is pressed
+        if(up.isDown) {}
         player.vx = -movement_speed;
-        player.vy = 0;
+        //player.vy = 0;
     };
 
     //Left arrow key `release` method
@@ -76,41 +77,53 @@ function key_presses() {
         //If the left arrow has been released, and the right arrow isn't down,
         //and the sprite isn't moving vertically:
         //Stop the sprite
-        if (!right.isDown && player.vy === 0) {
+        if (!right.isDown) {
             player.vx = 0;
+        }
+        else {
+            player.vx = movement_speed
         }
     };
 
     //Up
     up.press = () => {
         player.vy = -movement_speed;
-        player.vx = 0;
+        //player.vx = 0;
     };
     up.release = () => {
-        if (!down.isDown && player.vx === 0) {
-        player.vy = 0;
+        if (!down.isDown) {
+            player.vy = 0;
+        }
+        else {
+            player.vy = movement_speed;
         }
     };
 
     //Right
     right.press = () => {
         player.vx = movement_speed;
-        player.vy = 0;
+        //player.vy = 0;
     };
     right.release = () => {
-        if (!left.isDown && player.vy === 0) {
+        if (!left.isDown) {
             player.vx = 0;
+        }
+        else{
+            player.vx = -movement_speed;
         }
     };
 
     //Down
     down.press = () => {
         player.vy = movement_speed;
-        player.vx = 0;
+        //player.vx = 0;
     };
     down.release = () => {
-        if (!up.isDown && player.vx === 0) {
+        if (!up.isDown) {
             player.vy = 0;
+        }
+        else{
+            player.vy = -movement_speed;
         }
     };
 }
