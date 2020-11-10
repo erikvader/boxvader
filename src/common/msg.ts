@@ -1,4 +1,4 @@
-import { Input } from "./misc"
+import { Input } from './misc';
 
 // TODO
 type State = any;
@@ -9,8 +9,8 @@ type State = any;
  * @property inputs The state of the inputs.
  */
 export interface ClientMsg {
-    seqNum: number
-    inputs: Input[]
+  seqNum: number;
+  inputs: Input[];
 }
 
 /**
@@ -19,6 +19,6 @@ export interface ClientMsg {
  * @property state The current state of the simulation.
  */
 export interface ServerMsg {
-    ackNum: number
-    state: State
+  ackNum: number;
+  state: State;
 }

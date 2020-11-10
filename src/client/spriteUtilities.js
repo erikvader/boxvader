@@ -1,13 +1,16 @@
-export default class SpriteUtilities{
+export default class SpriteUtilities {
   constructor(renderingEngine = PIXI) {
-    if (renderingEngine === undefined) throw new Error("Please supply a reference to PIXI in the SpriteUtilities constructor before using spriteUtilities.js"); 
+    if (renderingEngine === undefined)
+      throw new Error(
+        'Please supply a reference to PIXI in the SpriteUtilities constructor before using spriteUtilities.js',
+      );
 
     //Find out which rendering engine is being used (the default is Pixi)
-    this.renderer = "";
+    this.renderer = '';
 
     //If the `renderingEngine` is Pixi, set up Pixi object aliases
     if (renderingEngine.particles.ParticleContainer && renderingEngine.Sprite) {
-      this.renderer = "pixi";
+      this.renderer = 'pixi';
       this.Container = renderingEngine.Container;
       this.ParticleContainer = renderingEngine.particles.ParticleContainer;
       this.TextureCache = renderingEngine.utils.TextureCache;
@@ -19,7 +22,7 @@ export default class SpriteUtilities{
       this.TilingSprite = renderingEngine.extras.TilingSprite;
       this.Graphics = renderingEngine.Graphics;
       this.Text = renderingEngine.Text;
-      
+
       //An array to store all the shaking sprites
       this.shakingSprites = [];
     }
@@ -27,20 +30,18 @@ export default class SpriteUtilities{
 
   update() {
     if (this.shakingSprites.length > 0) {
-      for(let i = this.shakingSprites.length - 1; i >= 0; i--) {
+      for (let i = this.shakingSprites.length - 1; i >= 0; i--) {
         let shakingSprite = this.shakingSprites[i];
         if (shakingSprite.updateShake) shakingSprite.updateShake();
-      } 
+      }
     }
   }
 
   sprite(source, x = 0, y = 0, tiling = false, width, height) {
-
     let o, texture;
 
-    //Create a sprite if the `source` is a string 
-    if (typeof source === "string") {
-
+    //Create a sprite if the `source` is a string
+    if (typeof source === 'string') {
       //Access the texture in the cache if it's there
       if (this.TextureCache[source]) {
         texture = this.TextureCache[source];
@@ -53,7 +54,6 @@ export default class SpriteUtilities{
 
       //If the texture was created, make the o
       if (texture) {
-
         //If `tiling` is `false`, make a regular `Sprite`
         if (!tiling) {
           o = new this.Sprite(texture);
@@ -81,20 +81,16 @@ export default class SpriteUtilities{
 
     //Create a `MovieClip` o if the `source` is an array
     else if (source instanceof Array) {
-
       //Is it an array of frame ids or textures?
-      if (typeof source[0] === "string") {
-
+      if (typeof source[0] === 'string') {
         //They're strings, but are they pre-existing texture or
         //paths to image files?
         //Check to see if the first element matches a texture in the
         //cache
         if (this.TextureCache[source[0]]) {
-
           //It does, so it's an array of frame ids
           o = this.MovieClip.fromFrames(source);
         } else {
-
           //It's not already in the cache, so let's load it
           o = this.MovieClip.fromImages(source);
         }
@@ -103,16 +99,14 @@ export default class SpriteUtilities{
       //If the `source` isn't an array of strings, check whether
       //it's an array of textures
       else if (source[0] instanceof this.Texture) {
-
-        //Yes, it's an array of textures. 
-        //Use them to make a MovieClip o 
+        //Yes, it's an array of textures.
+        //Use them to make a MovieClip o
         o = new this.MovieClip(source);
       }
     }
 
     //If the sprite was successfully created, intialize it
     if (o) {
-
       //Position the sprite
       o.x = x;
       o.y = y;
@@ -131,7 +125,6 @@ export default class SpriteUtilities{
   }
 
   addStatePlayer(sprite) {
-
     let frameCounter = 0,
       numberOfFrames = 0,
       startFrame = 0,
@@ -140,7 +133,6 @@ export default class SpriteUtilities{
 
     //The `show` function (to display static states)
     function show(frameNumber) {
-
       //Reset any possible previous animations
       reset();
 
@@ -156,7 +148,6 @@ export default class SpriteUtilities{
 
     //The `playSequence` function, to play a sequence of frames
     function playAnimation(sequenceArray) {
-
       //Reset any possible previous animations
       reset();
 
@@ -196,7 +187,7 @@ export default class SpriteUtilities{
       //Set the sprite to the starting frame
       sprite.gotoAndStop(startFrame);
 
-      //Set the `frameCounter` to the first frame 
+      //Set the `frameCounter` to the first frame
       frameCounter = 1;
 
       //If the state isn't already `playing`, start it
@@ -206,15 +197,13 @@ export default class SpriteUtilities{
       }
     }
 
-    //`advanceFrame` is called by `setInterval` to display the next frame 
-    //in the sequence based on the `frameRate`. When the frame sequence 
+    //`advanceFrame` is called by `setInterval` to display the next frame
+    //in the sequence based on the `frameRate`. When the frame sequence
     //reaches the end, it will either stop or loop
     function advanceFrame() {
-
-      //Advance the frame if `frameCounter` is less than 
+      //Advance the frame if `frameCounter` is less than
       //the state's total frames
       if (frameCounter < numberOfFrames + 1) {
-
         //Advance the frame
         sprite.gotoAndStop(sprite.currentFrame + 1);
 
@@ -232,7 +221,6 @@ export default class SpriteUtilities{
     }
 
     function reset() {
-
       //Reset `sprite.playing` to `false`, set the `frameCounter` to 0, //and clear the `timerInterval`
       if (timerInterval !== undefined && sprite.animating === true) {
         sprite.animating = false;
@@ -253,63 +241,65 @@ export default class SpriteUtilities{
   //`tilingSpirte` lets you quickly create Pixi tiling sprites
   tilingSprite(source, width, height, x, y) {
     if (width === undefined) {
-      throw new Error("Please define a width as your second argument for the tiling sprite");
+      throw new Error(
+        'Please define a width as your second argument for the tiling sprite',
+      );
     }
     if (height === undefined) {
-      throw new Error("Please define a height as your third argument for the tiling sprite");
+      throw new Error(
+        'Please define a height as your third argument for the tiling sprite',
+      );
     }
     let o = this.sprite(source, x, y, true, width, height);
 
     //Add `tileX`, `tileY`, `tileScaleX` and `tileScaleY` properties
     Object.defineProperties(o, {
-      "tileX": {
+      tileX: {
         get() {
           return o.tilePosition.x;
         },
         set(value) {
           o.tilePosition.x = value;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "tileY": {
+      tileY: {
         get() {
           return o.tilePosition.y;
         },
         set(value) {
           o.tilePosition.y = value;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "tileScaleX": {
+      tileScaleX: {
         get() {
           return o.tileScale.x;
         },
         set(value) {
           o.tileScale.x = value;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "tileScaleY": {
+      tileScaleY: {
         get() {
           return o.tileScale.y;
         },
         set(value) {
           o.tileScale.y = value;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
     });
-    
-    return o
+
+    return o;
   }
 
-  filmstrip(
-    texture,
-    frameWidth,
-    frameHeight,
-    spacing = 0
-  ) {
-
+  filmstrip(texture, frameWidth, frameHeight, spacing = 0) {
     //An array to store the x/y positions of the frames
     let positions = [];
 
@@ -325,18 +315,17 @@ export default class SpriteUtilities{
     let numberOfFrames = columns * rows;
 
     for (let i = 0; i < numberOfFrames; i++) {
-
       //Find the correct row and column for each frame
       //and figure out its x and y position
       let x = (i % columns) * frameWidth,
         y = Math.floor(i / columns) * frameHeight;
 
       //Compensate for any optional spacing (padding) around the tiles if
-      //there is any. This bit of code accumlates the spacing offsets from the 
-      //left side of the tileset and adds them to the current tile's position 
+      //there is any. This bit of code accumlates the spacing offsets from the
+      //left side of the tileset and adds them to the current tile's position
       if (spacing > 0) {
-        x += spacing + (spacing * i % columns);
-        y += spacing + (spacing * Math.floor(i / columns));
+        x += spacing + ((spacing * i) % columns);
+        y += spacing + spacing * Math.floor(i / columns);
       }
 
       //Add the x and y value of each frame to the `positions` array
@@ -349,12 +338,11 @@ export default class SpriteUtilities{
 
   //Make a texture from a frame in another texture or image
   frame(source, x, y, width, height) {
-
     let texture, imageFrame;
 
     //If the source is a string, it's either a texture in the
     //cache or an image file
-    if (typeof source === "string") {
+    if (typeof source === 'string') {
       if (this.TextureCache[source]) {
         texture = new this.Texture(this.TextureCache[source]);
       }
@@ -367,7 +355,6 @@ export default class SpriteUtilities{
     if (!texture) {
       throw new Error(`Please load the ${source} texture into the cache.`);
     } else {
-
       //Make a rectangle the size of the sub-image
       imageFrame = new this.Rectangle(x, y, width, height);
       texture.frame = imageFrame;
@@ -378,12 +365,11 @@ export default class SpriteUtilities{
   //Make an array of textures from a 2D array of frame x and y coordinates in
   //texture
   frames(source, coordinates, frameWidth, frameHeight) {
-
     let baseTexture, textures;
 
     //If the source is a string, it's either a texture in the
     //cache or an image file
-    if (typeof source === "string") {
+    if (typeof source === 'string') {
       if (this.TextureCache[source]) {
         baseTexture = new this.Texture(this.TextureCache[source]);
       }
@@ -395,20 +381,19 @@ export default class SpriteUtilities{
     if (!baseTexture) {
       throw new Error(`Please load the ${source} texture into the cache.`);
     } else {
-      let textures = coordinates.map((position) => {
+      let textures = coordinates.map(position => {
         let x = position[0],
           y = position[1];
         let imageFrame = new this.Rectangle(x, y, frameWidth, frameHeight);
         let frameTexture = new this.Texture(baseTexture);
         frameTexture.frame = imageFrame;
-        return frameTexture
+        return frameTexture;
       });
       return textures;
     }
   }
 
-  frameSeries(startNumber = 0, endNumber = 1, baseName = "", extension = "") {
-
+  frameSeries(startNumber = 0, endNumber = 1, baseName = '', extension = '') {
     //Create an array to store the frame names
     let frames = [];
 
@@ -422,16 +407,21 @@ export default class SpriteUtilities{
   /* Text creation */
 
   //The`text` method is a quick way to create a Pixi Text sprite
-  text(content = "message", font = "16px sans", fillStyle = "red", x = 0, y = 0) {
-
+  text(
+    content = 'message',
+    font = '16px sans',
+    fillStyle = 'red',
+    x = 0,
+    y = 0,
+  ) {
     //Create a Pixi Sprite object
-    let message = new this.Text(content, {font: font, fill: fillStyle});
+    let message = new this.Text(content, { font: font, fill: fillStyle });
     message.x = x;
     message.y = y;
 
     //Add a `_text` property with a getter/setter
     message._content = content;
-    Object.defineProperty(message, "content", {
+    Object.defineProperty(message, 'content', {
       get() {
         return this._content;
       },
@@ -439,7 +429,8 @@ export default class SpriteUtilities{
         this._content = value;
         this.text = value;
       },
-      enumerable: true, configurable: true
+      enumerable: true,
+      configurable: true,
     });
 
     //Return the text object
@@ -447,16 +438,19 @@ export default class SpriteUtilities{
   }
 
   //The`bitmapText` method lets you create bitmap text
-  bitmapText(content = "message", font, align, tint, x = 0, y = 0) {
-
+  bitmapText(content = 'message', font, align, tint, x = 0, y = 0) {
     //Create a Pixi Sprite object
-    let message = new this.BitmapText(content, {font: font, align: align, tint: tint});
+    let message = new this.BitmapText(content, {
+      font: font,
+      align: align,
+      tint: tint,
+    });
     message.x = x;
     message.y = y;
 
     //Add a `_text` property with a getter/setter
     message._content = content;
-    Object.defineProperty(message, "content", {
+    Object.defineProperty(message, 'content', {
       get() {
         return this._content;
       },
@@ -464,7 +458,8 @@ export default class SpriteUtilities{
         this._content = value;
         this.text = value;
       },
-      enumerable: true, configurable: true
+      enumerable: true,
+      configurable: true,
     });
 
     //Return the text object
@@ -475,15 +470,14 @@ export default class SpriteUtilities{
 
   //Rectangle
   rectangle(
-      width = 32, 
-      height = 32,  
-      fillStyle = 0xFF3300, 
-      strokeStyle = 0x0033CC, 
-      lineWidth = 0,
-      x = 0, 
-      y = 0 
-    ){
-
+    width = 32,
+    height = 32,
+    fillStyle = 0xff3300,
+    strokeStyle = 0x0033cc,
+    lineWidth = 0,
+    x = 0,
+    y = 0,
+  ) {
     let o = new this.Graphics();
     o._sprite = undefined;
     o._width = width;
@@ -520,57 +514,84 @@ export default class SpriteUtilities{
     //Add getters and setters to the sprite
     let self = this;
     Object.defineProperties(sprite, {
-      "fillStyle": {
+      fillStyle: {
         get() {
           return o._fillStyle;
         },
         set(value) {
           o._fillStyle = self.color(value);
 
-          //Draw the new rectangle 
-          draw(o._width, o._height, o._fillStyle, o._strokeStyle, o._lineWidth, o._x, o._y);
+          //Draw the new rectangle
+          draw(
+            o._width,
+            o._height,
+            o._fillStyle,
+            o._strokeStyle,
+            o._lineWidth,
+            o._x,
+            o._y,
+          );
 
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "strokeStyle": {
+      strokeStyle: {
         get() {
           return o._strokeStyle;
         },
         set(value) {
           o._strokeStyle = self.color(value);
 
-          //Draw the new rectangle 
-          draw(o._width, o._height, o._fillStyle, o._strokeStyle, o._lineWidth, o._x, o._y);
+          //Draw the new rectangle
+          draw(
+            o._width,
+            o._height,
+            o._fillStyle,
+            o._strokeStyle,
+            o._lineWidth,
+            o._x,
+            o._y,
+          );
 
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "lineWidth": {
+      lineWidth: {
         get() {
           return o._lineWidth;
         },
         set(value) {
           o._lineWidth = value;
 
-          //Draw the new rectangle 
-          draw(o._width, o._height, o._fillStyle, o._strokeStyle, o._lineWidth, o._x, o._y);
+          //Draw the new rectangle
+          draw(
+            o._width,
+            o._height,
+            o._fillStyle,
+            o._strokeStyle,
+            o._lineWidth,
+            o._x,
+            o._y,
+          );
 
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
-      }
+        },
+        enumerable: true,
+        configurable: true,
+      },
     });
-    
-    //Get a local reference to the sprite so that we can 
+
+    //Get a local reference to the sprite so that we can
     //change the rectangle properties later using the getters/setters
     o._sprite = sprite;
 
@@ -580,14 +601,13 @@ export default class SpriteUtilities{
 
   //Circle
   circle(
-      diameter = 32, 
-      fillStyle = 0xFF3300, 
-      strokeStyle = 0x0033CC, 
-      lineWidth = 0,
-      x = 0, 
-      y = 0 
-    ){
-
+    diameter = 32,
+    fillStyle = 0xff3300,
+    strokeStyle = 0x0033cc,
+    lineWidth = 0,
+    x = 0,
+    y = 0,
+  ) {
     let o = new this.Graphics();
     o._diameter = diameter;
     o._fillStyle = this.color(fillStyle);
@@ -596,7 +616,7 @@ export default class SpriteUtilities{
 
     //Draw the circle
     let draw = (diameter, fillStyle, strokeStyle, lineWidth) => {
-      o.clear(); 
+      o.clear();
       o.beginFill(fillStyle);
       if (lineWidth > 0) {
         o.lineStyle(lineWidth, strokeStyle, 1);
@@ -621,7 +641,7 @@ export default class SpriteUtilities{
     //Add getters and setters to the sprite
     let self = this;
     Object.defineProperties(sprite, {
-      "fillStyle": {
+      fillStyle: {
         get() {
           return o._fillStyle;
         },
@@ -634,10 +654,11 @@ export default class SpriteUtilities{
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "strokeStyle": {
+      strokeStyle: {
         get() {
           return o._strokeStyle;
         },
@@ -650,10 +671,11 @@ export default class SpriteUtilities{
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "diameter": {
+      diameter: {
         get() {
           return o._diameter;
         },
@@ -666,26 +688,27 @@ export default class SpriteUtilities{
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "radius": {
+      radius: {
         get() {
           return o._diameter / 2;
         },
         set(value) {
-
           //Draw the cirlce
           draw(value * 2, o._fillStyle, o._strokeStyle, o._lineWidth);
 
           //Generate a new texture and set it as the sprite's texture
           let texture = o.generateTexture();
           o._sprite.texture = texture;
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
     });
-    //Get a local reference to the sprite so that we can 
+    //Get a local reference to the sprite so that we can
     //change the circle properties later using the getters/setters
     o._sprite = sprite;
 
@@ -695,14 +718,13 @@ export default class SpriteUtilities{
 
   //Line
   line(
-      strokeStyle = 0x000000, 
-      lineWidth = 1, 
-      ax = 0, 
-      ay = 0, 
-      bx = 32, 
-      by = 32
-    ){
-
+    strokeStyle = 0x000000,
+    lineWidth = 1,
+    ax = 0,
+    ay = 0,
+    bx = 32,
+    by = 32,
+  ) {
     //Create the line object
     let o = new this.Graphics();
 
@@ -721,55 +743,59 @@ export default class SpriteUtilities{
       o.moveTo(ax, ay);
       o.lineTo(bx, by);
     };
-    
+
     //Draw the line
     draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
 
-    //Define getters and setters that redefine the line's start and 
+    //Define getters and setters that redefine the line's start and
     //end points and re-draws it if they change
     let self = this;
     Object.defineProperties(o, {
-      "ax": {
+      ax: {
         get() {
           return o._ax;
         },
         set(value) {
           o._ax = value;
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "ay": {
+      ay: {
         get() {
           return o._ay;
         },
         set(value) {
           o._ay = value;
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "bx": {
+      bx: {
         get() {
           return o._bx;
         },
         set(value) {
           o._bx = value;
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "by": {
+      by: {
         get() {
           return o._by;
         },
         set(value) {
           o._by = value;
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "strokeStyle": {
+      strokeStyle: {
         get() {
           return o._strokeStyle;
         },
@@ -778,10 +804,11 @@ export default class SpriteUtilities{
 
           //Draw the line
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
+        },
+        enumerable: true,
+        configurable: true,
       },
-      "width": {
+      width: {
         get() {
           return o._width;
         },
@@ -790,9 +817,10 @@ export default class SpriteUtilities{
 
           //Draw the line
           draw(o._strokeStyle, o._width, o._ax, o._ay, o._bx, o._by);
-        }, 
-        enumerable: true, configurable: true
-      }
+        },
+        enumerable: true,
+        configurable: true,
+      },
     });
 
     //Return the line
@@ -803,12 +831,16 @@ export default class SpriteUtilities{
 
   //Use `grid` to create a grid of sprites
   grid(
-    columns = 0, rows = 0, cellWidth = 32, cellHeight = 32,
-    centerCell = false, xOffset = 0, yOffset = 0,
+    columns = 0,
+    rows = 0,
+    cellWidth = 32,
+    cellHeight = 32,
+    centerCell = false,
+    xOffset = 0,
+    yOffset = 0,
     makeSprite = undefined,
-    extra = undefined
-  ){
-
+    extra = undefined,
+  ) {
     //Create an empty group called `container`. This `container`
     //group is what the function returns back to the main program.
     //All the sprites in the grid cells will be added
@@ -818,16 +850,14 @@ export default class SpriteUtilities{
     //The `create` method plots the grid
 
     let createGrid = () => {
-
       //Figure out the number of cells in the grid
       let length = columns * rows;
 
       //Create a sprite for each cell
-      for(let i = 0; i < length; i++) {
-
+      for (let i = 0; i < length; i++) {
         //Figure out the sprite's x/y placement in the grid
         let x = (i % columns) * cellWidth,
-            y = Math.floor(i / columns) * cellHeight;
+          y = Math.floor(i / columns) * cellHeight;
 
         //Use the `makeSprite` function supplied in the constructor
         //to make a sprite for the grid cell
@@ -846,12 +876,8 @@ export default class SpriteUtilities{
 
         //Yes, it should be centered
         else {
-          sprite.x 
-            = x + (cellWidth / 2) 
-            - (sprite.width / 2) + xOffset;
-          sprite.y 
-            = y + (cellHeight / 2) 
-            - (sprite.width / 2) + yOffset;
+          sprite.x = x + cellWidth / 2 - sprite.width / 2 + xOffset;
+          sprite.y = y + cellHeight / 2 - sprite.width / 2 + yOffset;
         }
 
         //Run any optional extra code. This calls the
@@ -867,11 +893,17 @@ export default class SpriteUtilities{
     return container;
   }
 
-  //Use `shoot` to create bullet sprites 
+  //Use `shoot` to create bullet sprites
   shoot(
-    shooter, angle, x, y, container, bulletSpeed, bulletArray, bulletSprite
+    shooter,
+    angle,
+    x,
+    y,
+    container,
+    bulletSpeed,
+    bulletArray,
+    bulletSprite,
   ) {
-
     //Make a new sprite using the user-supplied `bulletSprite` function
     let bullet = bulletSprite();
 
@@ -888,7 +920,7 @@ export default class SpriteUtilities{
     //Find the bullet's global coordinates so that we can use
     //them to position the bullet on the new parent container
     let tempGx = bullet.getGlobalPosition().x,
-        tempGy = bullet.getGlobalPosition().y;
+      tempGy = bullet.getGlobalPosition().y;
 
     //Add the bullet to the new parent container using
     //the new global coordinates
@@ -932,12 +964,16 @@ export default class SpriteUtilities{
   */
 
   grid(
-    columns = 0, rows = 0, cellWidth = 32, cellHeight = 32,
-    centerCell = false, xOffset = 0, yOffset = 0,
+    columns = 0,
+    rows = 0,
+    cellWidth = 32,
+    cellHeight = 32,
+    centerCell = false,
+    xOffset = 0,
+    yOffset = 0,
     makeSprite = undefined,
-    extra = undefined
-  ){
-
+    extra = undefined,
+  ) {
     //Create an empty group called `container`. This `container`
     //group is what the function returns back to the main program.
     //All the sprites in the grid cells will be added
@@ -946,16 +982,14 @@ export default class SpriteUtilities{
 
     //The `create` method plots the grid
     let createGrid = () => {
-
       //Figure out the number of cells in the grid
       let length = columns * rows;
 
       //Create a sprite for each cell
-      for(let i = 0; i < length; i++) {
-
+      for (let i = 0; i < length; i++) {
         //Figure out the sprite's x/y placement in the grid
         let x = (i % columns) * cellWidth,
-            y = Math.floor(i / columns) * cellHeight;
+          y = Math.floor(i / columns) * cellHeight;
 
         //Use the `makeSprite` function supplied in the constructor
         //to make a sprite for the grid cell
@@ -974,12 +1008,8 @@ export default class SpriteUtilities{
 
         //Yes, it should be centered
         else {
-          sprite.x 
-            = x + (cellWidth / 2) 
-            - sprite.halfWidth + xOffset;
-          sprite.y 
-            = y + (cellHeight / 2) 
-            - sprite.halfHeight + yOffset;
+          sprite.x = x + cellWidth / 2 - sprite.halfWidth + xOffset;
+          sprite.y = y + cellHeight / 2 - sprite.halfHeight + yOffset;
         }
 
         //Run any optional extra code. This calls the
@@ -1003,7 +1033,6 @@ export default class SpriteUtilities{
   */
 
   shake(sprite, magnitude = 16, angular = false) {
-
     //Get a reference to this current object so that
     //it's easy to maintain scope in the nested sub-functions
     let self = this;
@@ -1017,30 +1046,29 @@ export default class SpriteUtilities{
     //Capture the sprite's position and angle so you can
     //restore them after the shaking has finished
     let startX = sprite.x,
-        startY = sprite.y,
-        startAngle = sprite.rotation;
+      startY = sprite.y,
+      startAngle = sprite.rotation;
 
-    //Divide the magnitude into 10 units so that you can 
+    //Divide the magnitude into 10 units so that you can
     //reduce the amount of shake by 10 percent each frame
     let magnitudeUnit = magnitude / numberOfShakes;
-    
+
     //The `randomInt` helper function
     let randomInt = (min, max) => {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
-    
+
     //Add the sprite to the `shakingSprites` array if it
     //isn't already there
-    if(self.shakingSprites.indexOf(sprite) === -1) {
-
+    if (self.shakingSprites.indexOf(sprite) === -1) {
       self.shakingSprites.push(sprite);
-      
+
       //Add an `updateShake` method to the sprite.
       //The `updateShake` method will be called each frame
       //in the game loop. The shake effect type can be either
       //up and down (x/y shaking) or angular (rotational shaking).
       sprite.updateShake = () => {
-        if(angular) {
+        if (angular) {
           angularShake();
         } else {
           upAndDownShake();
@@ -1050,11 +1078,9 @@ export default class SpriteUtilities{
 
     //The `upAndDownShake` function
     function upAndDownShake() {
-
-      //Shake the sprite while the `counter` is less than 
+      //Shake the sprite while the `counter` is less than
       //the `numberOfShakes`
       if (counter < numberOfShakes) {
-
         //Reset the sprite's position at the start of each shake
         sprite.x = startX;
         sprite.y = startY;
@@ -1070,7 +1096,7 @@ export default class SpriteUtilities{
         counter += 1;
       }
 
-      //When the shaking is finished, restore the sprite to its original 
+      //When the shaking is finished, restore the sprite to its original
       //position and remove it from the `shakingSprites` array
       if (counter >= numberOfShakes) {
         sprite.x = startX;
@@ -1078,14 +1104,13 @@ export default class SpriteUtilities{
         self.shakingSprites.splice(self.shakingSprites.indexOf(sprite), 1);
       }
     }
-    
+
     //The `angularShake` function
-    //First set the initial tilt angle to the right (+1) 
+    //First set the initial tilt angle to the right (+1)
     let tiltAngle = 1;
 
     function angularShake() {
       if (counter < numberOfShakes) {
-
         //Reset the sprite's rotation
         sprite.rotation = startAngle;
 
@@ -1128,11 +1153,9 @@ export default class SpriteUtilities{
         return dimension / 2;
       }
     } else {
-      return dimension; 
+      return dimension;
     }
   }
-  
-
 
   /* Groups */
 
@@ -1146,7 +1169,10 @@ export default class SpriteUtilities{
   }
 
   //Use the `batch` method to create a ParticleContainer
-  batch(size = 15000, options = {rotation: true, alpha: true, scale: true, uvs: true}) {
+  batch(
+    size = 15000,
+    options = { rotation: true, alpha: true, scale: true, uvs: true },
+  ) {
     let o = new this.ParticleContainer(size, options);
     return o;
   }
@@ -1154,11 +1180,10 @@ export default class SpriteUtilities{
   //`remove` is a global convenience method that will
   //remove any sprite, or an argument list of sprites, from its parent.
   remove(...sprites) {
-
     //Remove sprites that's aren't in an array
     if (!(sprites[0] instanceof Array)) {
       if (sprites.length > 1) {
-        sprites.forEach(sprite  => {
+        sprites.forEach(sprite => {
           sprite.parent.removeChild(sprite);
         });
       } else {
@@ -1197,13 +1222,13 @@ export default class SpriteUtilities{
     ctx = cvs.getContext('2d');
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, 1, 1);
-    let data = ctx.getImageData(0, 0, 1, 1).data; 
+    let data = ctx.getImageData(0, 0, 1, 1).data;
     return data;
   }
 
   byteToHex(num) {
     // Turns a number (0-255) into a 2-character hex number (00-ff)
-    return ('0'+num.toString(16)).slice(-2);
+    return ('0' + num.toString(16)).slice(-2);
   }
 
   colorToHex(color) {
@@ -1213,26 +1238,21 @@ export default class SpriteUtilities{
     // colorToHex('rgb(255, 0, 0)') # '#ff0000'
     var rgba, hex;
     rgba = this.colorToRGBA(color);
-    hex = [0,1,2].map(
-      idx => this.byteToHex(rgba[idx])
-      ).join('');
-    return "0x" + hex;
+    hex = [0, 1, 2].map(idx => this.byteToHex(rgba[idx])).join('');
+    return '0x' + hex;
   }
 
   //A function to find out if the user entered a number (a hex color
   //code) or a string (an HTML color string)
   color(value) {
-
     //Check if it's a number
-    if(!isNaN(value)){
-
+    if (!isNaN(value)) {
       //Yes, it is a number, so just return it
       return value;
     }
 
-    //No it's not a number, so it must be a string    
+    //No it's not a number, so it must be a string
     else {
-
       return parseInt(this.colorToHex(value));
       /*
 
@@ -1247,7 +1267,7 @@ export default class SpriteUtilities{
       }
       */
     }
-    
+
     /*
     //Find out if the first character in the string is a number
     if (!isNaN(parseInt(string.charAt(0)))) {
@@ -1262,10 +1282,5 @@ export default class SpriteUtilities{
     }
     
   */
-
   }
-  
 }
-
-
-
