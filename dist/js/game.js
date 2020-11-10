@@ -1,6 +1,6 @@
 
 let movement_speed = 2; 
-let su = new SpriteUtilities(PIXI);
+const su = new SpriteUtilities(PIXI);
 let textureArrayLeftWalk = [];
 
 let type = "WebGL"
@@ -33,7 +33,7 @@ loader
 
 function setup() {
 
-    player = add_characther(200, 200, 0.5, "imgs/zombie_0.png")
+    player = add_character(200, 200, 0.5, "imgs/zombie_0.png")
 
     app.ticker.add(delta => gameLoop(delta));
     key_presses();
@@ -42,20 +42,20 @@ function gameLoop(delta){
     state(delta);
 }
 
-function add_characther(x, y, scale, img_filepath){
-    characther = load_zombie(img_filepath)
+function add_character(x, y, scale, img_filepath){
+    character = load_zombie(img_filepath)
 
-    characther.position.set(x, y);
-    characther.vx = 0;
-    characther.vy = 0;
+    character.position.set(x, y);
+    character.vx = 0;
+    character.vy = 0;
     
-    characther.scale.set(scale, scale);
-    characther.anchor.set(0.5, 0.5);
+    character.scale.set(scale, scale);
+    character.anchor.set(0.5, 0.5);
     
-    app.stage.addChild(characther);
+    app.stage.addChild(character);
 
-    characther.show(characther.animationStates.down);
-    return characther
+    character.show(character.animationStates.down);
+    return character
 }
 
 function load_zombie(img_filepath) {
@@ -122,7 +122,7 @@ function key_presses() {
         } else if(right.isDown){
             player.playAnimation(player.animationStates.walkRight)
         } else {
-            player.show(characther.animationStates.left);
+            player.show(character.animationStates.left);
         }
 
         if (!right.isDown) {
@@ -155,7 +155,7 @@ function key_presses() {
         } else if(down.isDown){
             player.playAnimation(player.animationStates.walkDown)
         } else {
-            player.show(characther.animationStates.up);
+            player.show(character.animationStates.up);
         }
 
         if (!down.isDown) {
@@ -187,7 +187,7 @@ function key_presses() {
         } else if(left.isDown){
             player.playAnimation(player.animationStates.walkLeft)
         } else {
-            player.show(characther.animationStates.right);
+            player.show(character.animationStates.right);
         }
 
         if (!left.isDown) {
@@ -208,7 +208,7 @@ function key_presses() {
         } else if(up.isDown){
             player.playAnimation(player.animationStates.walkUp)
         } else {
-            player.show(characther.animationStates.up);
+            player.show(character.animationStates.up);
         }
 
         player.vy = movement_speed;
@@ -221,7 +221,7 @@ function key_presses() {
         } else if(up.isDown){
             player.playAnimation(player.animationStates.walkUp)
         } else {
-            player.show(characther.animationStates.down);
+            player.show(character.animationStates.down);
         }
 
         if (!up.isDown) {
