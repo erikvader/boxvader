@@ -1,5 +1,6 @@
 
-let movement_speed = 5; 
+const movement_speed = 2; 
+const su = new SpriteUtilities(PIXI);
 
 let type = "WebGL"
 if(!PIXI.utils.isWebGLSupported()){
@@ -7,26 +8,31 @@ if(!PIXI.utils.isWebGLSupported()){
 }
 
 //Aliases
-let Application = PIXI.Application,
+const Application = PIXI.Application,
     loader = PIXI.loader,
     resources = PIXI.loader.resources,
-    Sprite = PIXI.Sprite;
+    Sprite = PIXI.Sprite,
+    Rectangle = PIXI.Rectangle,
+    TextureCache = PIXI.utils.TextureCache,
+    MovieClip = PIXI.MovieClip;
 
 
 //Create a Pixi Application
-let app = new Application({width: 512, height: 512});
+const app = new Application({width: 512, height: 512});
 let player;
-
 state = play;
+
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.view);
 
 loader
   .add("imgs/baby_yoda.PNG")
+  .add("imgs/zombie_0.png")
   .load(setup);
 
 function setup() {
-    player = add_characther(50, 50, "imgs/baby_yoda.PNG")
+
+    player = add_character(200, 200, 0.5, "imgs/zombie_0.png")
 
     app.ticker.add(delta => gameLoop(delta));
     key_presses();
@@ -35,23 +41,52 @@ function gameLoop(delta){
     state(delta);
 }
 
-function add_characther(x, y, img_filepath){
-    characther = new Sprite(
-        loader.resources[img_filepath].texture
-    );
-    characther.position.set(x, y);
-    characther.vx = 0;
-    characther.vy = 0;
+function add_character(x, y, scale, img_filepath){
+    character = load_zombie(img_filepath)
+
+    character.position.set(x, y);
+    character.vx = 0;
+    character.vy = 0;
     
-    characther.scale.set(0.2, 0.2);
-    characther.anchor.set(0.5, 0.5);
+    character.scale.set(scale, scale);
+    character.anchor.set(0.5, 0.5);
     
-    app.stage.addChild(characther);
-    return characther
+    app.stage.addChild(character);
+
+    character.show(character.animationStates.down);
+    return character
+}
+
+function load_zombie(img_filepath) {
+    const frames = su.filmstrip(img_filepath, 128, 128);
+    animation = su.sprite(frames);
+    const stripSize = 36;
+    const walkOffset = 4;
+    const walkAnimationLength = 7;
+
+    animation.fps = 12;
+    animation.animationStates = {
+        left: 0,
+        left_up: stripSize,
+        up: stripSize*2,
+        up_right: stripSize*3,
+        right: stripSize*4,
+        right_down: stripSize*5,
+        down: stripSize*6,
+        left_down:stripSize*7,
+        walkLeft: [stripSize * 0 + walkOffset, stripSize * 0 + walkOffset +walkAnimationLength],
+        walkLeft_up: [stripSize * 1 + walkOffset, stripSize * 1 + walkOffset +walkAnimationLength],
+        walkUp: [stripSize * 2 + walkOffset, stripSize * 2 + walkOffset +walkAnimationLength],
+        walkRight_up: [stripSize * 3 + walkOffset, stripSize * 3 + walkOffset +walkAnimationLength],
+        walkRight: [stripSize * 4 + walkOffset, stripSize * 4 + walkOffset +walkAnimationLength],
+        walkRight_down: [stripSize * 5 + walkOffset, stripSize * 5 + walkOffset +walkAnimationLength],
+        walkDown: [stripSize * 6 + walkOffset, stripSize * 6 + walkOffset +walkAnimationLength],
+        walkLeft_down: [stripSize * 7 + walkOffset, stripSize * 7 + walkOffset +walkAnimationLength]
+    }
+    return animation
 }
 
 function play(delta){
-    //Move the cat 1 pixel 
     player.x += player.vx;
     player.y += player.vy;
   }
@@ -66,31 +101,62 @@ function key_presses() {
     
     //Left arrow key `press` method
     left.press = () => {
-        //Change the sprites's velocity when the key is pressed
-        if(up.isDown) {}
+        if(up.isDown) {
+            player.playAnimation(player.animationStates.walkLeft_up)
+        } else if(down.isDown) {
+            player.playAnimation(player.animationStates.walkLeft_down)
+        } else {
+            player.playAnimation(player.animationStates.walkLeft)
+        }
+
         player.vx = -movement_speed;
-        //player.vy = 0;
     };
 
     //Left arrow key `release` method
     left.release = () => {
-        //If the left arrow has been released, and the right arrow isn't down,
-        //and the sprite isn't moving vertically:
-        //Stop the sprite
+        if(up.isDown) {
+            player.playAnimation(player.animationStates.walkUp)
+        } else if(down.isDown) {
+            player.playAnimation(player.animationStates.walkDown)
+        } else if(right.isDown){
+            player.playAnimation(player.animationStates.walkRight)
+        } else {
+            player.show(character.animationStates.left);
+        }
+
         if (!right.isDown) {
             player.vx = 0;
         }
         else {
             player.vx = movement_speed
         }
+
     };
 
     //Up
     up.press = () => {
+        if(right.isDown) {
+            player.playAnimation(player.animationStates.walkRight_up)
+        } else if(left.isDown) {
+            player.playAnimation(player.animationStates.walkLeft_up)
+        } else {
+            player.playAnimation(player.animationStates.walkUp)
+        }
+
         player.vy = -movement_speed;
-        //player.vx = 0;
     };
+
     up.release = () => {
+        if(right.isDown) {
+            player.playAnimation(player.animationStates.walkRight)
+        } else if(left.isDown) {
+            player.playAnimation(player.animationStates.walkLeft)
+        } else if(down.isDown){
+            player.playAnimation(player.animationStates.walkDown)
+        } else {
+            player.show(character.animationStates.up);
+        }
+
         if (!down.isDown) {
             player.vy = 0;
         }
@@ -101,10 +167,28 @@ function key_presses() {
 
     //Right
     right.press = () => {
+        if(up.isDown) {
+            player.playAnimation(player.animationStates.walkRight_up)
+        } else if(down.isDown) {
+            player.playAnimation(player.animationStates.walkRight_down)
+        } else {
+            player.playAnimation(player.animationStates.walkRight)
+        }
+
         player.vx = movement_speed;
-        //player.vy = 0;
     };
     right.release = () => {
+
+        if(up.isDown) {
+            player.playAnimation(player.animationStates.walkUp)
+        } else if(down.isDown) {
+            player.playAnimation(player.animationStates.walkDown)
+        } else if(left.isDown){
+            player.playAnimation(player.animationStates.walkLeft)
+        } else {
+            player.show(character.animationStates.right);
+        }
+
         if (!left.isDown) {
             player.vx = 0;
         }
@@ -115,10 +199,30 @@ function key_presses() {
 
     //Down
     down.press = () => {
+
+        if(right.isDown) {
+            player.playAnimation(player.animationStates.walkRight)
+        } else if(left.isDown) {
+            player.playAnimation(player.animationStates.walkLeft)
+        } else if(up.isDown){
+            player.playAnimation(player.animationStates.walkUp)
+        } else {
+            player.show(character.animationStates.up);
+        }
+
         player.vy = movement_speed;
-        //player.vx = 0;
     };
     down.release = () => {
+        if(right.isDown) {
+            player.playAnimation(player.animationStates.walkRight)
+        } else if(left.isDown) {
+            player.playAnimation(player.animationStates.walkLeft)
+        } else if(up.isDown){
+            player.playAnimation(player.animationStates.walkUp)
+        } else {
+            player.show(character.animationStates.down);
+        }
+
         if (!up.isDown) {
             player.vy = 0;
         }
