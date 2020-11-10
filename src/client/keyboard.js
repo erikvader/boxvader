@@ -28,19 +28,15 @@ export default function keyboard(value) {
   //Attach event listeners
   const downListener = key.downHandler.bind(key);
   const upListener = key.upHandler.bind(key);
-  
-  window.addEventListener(
-    "keydown", downListener, false
-  );
-  window.addEventListener(
-    "keyup", upListener, false
-  );
-  
+
+  window.addEventListener('keydown', downListener, false);
+  window.addEventListener('keyup', upListener, false);
+
   // Detach event listeners
   key.unsubscribe = () => {
-    window.removeEventListener("keydown", downListener);
-    window.removeEventListener("keyup", upListener);
+    window.removeEventListener('keydown', downListener);
+    window.removeEventListener('keyup', upListener);
   };
-  
+
   return key;
 }

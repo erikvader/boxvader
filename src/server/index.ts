@@ -10,26 +10,26 @@ import geckos from '@geckos.io/server';
 const io = geckos();
 
 import PSON from 'pson';
-const pson = new PSON.StaticPair(["hej"]);
+const pson = new PSON.StaticPair(['hej']);
 
 io.addServer(server);
 
-app.use("/", express.static(path.join(__dirname, "../../public")));
-app.use("/", express.static(path.join(__dirname, "../../dist")));
+app.use('/', express.static(path.join(__dirname, '../../public')));
+app.use('/', express.static(path.join(__dirname, '../../dist')));
 
 io.onConnection(channel => {
-    console.log(`${channel.id} connected`);
-    channel.onDisconnect(() => {
-        console.log(`${channel.id} disconnected`);
-    })
+  console.log(`${channel.id} connected`);
+  channel.onDisconnect(() => {
+    console.log(`${channel.id} disconnected`);
+  });
 
-    channel.onRaw(data => {
-        console.log(`got ${data}`);
-        console.log(pson.decode(data));
-        channel.raw.emit(data);
-    });
+  channel.onRaw(data => {
+    console.log(`got ${data}`);
+    console.log(pson.decode(data));
+    channel.raw.emit(data);
+  });
 });
 
 server.listen(port, () => {
-    console.log(`spela spel gratis på http://localhost:${port}`)
+  console.log(`spela spel gratis på http://localhost:${port}`);
 });
