@@ -1,5 +1,8 @@
+import keyboard from './keyboard';
+import SpriteUtilities from './spriteUtilities';
+import * as PIXI from 'pixi.js';
 
-const movement_speed = 2; 
+const movement_speed = 2;
 const su = new SpriteUtilities(PIXI);
 
 let type = "WebGL"
@@ -20,10 +23,9 @@ const Application = PIXI.Application,
 //Create a Pixi Application
 const app = new Application({width: 512, height: 512});
 let player;
-state = play;
+let state = play;
 
 //Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);
 
 loader
   .add("imgs/baby_yoda.PNG")
@@ -42,7 +44,7 @@ function gameLoop(delta){
 }
 
 function add_character(x, y, scale, img_filepath){
-    character = load_zombie(img_filepath)
+    let character = load_zombie(img_filepath)
 
     character.position.set(x, y);
     character.vx = 0;
@@ -59,7 +61,7 @@ function add_character(x, y, scale, img_filepath){
 
 function load_zombie(img_filepath) {
     const frames = su.filmstrip(img_filepath, 128, 128);
-    animation = su.sprite(frames);
+    let animation = su.sprite(frames);
     const stripSize = 36;
     const walkOffset = 4;
     const walkAnimationLength = 7;
@@ -121,7 +123,7 @@ function key_presses() {
         } else if(right.isDown){
             player.playAnimation(player.animationStates.walkRight)
         } else {
-            player.show(character.animationStates.left);
+            player.show(player.animationStates.left);
         }
 
         if (!right.isDown) {
@@ -154,7 +156,7 @@ function key_presses() {
         } else if(down.isDown){
             player.playAnimation(player.animationStates.walkDown)
         } else {
-            player.show(character.animationStates.up);
+            player.show(player.animationStates.up);
         }
 
         if (!down.isDown) {
@@ -186,7 +188,7 @@ function key_presses() {
         } else if(left.isDown){
             player.playAnimation(player.animationStates.walkLeft)
         } else {
-            player.show(character.animationStates.right);
+            player.show(player.animationStates.right);
         }
 
         if (!left.isDown) {
@@ -207,7 +209,7 @@ function key_presses() {
         } else if(up.isDown){
             player.playAnimation(player.animationStates.walkUp)
         } else {
-            player.show(character.animationStates.up);
+            player.show(player.animationStates.up);
         }
 
         player.vy = movement_speed;
@@ -220,7 +222,7 @@ function key_presses() {
         } else if(up.isDown){
             player.playAnimation(player.animationStates.walkUp)
         } else {
-            player.show(character.animationStates.down);
+            player.show(player.animationStates.down);
         }
 
         if (!up.isDown) {
@@ -231,3 +233,5 @@ function key_presses() {
         }
     };
 }
+
+export default app;
