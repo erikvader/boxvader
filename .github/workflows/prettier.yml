@@ -6,4 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run prettier
-        run: npx -p prettier@1.19 prettier --check "**/*.{ts,tsx}"
+        run: npx -p prettier@1.19 prettier --check "**/*.{ts,js}"
