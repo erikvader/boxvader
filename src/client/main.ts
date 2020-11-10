@@ -1,5 +1,6 @@
 import geckos from '@geckos.io/client';
 import PSON from 'pson';
+import app from './game';
 
 const pson = new PSON.StaticPair(["hej"]);
 
@@ -20,3 +21,5 @@ channel.onConnect(error => {
     let d = pson.encode({hej: 1}).toArrayBuffer();
     channel.raw.emit(d);
 });
+
+document.body.appendChild(app.view);

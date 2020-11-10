@@ -16,6 +16,9 @@ module.exports = {
             pson: 'pson/dist/PSON.js',
             Long: "long/index.js",
             ByteBuffer: "bytebuffer/index.js"
+        },
+        fallback: {
+            path: require.resolve("path-browserify")
         }
     },
     module: {
