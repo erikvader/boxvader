@@ -33,21 +33,7 @@ loader
 
 function setup() {
 
-    player = add_characther(200, 200, "imgs/zombie_0.png")
-
-    //let base = TextureCache["imgs/zombie_0.png"];
-    /*
-    for (let i = 0; i < 8; i++) {
-        textureArrayLeftWalk[i] = new PIXI.Texture(base);
-        textureArrayLeftWalk[i].frame = new Rectangle((4 + i )*128, 0, 128, 128);
-    }
-    let animation = new MovieClip(textureArrayLeftWalk);
-    animation.position.set(20, 20)
-    app.stage.addChild(animation);
-    animation.play();
-    animation.animationSpeed = 0.2;
-    */
-    //player = add_characther(50, 50, "imgs/zombie_0.png")
+    player = add_characther(200, 200, 0.5, "imgs/zombie_0.png")
 
     app.ticker.add(delta => gameLoop(delta));
     key_presses();
@@ -56,15 +42,14 @@ function gameLoop(delta){
     state(delta);
 }
 
-function add_characther(x, y, img_filepath){
-    characther = load_animation(img_filepath)
-
+function add_characther(x, y, scale, img_filepath){
+    characther = load_zombie(img_filepath)
 
     characther.position.set(x, y);
     characther.vx = 0;
     characther.vy = 0;
     
-    characther.scale.set(0.5, 0.5);
+    characther.scale.set(scale, scale);
     characther.anchor.set(0.5, 0.5);
     
     app.stage.addChild(characther);
@@ -73,15 +58,15 @@ function add_characther(x, y, img_filepath){
     return characther
 }
 
-function load_animation(img_filepath) {
+function load_zombie(img_filepath) {
     let frames = su.filmstrip(img_filepath, 128, 128);
-    zombie = su.sprite(frames);
+    animation = su.sprite(frames);
     let stripSize = 36;
     let walkOffset = 4;
     let walkAnimationLength = 7;
 
-    zombie.fps = 12;
-    zombie.animationStates = {
+    animation.fps = 12;
+    animation.animationStates = {
         left: 0,
         left_up: stripSize,
         up: stripSize*2,
@@ -99,16 +84,12 @@ function load_animation(img_filepath) {
         walkDown: [stripSize * 6 + walkOffset, stripSize * 6 + walkOffset +walkAnimationLength],
         walkLeft_down: [stripSize * 7 + walkOffset, stripSize * 7 + walkOffset +walkAnimationLength]
     }
-    
-    return zombie
+    return animation
 }
 
 function play(delta){
-    //Move the player 1 pixel 
     player.x += player.vx;
     player.y += player.vy;
-
-    
   }
 
 
@@ -121,8 +102,6 @@ function key_presses() {
     
     //Left arrow key `press` method
     left.press = () => {
-        //Change the sprites's velocity when the key is pressed
-        
         if(up.isDown) {
             player.playAnimation(player.animationStates.walkLeft_up)
         } else if(down.isDown) {
@@ -130,15 +109,12 @@ function key_presses() {
         } else {
             player.playAnimation(player.animationStates.walkLeft)
         }
+
         player.vx = -movement_speed;
-        //player.vy = 0;
     };
 
     //Left arrow key `release` method
     left.release = () => {
-        //If the left arrow has been released, and the right arrow isn't down,
-        //and the sprite isn't moving vertically:
-        //Stop the sprite
         if(up.isDown) {
             player.playAnimation(player.animationStates.walkUp)
         } else if(down.isDown) {
@@ -167,9 +143,10 @@ function key_presses() {
         } else {
             player.playAnimation(player.animationStates.walkUp)
         }
+
         player.vy = -movement_speed;
-        //player.vx = 0;
     };
+
     up.release = () => {
         if(right.isDown) {
             player.playAnimation(player.animationStates.walkRight)
@@ -180,7 +157,6 @@ function key_presses() {
         } else {
             player.show(characther.animationStates.up);
         }
-
 
         if (!down.isDown) {
             player.vy = 0;
@@ -201,7 +177,6 @@ function key_presses() {
         }
 
         player.vx = movement_speed;
-        //player.vy = 0;
     };
     right.release = () => {
 
@@ -237,7 +212,6 @@ function key_presses() {
         }
 
         player.vy = movement_speed;
-        //player.vx = 0;
     };
     down.release = () => {
         if(right.isDown) {
