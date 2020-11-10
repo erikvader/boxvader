@@ -1,15 +1,15 @@
-const path = require("path");
+import path from 'path';
 
-const express = require("express");
-const http = require("http");
+import express from 'express';
+import http from 'http';
 const app = express();
 const server = http.createServer(app);
 const port = 3000;
 
-const geckos = require("@geckos.io/server").default;
+import geckos from '@geckos.io/server';
 const io = geckos();
 
-const PSON = require("pson");
+import PSON from 'pson';
 const pson = new PSON.StaticPair(["hej"]);
 
 io.addServer(server);
