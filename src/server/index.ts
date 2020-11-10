@@ -31,5 +31,5 @@ io.onConnection(channel => {
 });
 
 server.listen(port, () => {
-    console.log(`spela spel gratis på http://lokalhost:${port}`)
+    console.log(`spela spel gratis på http://localhost:${port}`)
 });

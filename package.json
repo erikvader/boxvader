@@ -8,7 +8,7 @@
     "build-watch": "webpack --watch",
     "serve": "ts-node src/server/index.ts",
     "serve-watch": "ts-node-dev src/server/index.ts",
-    "devel": "concurrently 'npm:serve-watch' 'npm:build-watch'"
+    "dev": "concurrently 'npm:serve-watch' 'npm:build-watch'"
   },
   "author": "",
   "license": "ISC",
