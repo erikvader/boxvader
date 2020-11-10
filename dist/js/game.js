@@ -58,11 +58,11 @@ function add_character(x, y, scale, img_filepath){
 }
 
 function load_zombie(img_filepath) {
-    let frames = su.filmstrip(img_filepath, 128, 128);
+    const frames = su.filmstrip(img_filepath, 128, 128);
     animation = su.sprite(frames);
-    let stripSize = 36;
-    let walkOffset = 4;
-    let walkAnimationLength = 7;
+    const stripSize = 36;
+    const walkOffset = 4;
+    const walkAnimationLength = 7;
 
     animation.fps = 12;
     animation.animationStates = {
