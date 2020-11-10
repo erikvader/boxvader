@@ -1,0 +1,11 @@
+name: Check with eslint
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install packages
+        run: npm install @typescript-eslint/eslint-plugin eslint
+      - name: Run eslint
+        run: npm run lint
