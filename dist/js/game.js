@@ -1,7 +1,6 @@
 
-let movement_speed = 2; 
+const movement_speed = 2; 
 const su = new SpriteUtilities(PIXI);
-let textureArrayLeftWalk = [];
 
 let type = "WebGL"
 if(!PIXI.utils.isWebGLSupported()){
@@ -9,7 +8,7 @@ if(!PIXI.utils.isWebGLSupported()){
 }
 
 //Aliases
-let Application = PIXI.Application,
+const Application = PIXI.Application,
     loader = PIXI.loader,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite,
@@ -19,10 +18,10 @@ let Application = PIXI.Application,
 
 
 //Create a Pixi Application
-let app = new Application({width: 512, height: 512});
+const app = new Application({width: 512, height: 512});
 let player;
-let zombie;
 state = play;
+
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.view);
 
