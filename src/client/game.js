@@ -1,9 +1,52 @@
 import keyboard from './keyboard';
 import SpriteUtilities from './spriteUtilities';
 import * as PIXI from 'pixi.js';
+import geckos from '@geckos.io/client';
+import PSON from 'pson';
 
 const movement_speed = 2;
 const su = new SpriteUtilities(PIXI);
+let my_id;
+let player_list = {};
+////CONNECT TO SERVER/////
+const pson = new PSON.StaticPair(['hej']);
+const channel = geckos({ port: 3000 });
+channel.onConnect(error => {
+  if (error) {
+    console.error(error.message);
+    return;
+  }
+  channel.onRaw(data => {
+    let d = pson.decode(data);
+    if (d["type"] === "position"){
+
+      if(d["player_id"] === my_id){
+
+        player.x = d["x"];
+        player.y = d["y"];
+      }else{
+        let player_to_move = player_list[d["player_id"]];
+        player_to_move.x = d["x"];
+        player_to_move.y = d["y"];
+      }
+    } else if(d["type"] === "id"){
+      my_id = d["new_id"];
+
+    } else if(d["type"] === "new_player"){
+        add_character(d["x"], d["y"], 0.5, 'imgs/zombie_0.png', d["player_id"]);
+    }else if(d["type"] === "player_disconected"){
+      console.log("agge", player_list[d["player_id"]]);
+      app.stage.removeChild(player_list[d["player_id"]]);
+      player_list.splice(d["player_id"], 1);
+    } else {
+      console.log(data);
+      console.log('msg:', d);
+    }
+  });
+  let d = pson.encode({ hej: 1 }).toArrayBuffer();
+  channel.raw.emit(d);
+});
+////////////////////////
 
 let type = 'WebGL';
 if (!PIXI.utils.isWebGLSupported()) {
@@ -21,6 +64,7 @@ const Application = PIXI.Application,
 
 //Create a Pixi Application
 const app = new Application({ width: 512, height: 512 });
+app.renderer.backgroundColor = 0xffd700;
 let player;
 let state = play;
 
@@ -31,8 +75,11 @@ loader
   .add('imgs/zombie_0.png')
   .load(setup);
 
+
+
 function setup() {
-  player = add_character(200, 200, 0.5, 'imgs/zombie_0.png');
+
+  player = add_character(200, 200, 0.5, 'imgs/zombie_0.png', my_id);
 
   app.ticker.add(delta => gameLoop(delta));
   key_presses();
@@ -41,19 +88,22 @@ function gameLoop(delta) {
   state(delta);
 }
 
-function add_character(x, y, scale, img_filepath) {
+function add_character(x, y, scale, img_filepath, id) {
   let character = load_zombie(img_filepath);
 
   character.position.set(x, y);
   character.vx = 0;
   character.vy = 0;
-
+  character.id = id;
   character.scale.set(scale, scale);
   character.anchor.set(0.5, 0.5);
-
+  player_list[id] = character;
   app.stage.addChild(character);
 
   character.show(character.animationStates.down);
+
+
+
   return character;
 }
 
@@ -111,8 +161,10 @@ function load_zombie(img_filepath) {
 }
 
 function play(delta) {
-  player.x += player.vx;
-  player.y += player.vy;
+  if(my_id != null){
+    let position_data = pson.encode({type: "position", player_id: my_id,  x: player.vx + player.x, y: player.vy + player.y}).toArrayBuffer();
+    channel.raw.emit(position_data);
+  }
 }
 
 function key_presses() {
@@ -124,6 +176,7 @@ function key_presses() {
 
   //Left arrow key `press` method
   left.press = () => {
+
     if (up.isDown) {
       player.playAnimation(player.animationStates.walkLeft_up);
     } else if (down.isDown) {
