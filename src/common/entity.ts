@@ -30,7 +30,7 @@ abstract class Entity {
   }
 
   abstract createBody(world: World): Body;
-  abstract draw(pixi: any): void;
+  abstract draw(pixi): void;
 
   isAlive(): boolean {
     return this.health > 0;
@@ -74,10 +74,21 @@ export class Player extends Entity {
   }
 
   createBody(world: World): Body {
-    throw new Error('Method not implemented.');
+    const bodyDef: BodyDef = {
+      position: this.position,
+      linearVelocity: this.velocity,
+    };
+
+    // shape must have type any to silence this error:
+    // 'CircleShape' is not assignable to parameter of type 'Shape'
+    const body = world.createDynamicBody(bodyDef);
+    const shape: any = new Circle(1);
+    body.createFixture(shape);
+
+    return body;
   }
 
-  draw(pixi: any): void {
+  draw(pixi): void {
     throw new Error('Method not implemented.');
   }
 }
