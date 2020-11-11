@@ -74,21 +74,45 @@ export class Player extends Entity {
   }
 
   createBody(world: World): Body {
-    const bodyDef: BodyDef = {
-      position: this.position,
-      linearVelocity: this.velocity,
-    };
-
-    // shape must have type any to silence this error:
-    // 'CircleShape' is not assignable to parameter of type 'Shape'
-    const body = world.createDynamicBody(bodyDef);
-    const shape: any = new Circle(1);
-    body.createFixture(shape);
-
-    return body;
+    return createBody(world, this);
   }
 
   draw(pixi): void {
     throw new Error('Method not implemented.');
   }
+}
+
+export class Enemy extends Entity {
+  constructor(
+    id: Id,
+    hitbox: Vec2,
+    health: number,
+    position: Vec2,
+    velocity: Vec2,
+  ) {
+    super(id, hitbox, health, position, velocity);
+  }
+
+  createBody(world: World): Body {
+    return createBody(world, this);
+  }
+
+  draw(pixi): void {
+    throw new Error('Method not implemented.');
+  }
+}
+
+function createBody(world: World, entity: Entity): Body {
+  const bodyDef: BodyDef = {
+    position: entity.position,
+    linearVelocity: entity.velocity,
+  };
+
+  // shape must have type any to silence this error:
+  // 'CircleShape' is not assignable to parameter of type 'Shape'
+  const body = world.createDynamicBody(bodyDef);
+  const shape: any = new Circle(1);
+  body.createFixture(shape);
+
+  return body;
 }
