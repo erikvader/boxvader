@@ -67,9 +67,7 @@ io.onConnection(channel => {
           })
           .toArrayBuffer();
         channel.raw.broadcast.emit(player_disconected);
-        console.log('before ', player_list);
         player_list.splice(player_list.indexOf(player), 1);
-        console.log('after ', player_list);
         break;
       }
     }
@@ -90,11 +88,7 @@ io.onConnection(channel => {
         })
         .toArrayBuffer();
       io.raw.emit(new_pos);
-      //console.log('position ', player_list);
       for (const player of player_list) {
-        if (player === undefined) {
-          console.log(player_list);
-        }
         if (player.player_id === json_data['player_id']) {
           player.x = json_data['x'];
           player.y = json_data['y'];

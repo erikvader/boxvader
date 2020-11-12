@@ -28,7 +28,6 @@ channel.onConnect(error => {
         player.x = d['x'];
         player.y = d['y'];
       } else {
-        console.log(player_list[d['player_id']]);
         for (const player of player_list) {
           if (player.player_id === d['player_id']) {
             const player_to_move = player.player;
@@ -43,15 +42,12 @@ channel.onConnect(error => {
     } else if (d['type'] === 'new_player') {
       add_character(d['x'], d['y'], 0.5, 'imgs/zombie_0.png', d['player_id']);
     } else if (d['type'] === 'player_disconected') {
-      console.log('1 ', player_list);
       for (const player of player_list) {
         if (player.player_id === d['player_id']) {
-          console.log('agge');
           app.stage.removeChild(player.player);
           player_list.splice(player_list.indexOf(player), 1);
         }
       }
-      console.log('2 ', player_list);
     } else {
       console.log(data);
       console.log('msg:', d);
