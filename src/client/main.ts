@@ -1,3 +1,3 @@
-import app from './game';
+import app from './game.ts';
 
 document.body.appendChild(app.view);

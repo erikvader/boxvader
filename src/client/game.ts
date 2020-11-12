@@ -4,10 +4,15 @@ import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
 import PSON from 'pson';
 
+type Player = {
+  player_id: number;
+  player: any;
+};
+
 const movement_speed = 2;
 const su = new SpriteUtilities(PIXI);
 let my_id;
-const player_list = {};
+const player_list: Player[] = [];
 ////CONNECT TO SERVER/////
 const pson = new PSON.StaticPair(['hej']);
 const channel = geckos({ port: 3000 });
@@ -23,7 +28,13 @@ channel.onConnect(error => {
         player.x = d['x'];
         player.y = d['y'];
       } else {
-        const player_to_move = player_list[d['player_id']];
+        console.log(player_list[d['player_id']]);
+        for (const player of player_list) {
+          if (player.player_id === d['player_id']) {
+            const player_to_move = player.player;
+            break;
+          }
+        }
         player_to_move.x = d['x'];
         player_to_move.y = d['y'];
       }
@@ -32,8 +43,15 @@ channel.onConnect(error => {
     } else if (d['type'] === 'new_player') {
       add_character(d['x'], d['y'], 0.5, 'imgs/zombie_0.png', d['player_id']);
     } else if (d['type'] === 'player_disconected') {
-      app.stage.removeChild(player_list[d['player_id']]);
-      player_list.splice(d['player_id'], 1);
+      console.log('1 ', player_list);
+      for (const player of player_list) {
+        if (player.player_id === d['player_id']) {
+          console.log('agge');
+          app.stage.removeChild(player.player);
+          player_list.splice(player_list.indexOf(player), 1);
+        }
+      }
+      console.log('2 ', player_list);
     } else {
       console.log(data);
       console.log('msg:', d);
@@ -80,7 +98,7 @@ function add_character(x, y, scale, img_filepath, id) {
   character.id = id;
   character.scale.set(scale, scale);
   character.anchor.set(0.5, 0.5);
-  player_list[id] = character;
+  player_list.push({ player: character, player_id: id });
   app.stage.addChild(character);
 
   character.show(character.animationStates.down);
