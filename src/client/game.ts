@@ -1,4 +1,4 @@
-import keyboard from './keyboard';
+import Key from './key.ts';
 import SpriteUtilities from './spriteUtilities';
 import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
@@ -157,10 +157,10 @@ function play(delta) {
 
 function key_presses() {
   //Capture the keyboard arrow keys
-  const left = keyboard('ArrowLeft');
-  const up = keyboard('ArrowUp');
-  const right = keyboard('ArrowRight');
-  const down = keyboard('ArrowDown');
+  const left = new Key('ArrowLeft');
+  const up = new Key('ArrowUp');
+  const right = new Key('ArrowRight');
+  const down = new Key('ArrowDown');
 
   //Left arrow key `press` method
   left.press = () => {

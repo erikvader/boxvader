@@ -9,8 +9,8 @@
     "serve": "ts-node src/server/index.ts",
     "serve-watch": "ts-node-dev src/server/index.ts",
     "dev": "concurrently 'npm:serve-watch' 'npm:build-watch'",
-    "format": "prettier --write \"**/*.{ts,js}\"",
-    "format-check": "prettier --check \"**/*.{ts,js}\"",
+    "format": "prettier --write \"src/**/*.{ts,js}\"",
+    "format-check": "prettier --check \"src/**/*.{ts,js}\"",
     "lint": "eslint src"
   },
   "author": "",
