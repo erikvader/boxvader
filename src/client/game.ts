@@ -44,19 +44,9 @@ channel.onConnect(error => {
 });
 ////////////////////////
 
-/*let type = 'WebGL';
-if (!PIXI.utils.isWebGLSupported()) {
-  type = 'canvas';
-}*/
-
 //Aliases
 const Application = PIXI.Application,
   loader = PIXI.loader;
-//resources = PIXI.loader.resources,
-//Sprite = PIXI.Sprite,
-//Rectangle = PIXI.Rectangle,
-//TextureCache = PIXI.utils.TextureCache,
-//MovieClip = PIXI.MovieClip;
 
 //Create a Pixi Application
 const app = new Application({ width: 512, height: 512 });
