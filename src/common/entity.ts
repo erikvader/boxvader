@@ -9,9 +9,9 @@ abstract class Entity {
   readonly hitbox: Vec2;
   readonly maxHealth: number;
 
-  health: number;
-  position: Vec2;
-  velocity: Vec2;
+  private health: number;
+  protected position: Vec2;
+  protected velocity: Vec2;
 
   constructor(
     id: Id,
@@ -30,6 +30,18 @@ abstract class Entity {
 
   abstract createBody(world: World): Body;
   abstract draw(pixi): void;
+
+  getHealth(): number {
+    return this.health;
+  }
+
+  getPosition(): Vec2 {
+    return this.position;
+  }
+
+  getVelocity(): Vec2 {
+    return this.velocity;
+  }
 
   isAlive(): boolean {
     return this.health > 0;
@@ -55,8 +67,8 @@ abstract class Entity {
 export class Player extends Entity {
   readonly name: string;
 
-  score: number;
-  firing: boolean;
+  private score: number;
+  private firing: boolean;
 
   constructor(
     id: Id,
@@ -69,6 +81,22 @@ export class Player extends Entity {
     this.name = name;
     this.score = 0;
     this.firing = false;
+  }
+
+  getScore(): number {
+    return this.score;
+  }
+
+  isFiring(): boolean {
+    return this.firing;
+  }
+
+  addScore(points: number): void {
+    this.score += points;
+  }
+
+  setFiring(firing: boolean): void {
+    this.firing = firing;
   }
 
   createBody(world: World): Body {
@@ -101,8 +129,8 @@ export class Enemy extends Entity {
 
 function createBody(world: World, entity: Entity): Body {
   const bodyDef: BodyDef = {
-    position: entity.position,
-    linearVelocity: entity.velocity,
+    position: entity.getPosition(),
+    linearVelocity: entity.getVelocity(),
   };
 
   // shape must have type any to silence this error:
