@@ -18,7 +18,6 @@ abstract class Entity {
     hitbox: Vec2,
     health: number,
     position: Vec2,
-    velocity: Vec2,
   ) {
     this.id = id;
     this.hitbox = hitbox;
@@ -26,7 +25,7 @@ abstract class Entity {
 
     this.health = health;
     this.position = position;
-    this.velocity = velocity;
+    this.velocity = Vec2.zero();
   }
 
   abstract createBody(world: World): Body;
@@ -64,10 +63,9 @@ export class Player extends Entity {
     hitbox: Vec2,
     health: number,
     position: Vec2,
-    velocity: Vec2,
     name: string,
   ) {
-    super(id, hitbox, health, position, velocity);
+    super(id, hitbox, health, position);
     this.name = name;
     this.score = 0;
     this.firing = false;
@@ -88,9 +86,8 @@ export class Enemy extends Entity {
     hitbox: Vec2,
     health: number,
     position: Vec2,
-    velocity: Vec2,
   ) {
-    super(id, hitbox, health, position, velocity);
+    super(id, hitbox, health, position);
   }
 
   createBody(world: World): Body {
