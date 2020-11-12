@@ -1,4 +1,4 @@
-import keyboard from './keyboard';
+import Key from './key.ts';
 import SpriteUtilities from './spriteUtilities';
 import * as PIXI from 'pixi.js';
 
@@ -117,10 +117,10 @@ function play(delta) {
 
 function key_presses() {
   //Capture the keyboard arrow keys
-  let left = keyboard('ArrowLeft'),
-    up = keyboard('ArrowUp'),
-    right = keyboard('ArrowRight'),
-    down = keyboard('ArrowDown');
+  let left = new Key('ArrowLeft'),
+    up = new Key('ArrowUp'),
+    right = new Key('ArrowRight'),
+    down = new Key('ArrowDown');
 
   //Left arrow key `press` method
   left.press = () => {
