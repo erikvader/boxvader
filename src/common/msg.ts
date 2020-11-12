@@ -1,7 +1,5 @@
 import { Input } from './misc';
-
-// TODO
-type State = any;
+import { State } from './state';
 
 /**
  * Messages sent from clients to servers.
