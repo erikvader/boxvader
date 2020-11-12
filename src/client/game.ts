@@ -7,7 +7,7 @@ import PSON from 'pson';
 const movement_speed = 2;
 const su = new SpriteUtilities(PIXI);
 let my_id;
-let player_list = {};
+const player_list = {};
 ////CONNECT TO SERVER/////
 const pson = new PSON.StaticPair(['hej']);
 const channel = geckos({ port: 3000 });
@@ -17,56 +17,52 @@ channel.onConnect(error => {
     return;
   }
   channel.onRaw(data => {
-    let d = pson.decode(data);
-    if (d["type"] === "position"){
-
-      if(d["player_id"] === my_id){
-
-        player.x = d["x"];
-        player.y = d["y"];
-      }else{
-        let player_to_move = player_list[d["player_id"]];
-        player_to_move.x = d["x"];
-        player_to_move.y = d["y"];
+    const d = pson.decode(data);
+    if (d['type'] === 'position') {
+      if (d['player_id'] === my_id) {
+        player.x = d['x'];
+        player.y = d['y'];
+      } else {
+        const player_to_move = player_list[d['player_id']];
+        player_to_move.x = d['x'];
+        player_to_move.y = d['y'];
       }
-    } else if(d["type"] === "id"){
-      my_id = d["new_id"];
-
-    } else if(d["type"] === "new_player"){
-        add_character(d["x"], d["y"], 0.5, 'imgs/zombie_0.png', d["player_id"]);
-    }else if(d["type"] === "player_disconected"){
-      console.log("agge", player_list[d["player_id"]]);
-      app.stage.removeChild(player_list[d["player_id"]]);
-      player_list.splice(d["player_id"], 1);
+    } else if (d['type'] === 'id') {
+      my_id = d['new_id'];
+    } else if (d['type'] === 'new_player') {
+      add_character(d['x'], d['y'], 0.5, 'imgs/zombie_0.png', d['player_id']);
+    } else if (d['type'] === 'player_disconected') {
+      app.stage.removeChild(player_list[d['player_id']]);
+      player_list.splice(d['player_id'], 1);
     } else {
       console.log(data);
       console.log('msg:', d);
     }
   });
-  let d = pson.encode({ hej: 1 }).toArrayBuffer();
+  const d = pson.encode({ hej: 1 }).toArrayBuffer();
   channel.raw.emit(d);
 });
 ////////////////////////
 
-let type = 'WebGL';
+/*let type = 'WebGL';
 if (!PIXI.utils.isWebGLSupported()) {
   type = 'canvas';
-}
+}*/
 
 //Aliases
 const Application = PIXI.Application,
-  loader = PIXI.loader,
-  resources = PIXI.loader.resources,
-  Sprite = PIXI.Sprite,
-  Rectangle = PIXI.Rectangle,
-  TextureCache = PIXI.utils.TextureCache,
-  MovieClip = PIXI.MovieClip;
+  loader = PIXI.loader;
+//resources = PIXI.loader.resources,
+//Sprite = PIXI.Sprite,
+//Rectangle = PIXI.Rectangle,
+//TextureCache = PIXI.utils.TextureCache,
+//MovieClip = PIXI.MovieClip;
 
 //Create a Pixi Application
 const app = new Application({ width: 512, height: 512 });
 app.renderer.backgroundColor = 0xffd700;
 let player;
-let state = play;
+const state = play;
 
 //Add the canvas that Pixi automatically created for you to the HTML document
 
@@ -75,10 +71,7 @@ loader
   .add('imgs/zombie_0.png')
   .load(setup);
 
-
-
 function setup() {
-
   player = add_character(200, 200, 0.5, 'imgs/zombie_0.png', my_id);
 
   app.ticker.add(delta => gameLoop(delta));
@@ -89,7 +82,7 @@ function gameLoop(delta) {
 }
 
 function add_character(x, y, scale, img_filepath, id) {
-  let character = load_zombie(img_filepath);
+  const character = load_zombie(img_filepath);
 
   character.position.set(x, y);
   character.vx = 0;
@@ -102,14 +95,12 @@ function add_character(x, y, scale, img_filepath, id) {
 
   character.show(character.animationStates.down);
 
-
-
   return character;
 }
 
 function load_zombie(img_filepath) {
   const frames = su.filmstrip(img_filepath, 128, 128);
-  let animation = su.sprite(frames);
+  const animation = su.sprite(frames);
   const stripSize = 36;
   const walkOffset = 4;
   const walkAnimationLength = 7;
@@ -161,22 +152,28 @@ function load_zombie(img_filepath) {
 }
 
 function play(delta) {
-  if(my_id != null){
-    let position_data = pson.encode({type: "position", player_id: my_id,  x: player.vx + player.x, y: player.vy + player.y}).toArrayBuffer();
+  if (my_id != null) {
+    const position_data = pson
+      .encode({
+        type: 'position',
+        player_id: my_id,
+        x: player.vx + player.x,
+        y: player.vy + player.y,
+      })
+      .toArrayBuffer();
     channel.raw.emit(position_data);
   }
 }
 
 function key_presses() {
   //Capture the keyboard arrow keys
-  let left = keyboard('ArrowLeft'),
-    up = keyboard('ArrowUp'),
-    right = keyboard('ArrowRight'),
-    down = keyboard('ArrowDown');
+  const left = keyboard('ArrowLeft');
+  const up = keyboard('ArrowUp');
+  const right = keyboard('ArrowRight');
+  const down = keyboard('ArrowDown');
 
   //Left arrow key `press` method
   left.press = () => {
-
     if (up.isDown) {
       player.playAnimation(player.animationStates.walkLeft_up);
     } else if (down.isDown) {

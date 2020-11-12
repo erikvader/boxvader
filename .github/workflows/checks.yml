@@ -1,0 +1,17 @@
+name: Check with eslint and prettier
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install packages
+        run: npm install @typescript-eslint/eslint-plugin eslint
+      - name: Run eslint
+        run: npm run lint
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run prettier
+        run: npx -p prettier@1.19 prettier --check "**/*.{ts,js}"
