@@ -5,54 +5,54 @@ import { Body, BodyDef, Circle, Vec2, World } from 'planck-js';
  * A generic entity. It has health, a position, and a velocity.
  */
 abstract class Entity {
-  readonly id: Id;
-  readonly hitbox: Vec2;
-  readonly maxHealth: number;
+  public readonly id: Id;
+  public readonly hitbox: Vec2;
+  public readonly maxHealth: number;
 
-  private health: number;
-  protected position: Vec2;
-  protected velocity: Vec2;
+  private _health: number;
+  protected _position: Vec2;
+  protected _velocity: Vec2;
 
-  constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
+  public constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
     this.id = id;
     this.hitbox = hitbox;
     this.maxHealth = health;
 
-    this.health = health;
-    this.position = position;
-    this.velocity = Vec2.zero();
+    this._health = health;
+    this._position = position;
+    this._velocity = Vec2.zero();
   }
 
-  abstract createBody(world: World): Body;
-  abstract draw(pixi): void;
+  public abstract createBody(world: World): Body;
+  public abstract draw(pixi): void;
 
-  getHealth(): number {
-    return this.health;
+  public get health(): number {
+    return this._health;
   }
 
-  getPosition(): Vec2 {
-    return this.position;
+  public get position(): Vec2 {
+    return this._position;
   }
 
-  getVelocity(): Vec2 {
-    return this.velocity;
+  public get velocity(): Vec2 {
+    return this._velocity;
   }
 
-  isAlive(): boolean {
+  public get alive(): boolean {
     return this.health > 0;
   }
 
-  takeDamage(damage: number): void {
-    if (damage > this.health) {
-      this.health = 0;
+  public takeDamage(damage: number): void {
+    if (damage > this._health) {
+      this._health = 0;
     } else {
-      this.health -= damage;
+      this._health -= damage;
     }
   }
 
-  updateFromBody(body: Body): void {
-    this.position = body.getPosition();
-    this.velocity = body.getLinearVelocity();
+  public updateFromBody(body: Body): void {
+    this._position = body.getPosition();
+    this._velocity = body.getLinearVelocity();
   }
 }
 
@@ -60,12 +60,12 @@ abstract class Entity {
  * A player with a name and score. An extension of `Entity`.
  */
 export class Player extends Entity {
-  readonly name: string;
+  public readonly name: string;
 
-  private score: number;
-  private firing: boolean;
+  private _firing: boolean;
+  private _score: number;
 
-  constructor(
+  public constructor(
     id: Id,
     hitbox: Vec2,
     health: number,
@@ -74,53 +74,53 @@ export class Player extends Entity {
   ) {
     super(id, hitbox, health, position);
     this.name = name;
-    this.score = 0;
-    this.firing = false;
+    this._score = 0;
+    this._firing = false;
   }
 
-  getScore(): number {
-    return this.score;
+  public get firing(): boolean {
+    return this._firing;
   }
 
-  isFiring(): boolean {
-    return this.firing;
+  public set firing(firing: boolean) {
+    this._firing = firing;
   }
 
-  addScore(points: number): void {
-    this.score += points;
+  public get score(): number {
+    return this._score;
   }
 
-  setFiring(firing: boolean): void {
-    this.firing = firing;
+  public addScore(points: number): void {
+    this._score += points;
   }
 
-  createBody(world: World): Body {
+  public createBody(world: World): Body {
     return createBody(world, this);
   }
 
-  draw(pixi): void {
+  public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
 }
 
 export class Enemy extends Entity {
-  constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
+  public constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
     super(id, hitbox, health, position);
   }
 
-  createBody(world: World): Body {
+  public createBody(world: World): Body {
     return createBody(world, this);
   }
 
-  draw(pixi): void {
+  public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
 }
 
 function createBody(world: World, entity: Entity): Body {
   const bodyDef: BodyDef = {
-    position: entity.getPosition(),
-    linearVelocity: entity.getVelocity(),
+    position: entity.position,
+    linearVelocity: entity.velocity,
   };
 
   // shape must have type any to silence this error:
