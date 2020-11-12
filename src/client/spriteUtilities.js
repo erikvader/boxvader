@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default class SpriteUtilities {
   constructor(renderingEngine = PIXI) {
     if (renderingEngine === undefined)

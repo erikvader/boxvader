@@ -13,12 +13,12 @@ channel.onConnect(error => {
   }
 
   channel.onRaw(data => {
-    let d = pson.decode(data);
+    const d = pson.decode(data);
     console.log(data);
     console.log('msg:', d);
   });
 
-  let d = pson.encode({ hej: 1 }).toArrayBuffer();
+  const d = pson.encode({ hej: 1 }).toArrayBuffer();
   channel.raw.emit(d);
 });
 
