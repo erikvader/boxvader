@@ -1,6 +1,6 @@
 # Vikings Of Vader
 
-Make sure to install prettier plugin to VS Code.
+It is recommended to install a plugin for you editor that automatically runs prettier. See their [website](https://prettier.io/) for alternatives.
 
 ## Backend
 
