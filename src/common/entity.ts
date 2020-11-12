@@ -13,12 +13,7 @@ abstract class Entity {
   protected position: Vec2;
   protected velocity: Vec2;
 
-  constructor(
-    id: Id,
-    hitbox: Vec2,
-    health: number,
-    position: Vec2,
-  ) {
+  constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
     this.id = id;
     this.hitbox = hitbox;
     this.maxHealth = health;
@@ -109,12 +104,7 @@ export class Player extends Entity {
 }
 
 export class Enemy extends Entity {
-  constructor(
-    id: Id,
-    hitbox: Vec2,
-    health: number,
-    position: Vec2,
-  ) {
+  constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
     super(id, hitbox, health, position);
   }
 
