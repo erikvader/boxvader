@@ -19,7 +19,7 @@ export default abstract class GameLoop {
 
   private secondacc = 0;
   private updateCount = 0;
-  public runningFPS = 0;
+  public runningFPS = 0; // our current FPS
 
   constructor(ups?: number, fps?: number) {
     this.ups = 1000.0 / (ups || 30);
@@ -43,7 +43,6 @@ export default abstract class GameLoop {
       this.runningFPS = this.updateCount;
       this.updateCount = 0;
       this.secondacc -= 1000;
-      console.debug('FPS: ' + this.runningFPS);
     }
 
     while (this.timeacc >= this.ups) {
@@ -56,6 +55,8 @@ export default abstract class GameLoop {
     return performance.now() - now;
   }
 
+  // start the game loop. Return a promise that resolves when the loop has
+  // stopped.
   public start(): Promise<void> {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     return new Promise((accept, reject) => {
@@ -67,6 +68,7 @@ export default abstract class GameLoop {
     });
   }
 
+  // stop the loop
   public stop(): void {
     if (!this.running) return;
     this.running = false;
@@ -80,6 +82,7 @@ export default abstract class GameLoop {
     return this.timeacc / this.ups;
   }
 
+  // something that calls update over and over and over and over and over...
   protected timer(prevStep?: number): void {
     setTimeout(() => {
       const step = this.update();
@@ -87,9 +90,13 @@ export default abstract class GameLoop {
     }, Math.max(0, this.fps - (prevStep || 0)));
   }
 
+  // run stuff after the loop has stopped.
   protected cleanup(): void {
     return;
   }
+
+  // something to run ups times per second, preferably game logic
   abstract doUpdate(): void;
+  // something to run fps times per second, preferable draw logic
   abstract afterUpdate(): void;
 }
