@@ -31,9 +31,9 @@ export default abstract class GameLoop {
     let step = now - this.prevNow;
     this.prevNow = now;
 
-    if (step > Game.maxUpdateStep) {
-      step = Game.maxUpdateStep;
-      console.warn('skipped frames!');
+    if (step > GameLoop.maxUpdateStep) {
+      step = GameLoop.maxUpdateStep;
+      console.warn('skipped updates!');
     }
     this.timeacc += step;
 
@@ -43,6 +43,7 @@ export default abstract class GameLoop {
       this.runningFPS = this.updateCount;
       this.updateCount = 0;
       this.secondacc -= 1000;
+      console.debug('FPS: ' + this.runningFPS);
     }
 
     while (this.timeacc >= this.ups) {
@@ -56,6 +57,7 @@ export default abstract class GameLoop {
   }
 
   public start(): Promise<void> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     return new Promise((accept, reject) => {
       this.running = true;
       this.timeacc = 0;
@@ -66,7 +68,9 @@ export default abstract class GameLoop {
   }
 
   public stop(): void {
+    if (!this.running) return;
     this.running = false;
+    this.cleanup();
     this.startAccept();
     this.startAccept = undefined;
   }
@@ -83,6 +87,9 @@ export default abstract class GameLoop {
     }, Math.max(0, this.fps - (prevStep || 0)));
   }
 
+  protected cleanup(): void {
+    return;
+  }
   abstract doUpdate(): void;
   abstract afterUpdate(): void;
 }

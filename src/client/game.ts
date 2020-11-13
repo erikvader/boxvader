@@ -1,107 +1,246 @@
 import Key from './key.ts';
-import SpriteUtilities from './spriteUtilities';
 import * as PIXI from 'pixi.js';
-import geckos from '@geckos.io/client';
-import PSON from 'pson';
+import GameLoop from '../common/game-loop.ts';
+import { Vec2 } from 'planck-js';
 
-type Player = {
-  player_id: number;
-  sprite: any;
-};
-
-const movement_speed = 2;
+import SpriteUtilities from './spriteUtilities';
 const su = new SpriteUtilities(PIXI);
-let my_id;
-const player_list: Player[] = [];
-////CONNECT TO SERVER/////
-const pson = new PSON.StaticPair(['hej']);
-const channel = geckos({ port: 3000 });
-channel.onConnect(error => {
-  if (error) {
-    console.error(error.message);
-    return;
+
+export interface ClientGameOpt {
+  sendInputFun: (any) => void;
+  renderer: any; // TODO: figure out type
+  stage: PIXI.Stage;
+}
+
+export default class ClientGame extends GameLoop {
+  private static readonly movement_speed = 2;
+
+  private renderer;
+  private stage;
+
+  private player_list = {};
+  public my_id?: number;
+  private player?;
+
+  private up;
+  private down;
+  private left;
+  private right;
+
+  private initialized;
+
+  private sendInputFun;
+
+  // TODO: planned instance variables
+  // private simulation: ClientSimulation;
+  // private static readonly historyLength = 10;
+  // private states: State[];
+  // private inputs: Input[];
+
+  constructor(args: ClientGameOpt) {
+    super();
+    this.sendInputFun = args.sendInputFun;
+    this.renderer = args.renderer;
+    this.stage = args.stage;
   }
-  channel.onRaw(data => {
-    const d = pson.decode(data);
-    if (d['type'] === 'position') {
-      if (d['player_id'] === my_id) {
-        if (player === null || player === undefined) {
-          console.log(player);
-        }
-        player.x = d['x'];
-        player.y = d['y'];
-      } else {
-        for (const p of player_list) {
-          if (p.player_id === d['player_id']) {
-            p.sprite.x = d['x'];
-            p.sprite.y = d['y'];
-            break;
-          }
-        }
+
+  public start(): Promise<void> {
+    if (this.my_id === undefined) throw new Error('my_id is not set');
+    this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
+    this.player = this.player_list[this.my_id];
+    this.key_presses();
+    return super.start();
+  }
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  protected timer(prevStep?: number): void {
+    window.requestAnimationFrame(() => {
+      this.update();
+      if (this.running) this.timer();
+    });
+  }
+
+  afterUpdate(): void {
+    this.renderer.render(this.stage);
+  }
+
+  doUpdate(): void {
+    this.player.x += this.player.vx;
+    this.player.y += this.player.vy;
+    this.sendInputFun({ x: this.player.x, y: this.player.y });
+  }
+
+  protected cleanup(): void {
+    // TODO: reset pixi
+    this.left.unsubscribe();
+    this.right.unsubscribe();
+    this.down.unsubscribe();
+    this.up.unsubscribe();
+  }
+
+  serverMsg(data: any): void {
+    if (!this.running) return;
+    for (const [pid, coord] of data) {
+      if (this.player_list[pid] === undefined) {
+        this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', pid);
       }
-    } else if (d['type'] === 'id') {
-      my_id = d['new_id'];
-    } else if (d['type'] === 'new_player') {
-      add_character(d['x'], d['y'], 0.5, 'imgs/zombie_0.png', d['player_id']);
-    } else if (d['type'] === 'player_disconected') {
-      for (const player of player_list) {
-        if (player.player_id === d['player_id']) {
-          app.stage.removeChild(player.sprite);
-          player_list.splice(player_list.indexOf(player), 1);
-        }
-      }
-    } else {
-      console.log(data);
-      console.log('msg:', d);
+      this.player_list[pid].x = coord.x;
+      this.player_list[pid].y = coord.y;
     }
-  });
-  const d = pson.encode({ hej: 1 }).toArrayBuffer();
-  channel.raw.emit(d);
-});
-////////////////////////
+  }
 
-//Aliases
-const Application = PIXI.Application,
-  loader = PIXI.loader;
+  add_character(
+    x: number,
+    y: number,
+    scale: number,
+    img_filepath: string,
+    id: number,
+  ): void {
+    const character = load_zombie(img_filepath);
 
-//Create a Pixi Application
-const app = new Application({ width: 512, height: 512 });
-app.renderer.backgroundColor = 0xffd700;
-let player;
-const state = play;
+    character.position.set(x, y);
+    character.vx = 0;
+    character.vy = 0;
+    character.id = id;
+    character.scale.set(scale, scale);
+    character.anchor.set(0.5, 0.5);
+    this.player_list[id] = character;
+    this.stage.addChild(character);
 
-//Add the canvas that Pixi automatically created for you to the HTML document
+    character.show(character.animationStates.down);
+  }
 
-loader
-  .add('imgs/baby_yoda.PNG')
-  .add('imgs/zombie_0.png')
-  .load(setup);
+  key_presses(): void {
+    this.left = new Key('ArrowLeft');
+    this.up = new Key('ArrowUp');
+    this.right = new Key('ArrowRight');
+    this.down = new Key('ArrowDown');
 
-function setup() {
-  player = add_character(200, 200, 0.5, 'imgs/zombie_0.png', my_id);
+    //Left arrow key `press` method
+    this.left.press = () => {
+      if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft_up);
+      } else if (this.down.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft_down);
+      } else {
+        this.player.playAnimation(this.player.animationStates.walkLeft);
+      }
 
-  app.ticker.add(delta => gameLoop(delta));
-  key_presses();
-}
-function gameLoop(delta) {
-  state(delta);
-}
+      this.player.vx = -ClientGame.movement_speed;
+    };
 
-function add_character(x, y, scale, img_filepath, id) {
-  const character = load_zombie(img_filepath);
+    //Left arrow key `release` method
+    this.left.release = () => {
+      if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkUp);
+      } else if (this.down.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkDown);
+      } else if (this.right.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight);
+      } else {
+        this.player.show(this.player.animationStates.left);
+      }
 
-  character.position.set(x, y);
-  character.vx = 0;
-  character.vy = 0;
-  character.id = id;
-  character.scale.set(scale, scale);
-  character.anchor.set(0.5, 0.5);
-  player_list.push({ sprite: character, player_id: id });
-  app.stage.addChild(character);
+      if (!this.right.isDown) {
+        this.player.vx = 0;
+      } else {
+        this.player.vx = ClientGame.movement_speed;
+      }
+    };
 
-  character.show(character.animationStates.down);
+    //Up
+    this.up.press = () => {
+      if (this.right.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight_up);
+      } else if (this.left.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft_up);
+      } else {
+        this.player.playAnimation(this.player.animationStates.walkUp);
+      }
 
-  return character;
+      this.player.vy = -ClientGame.movement_speed;
+    };
+
+    this.up.release = () => {
+      if (this.right.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight);
+      } else if (this.left.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft);
+      } else if (this.down.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkDown);
+      } else {
+        this.player.show(this.player.animationStates.up);
+      }
+
+      if (!this.down.isDown) {
+        this.player.vy = 0;
+      } else {
+        this.player.vy = ClientGame.movement_speed;
+      }
+    };
+
+    //Right
+    this.right.press = () => {
+      if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight_up);
+      } else if (this.down.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight_down);
+      } else {
+        this.player.playAnimation(this.player.animationStates.walkRight);
+      }
+
+      this.player.vx = ClientGame.movement_speed;
+    };
+    this.right.release = () => {
+      if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkUp);
+      } else if (this.down.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkDown);
+      } else if (this.left.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft);
+      } else {
+        this.player.show(this.player.animationStates.right);
+      }
+
+      if (!this.left.isDown) {
+        this.player.vx = 0;
+      } else {
+        this.player.vx = -ClientGame.movement_speed;
+      }
+    };
+
+    //Down
+    this.down.press = () => {
+      if (this.right.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight);
+      } else if (this.left.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft);
+      } else if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkUp);
+      } else {
+        this.player.show(this.player.animationStates.up);
+      }
+
+      this.player.vy = ClientGame.movement_speed;
+    };
+    this.down.release = () => {
+      if (this.right.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkRight);
+      } else if (this.left.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkLeft);
+      } else if (this.up.isDown) {
+        this.player.playAnimation(this.player.animationStates.walkUp);
+      } else {
+        this.player.show(this.player.animationStates.down);
+      }
+
+      if (!this.up.isDown) {
+        this.player.vy = 0;
+      } else {
+        this.player.vy = -ClientGame.movement_speed;
+      }
+    };
+  }
 }
 
 function load_zombie(img_filepath) {
@@ -156,152 +295,3 @@ function load_zombie(img_filepath) {
   };
   return animation;
 }
-
-function play(delta) {
-  if (my_id != null) {
-    const position_data = pson
-      .encode({
-        type: 'position',
-        player_id: my_id,
-        x: player.vx + player.x,
-        y: player.vy + player.y,
-      })
-      .toArrayBuffer();
-    channel.raw.emit(position_data);
-  }
-}
-
-function key_presses() {
-  //Capture the keyboard arrow keys
-  const left = new Key('ArrowLeft');
-  const up = new Key('ArrowUp');
-  const right = new Key('ArrowRight');
-  const down = new Key('ArrowDown');
-
-  //Left arrow key `press` method
-  left.press = () => {
-    if (up.isDown) {
-      player.playAnimation(player.animationStates.walkLeft_up);
-    } else if (down.isDown) {
-      player.playAnimation(player.animationStates.walkLeft_down);
-    } else {
-      player.playAnimation(player.animationStates.walkLeft);
-    }
-
-    player.vx = -movement_speed;
-  };
-
-  //Left arrow key `release` method
-  left.release = () => {
-    if (up.isDown) {
-      player.playAnimation(player.animationStates.walkUp);
-    } else if (down.isDown) {
-      player.playAnimation(player.animationStates.walkDown);
-    } else if (right.isDown) {
-      player.playAnimation(player.animationStates.walkRight);
-    } else {
-      player.show(player.animationStates.left);
-    }
-
-    if (!right.isDown) {
-      player.vx = 0;
-    } else {
-      player.vx = movement_speed;
-    }
-  };
-
-  //Up
-  up.press = () => {
-    if (right.isDown) {
-      player.playAnimation(player.animationStates.walkRight_up);
-    } else if (left.isDown) {
-      player.playAnimation(player.animationStates.walkLeft_up);
-    } else {
-      player.playAnimation(player.animationStates.walkUp);
-    }
-
-    player.vy = -movement_speed;
-  };
-
-  up.release = () => {
-    if (right.isDown) {
-      player.playAnimation(player.animationStates.walkRight);
-    } else if (left.isDown) {
-      player.playAnimation(player.animationStates.walkLeft);
-    } else if (down.isDown) {
-      player.playAnimation(player.animationStates.walkDown);
-    } else {
-      player.show(player.animationStates.up);
-    }
-
-    if (!down.isDown) {
-      player.vy = 0;
-    } else {
-      player.vy = movement_speed;
-    }
-  };
-
-  //Right
-  right.press = () => {
-    if (up.isDown) {
-      player.playAnimation(player.animationStates.walkRight_up);
-    } else if (down.isDown) {
-      player.playAnimation(player.animationStates.walkRight_down);
-    } else {
-      player.playAnimation(player.animationStates.walkRight);
-    }
-
-    player.vx = movement_speed;
-  };
-  right.release = () => {
-    if (up.isDown) {
-      player.playAnimation(player.animationStates.walkUp);
-    } else if (down.isDown) {
-      player.playAnimation(player.animationStates.walkDown);
-    } else if (left.isDown) {
-      player.playAnimation(player.animationStates.walkLeft);
-    } else {
-      player.show(player.animationStates.right);
-    }
-
-    if (!left.isDown) {
-      player.vx = 0;
-    } else {
-      player.vx = -movement_speed;
-    }
-  };
-
-  //Down
-  down.press = () => {
-    if (right.isDown) {
-      player.playAnimation(player.animationStates.walkRight);
-    } else if (left.isDown) {
-      player.playAnimation(player.animationStates.walkLeft);
-    } else if (up.isDown) {
-      player.playAnimation(player.animationStates.walkUp);
-    } else {
-      player.show(player.animationStates.up);
-    }
-
-    player.vy = movement_speed;
-  };
-  down.release = () => {
-    if (right.isDown) {
-      player.playAnimation(player.animationStates.walkRight);
-    } else if (left.isDown) {
-      player.playAnimation(player.animationStates.walkLeft);
-    } else if (up.isDown) {
-      player.playAnimation(player.animationStates.walkUp);
-    } else {
-      player.show(player.animationStates.down);
-    }
-
-    if (!up.isDown) {
-      player.vy = 0;
-    } else {
-      player.vy = -movement_speed;
-    }
-  };
-}
-
-export default app;
