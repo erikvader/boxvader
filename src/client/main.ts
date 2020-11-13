@@ -41,45 +41,5 @@ PIXI.loader
         game.stop();
         // TODO: how to make gecko reconnect?
       });
-
-      // channel.onRaw(data => {
-      //   const d = pson.decode(data);
-      //   if (d['type'] === 'position') {
-      //     if (d['player_id'] === my_id) {
-      //       player.x = d['x'];
-      //       player.y = d['y'];
-      //     } else {
-      //       const player_to_move = player_list[d['player_id']];
-      //       player_to_move.x = d['x'];
-      //       player_to_move.y = d['y'];
-      //     }
-      //   } else if (d['type'] === 'id') {
-      //     my_id = d['new_id'];
-      //   } else if (d['type'] === 'new_player') {
-      //     add_character(d['x'], d['y'], 0.5, 'imgs/zombie_0.png', d['player_id']);
-      //   } else if (d['type'] === 'player_disconected') {
-      //     app.stage.removeChild(player_list[d['player_id']]);
-      //     player_list.splice(d['player_id'], 1);
-      //   } else {
-      //     console.log(data);
-      //     console.log('msg:', d);
-      //   }
-      // });
-      // const d = pson.encode({ hej: 1 }).toArrayBuffer();
-      // channel.raw.emit(d);
     });
-
-    // function play(delta) {
-    //   if (my_id != null) {
-    //     const position_data = pson
-    //       .encode({
-    //         type: 'position',
-    //         player_id: my_id,
-    //         x: player.vx + player.x,
-    //         y: player.vy + player.y,
-    //       })
-    //       .toArrayBuffer();
-    //     channel.raw.emit(position_data);
-    //   }
-    // }
   });
