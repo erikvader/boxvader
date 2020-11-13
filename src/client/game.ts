@@ -25,13 +25,16 @@ channel.onConnect(error => {
     const d = pson.decode(data);
     if (d['type'] === 'position') {
       if (d['player_id'] === my_id) {
+        if (player === null || player === undefined) {
+          console.log(player);
+        }
         player.x = d['x'];
         player.y = d['y'];
       } else {
-        for (const player of player_list) {
-          if (player.player_id === d['player_id']) {
-            player.sprite.x = d['x'];
-            player.sprite.y = d['y'];
+        for (const p of player_list) {
+          if (p.player_id === d['player_id']) {
+            p.sprite.x = d['x'];
+            p.sprite.y = d['y'];
             break;
           }
         }
