@@ -1,13 +1,13 @@
 import GameLoop from '../common/game-loop';
 import { Vec2 } from 'planck-js';
 
-interface PosMap {
-  [id: number]: Vec2;
-}
-
 export default class ServerGame extends GameLoop {
   private positions: Map<number, Vec2>;
   private broadcast;
+
+  // private sim: ServerSimulation;
+  // private stateCur: State;
+  // private statePrev: State;
 
   constructor(broadcast: (any) => void, players: Array<number>) {
     super(60, 60);
