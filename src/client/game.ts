@@ -6,7 +6,7 @@ import PSON from 'pson';
 
 type Player = {
   player_id: number;
-  player: any;
+  sprite: any;
 };
 
 const movement_speed = 2;
@@ -30,12 +30,11 @@ channel.onConnect(error => {
       } else {
         for (const player of player_list) {
           if (player.player_id === d['player_id']) {
-            const player_to_move = player.player;
+            player.sprite.x = d['x'];
+            player.sprite.y = d['y'];
             break;
           }
         }
-        player_to_move.x = d['x'];
-        player_to_move.y = d['y'];
       }
     } else if (d['type'] === 'id') {
       my_id = d['new_id'];
@@ -44,7 +43,7 @@ channel.onConnect(error => {
     } else if (d['type'] === 'player_disconected') {
       for (const player of player_list) {
         if (player.player_id === d['player_id']) {
-          app.stage.removeChild(player.player);
+          app.stage.removeChild(player.sprite);
           player_list.splice(player_list.indexOf(player), 1);
         }
       }
@@ -94,7 +93,7 @@ function add_character(x, y, scale, img_filepath, id) {
   character.id = id;
   character.scale.set(scale, scale);
   character.anchor.set(0.5, 0.5);
-  player_list.push({ player: character, player_id: id });
+  player_list.push({ sprite: character, player_id: id });
   app.stage.addChild(character);
 
   character.show(character.animationStates.down);
