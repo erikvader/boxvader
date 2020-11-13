@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/client/main.ts',
@@ -29,4 +30,9 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.BROWSER': JSON.stringify('yes'),
+    }),
+  ],
 };

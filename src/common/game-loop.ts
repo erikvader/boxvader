@@ -1,3 +1,10 @@
+// NOTE: performance resides in different places in Node and browsers.
+/* eslint-disable @typescript-eslint/no-var-requires */
+const performance =
+  process.env.BROWSER === 'yes'
+    ? window.performance
+    : require('perf_hooks').performance;
+
 // A generic game loop that will make sure to run an update function at a steady
 // rate independently of the actual fps.
 export default abstract class GameLoop {
