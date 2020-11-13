@@ -48,18 +48,18 @@ io.onConnection(channel => {
       .toArrayBuffer();
     channel.raw.emit(new_player);
   }
-  player_list[client_id] = {
+  player_list.push({
     channel_id: channel.id,
     player_id: client_id,
     x: 200,
     y: 200,
-  };
+  });
 
   client_id += 1;
 
   channel.onDisconnect(() => {
     for (const player of player_list) {
-      if (player['channel_id'] === channel.id) {
+      if (player.channel_id === channel.id) {
         const player_disconected = pson
           .encode({
             type: 'player_disconected',
@@ -68,7 +68,6 @@ io.onConnection(channel => {
           .toArrayBuffer();
         channel.raw.broadcast.emit(player_disconected);
         player_list.splice(player_list.indexOf(player), 1);
-
         break;
       }
     }
@@ -90,9 +89,9 @@ io.onConnection(channel => {
         .toArrayBuffer();
       io.raw.emit(new_pos);
       for (const player of player_list) {
-        if (player['player_id'] === json_data['player_id']) {
-          player['x'] = json_data['x'];
-          player['y'] = json_data['y'];
+        if (player.player_id === json_data['player_id']) {
+          player.x = json_data['x'];
+          player.y = json_data['y'];
         }
       }
     } else {
