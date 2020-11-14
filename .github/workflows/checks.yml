@@ -1,17 +1,35 @@
 name: Check with eslint and prettier
 on: push
 jobs:
-  lint:
+  eslint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: install packages
-        run: npm install @typescript-eslint/eslint-plugin eslint
+      - name: npm install with caching
+        uses: bahmutov/npm-install@v1
       - name: Run eslint
         run: npm run lint
   prettier:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: npm install with caching
+        uses: bahmutov/npm-install@v1
       - name: Run prettier
-        run: npx -p prettier@1.19 prettier --check "**/*.{ts,js}"
+        run: npm run format-check
+  webpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: npm install with caching
+        uses: bahmutov/npm-install@v1
+      - name: Run webpack
+        run: npm run build
+  ts-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: npm install with caching
+        uses: bahmutov/npm-install@v1
+      - name: Run ts-node
+        run: NODE_SERVER_TEST=yes npm run serve
