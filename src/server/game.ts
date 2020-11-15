@@ -10,7 +10,7 @@ export default class ServerGame extends GameLoop {
   // private statePrev: State;
 
   constructor(broadcast: (any) => void, players: Array<number>) {
-    super(60, 60);
+    super({ ups: 60, fps: 60 });
     this.broadcast = broadcast;
     this.positions = new Map();
 

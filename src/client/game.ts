@@ -1,12 +1,12 @@
 import Key from './key.ts';
 import * as PIXI from 'pixi.js';
-import GameLoop from '../common/game-loop.ts';
+import { default as GameLoop, GameLoopOpt } from '../common/game-loop.ts';
 import { Vec2 } from 'planck-js';
 
 import SpriteUtilities from './spriteUtilities';
 const su = new SpriteUtilities(PIXI);
 
-export interface ClientGameOpt {
+export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (any) => void;
   renderer: any; // TODO: figure out type
   stage: PIXI.Stage;
@@ -38,7 +38,7 @@ export default class ClientGame extends GameLoop {
   // private inputs: Input[];
 
   constructor(args: ClientGameOpt) {
-    super();
+    super(args);
     this.sendInputFun = args.sendInputFun;
     this.renderer = args.renderer;
     this.stage = args.stage;

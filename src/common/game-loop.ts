@@ -5,14 +5,26 @@ const performance =
     ? window.performance
     : require('perf_hooks').performance;
 
+export interface GameLoopOpt {
+  ups?: number;
+  fps?: number;
+  maxUpdateStep?: number;
+}
+
 /**
  * A generic game loop that will make sure to run an update function at a steady
  * 'rate independently of the actual fps.
  */
 export default abstract class GameLoop {
+  /** How many times [[doUpdate]] should run per second */
   protected readonly ups: number;
+  /** How many times [[afterUpdate]] should run per second */
   protected readonly fps: number;
-  protected static readonly maxUpdateStep: number = 1000 / 4;
+  /**
+   * Maximum step [[update]] can take, or how many times [[doUpdate]] can run on
+   * a single frame (maxUpdateStep*fps maybe?)
+   */
+  protected readonly maxUpdateStep: number;
 
   private timeacc = 0;
   private prevNow = 0;
@@ -23,9 +35,10 @@ export default abstract class GameLoop {
   private updateCount = 0;
   public runningFPS = 0; // our current FPS
 
-  constructor(ups?: number, fps?: number) {
-    this.ups = 1000.0 / (ups || 30);
-    this.fps = 1000.0 / (fps || 60);
+  constructor(args?: GameLoopOpt) {
+    this.ups = 1000.0 / (args?.ups ?? 30);
+    this.fps = 1000.0 / (args?.fps ?? 60);
+    this.maxUpdateStep = args?.maxUpdateStep ?? 1000.0 / 4;
   }
 
   protected update(): number {
@@ -33,8 +46,8 @@ export default abstract class GameLoop {
     let step = now - this.prevNow;
     this.prevNow = now;
 
-    if (step > GameLoop.maxUpdateStep) {
-      step = GameLoop.maxUpdateStep;
+    if (step > this.maxUpdateStep) {
+      step = this.maxUpdateStep;
       console.warn('skipped updates!');
     }
     this.timeacc += step;
