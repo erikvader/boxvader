@@ -41,6 +41,4 @@ function setup() {
   });
 }
 
-PIXI.loader
-  .add('imgs/zombie_0.png')
-  .load(setup);
+PIXI.loader.add('imgs/zombie_0.png').load(setup);
