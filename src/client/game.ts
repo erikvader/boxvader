@@ -1,4 +1,4 @@
-import Key from './key.ts';
+import Key from './key';
 import SpriteUtilities from './spriteUtilities';
 import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
