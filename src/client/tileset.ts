@@ -45,7 +45,7 @@ export default class Tileset {
     for (let y = 0; y < json.imageheight; y += dy) {
       for (let x = 0; x < json.imagewidth; x += dx) {
         const rectangle = new su.Rectangle(x, y, dx, dy);
-        let texture = new su.Texture(baseTexture);
+        const texture = new su.Texture(baseTexture);
         texture.frame = rectangle;
 
         tiles.push(texture);
