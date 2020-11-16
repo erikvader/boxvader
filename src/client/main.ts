@@ -42,6 +42,5 @@ function setup() {
 }
 
 PIXI.loader
-  .add('imgs/baby_yoda.PNG')
   .add('imgs/zombie_0.png')
   .load(setup);
