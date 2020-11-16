@@ -12,7 +12,7 @@ function setup() {
 
   const game = new ClientGame({
     sendInputFun: x => {
-      channel.raw.emit(pson.encode(x).toArrayBuffer());
+      channel.raw.emit(x);
     },
     renderer,
     stage,
@@ -24,7 +24,7 @@ function setup() {
       return;
     }
 
-    channel.onRaw(data => game.serverMsg(pson.decode(data)));
+    channel.onRaw(data => game.serverMsg(data));
 
     channel.on('start', data => {
       game.my_id = data['id'];

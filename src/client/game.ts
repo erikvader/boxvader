@@ -1,9 +1,11 @@
 import Key from './key';
 import * as PIXI from 'pixi.js';
-import { default as GameLoop, GameLoopOpt } from '../common/game-loop.ts';
+import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import { Vec2 } from 'planck-js';
-
+import pson from '../common/pson';
 import SpriteUtilities from './spriteUtilities';
+import { deserializeSTC, serialize } from '../common/msg';
+import State from '../common/state';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -18,9 +20,10 @@ export default class ClientGame extends GameLoop {
   private renderer;
   private stage;
 
-  private player_list = {};
+  private states: State[];
   public my_id?: number;
-  private player?;
+  private my_sprite?;
+  private sprite_list = {};
 
   private up;
   private down;
@@ -34,7 +37,6 @@ export default class ClientGame extends GameLoop {
   // TODO: planned instance variables
   // private simulation: ClientSimulation;
   // private static readonly historyLength = 10;
-  // private states: State[];
   // private inputs: Input[];
 
   constructor(args: ClientGameOpt) {
@@ -42,13 +44,13 @@ export default class ClientGame extends GameLoop {
     this.sendInputFun = args.sendInputFun;
     this.renderer = args.renderer;
     this.stage = args.stage;
+    this.states = [];
   }
 
   public start(): Promise<void> {
     if (this.my_id === undefined) throw new Error('my_id is not set');
-    this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
-    this.player = this.player_list[this.my_id];
-    this.key_presses();
+    //this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
+    //  this.key_presses();
     return super.start();
   }
 
@@ -65,9 +67,12 @@ export default class ClientGame extends GameLoop {
   }
 
   doUpdate(): void {
-    this.player.x += this.player.vx;
-    this.player.y += this.player.vy;
-    this.sendInputFun({ x: this.player.x, y: this.player.y });
+    if (this.my_sprite === undefined) return;
+    this.my_sprite.x += this.my_sprite.vx;
+    this.my_sprite.y += this.my_sprite.vy;
+    this.sendInputFun(
+      pson.encode({ x: this.my_sprite.x, y: this.my_sprite.y }).toArrayBuffer(),
+    );
   }
 
   protected cleanup(): void {
@@ -80,12 +85,28 @@ export default class ClientGame extends GameLoop {
 
   serverMsg(data: any): void {
     if (!this.running) return;
-    for (const [pid, coord] of data) {
-      if (this.player_list[pid] === undefined) {
-        this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', pid);
+    const message = deserializeSTC(data);
+    //TODO change this when we have client side prediction
+    if (this.states === []) {
+      this.states.push(message.state);
+      this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id!);
+      this.my_sprite = this.sprite_list[this.my_id!];
+      this.key_presses();
+    } else {
+      this.states[0] = message.state;
+    }
+    console.log(this.states);
+    for (const player of Object.values(message.state.players)) {
+      if (this.sprite_list[player.id] === undefined) {
+        this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', player.id);
+      } else {
+        this.sprite_list[player.id].x = this.states[0].players[
+          player.id
+        ].position.x;
+        this.sprite_list[player.id].y = this.states[0].players[
+          player.id
+        ].position.x;
       }
-      this.player_list[pid].x = coord.x;
-      this.player_list[pid].y = coord.y;
     }
   }
 
@@ -104,7 +125,7 @@ export default class ClientGame extends GameLoop {
     character.id = id;
     character.scale.set(scale, scale);
     character.anchor.set(0.5, 0.5);
-    this.player_list[id] = character;
+    this.sprite_list[id] = character;
     this.stage.addChild(character);
 
     character.show(character.animationStates.down);
@@ -119,125 +140,137 @@ export default class ClientGame extends GameLoop {
     //Left arrow key `press` method
     this.left.press = () => {
       if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft_up);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkLeft_up,
+        );
       } else if (this.down.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft_down);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkLeft_down,
+        );
       } else {
-        this.player.playAnimation(this.player.animationStates.walkLeft);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       }
 
-      this.player.vx = -ClientGame.movement_speed;
+      this.my_sprite.vx = -ClientGame.movement_speed;
     };
 
     //Left arrow key `release` method
     this.left.release = () => {
       if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkUp);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       } else if (this.down.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkDown);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
       } else if (this.right.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       } else {
-        this.player.show(this.player.animationStates.left);
+        this.my_sprite.show(this.my_sprite.animationStates.left);
       }
 
       if (!this.right.isDown) {
-        this.player.vx = 0;
+        this.my_sprite.vx = 0;
       } else {
-        this.player.vx = ClientGame.movement_speed;
+        this.my_sprite.vx = ClientGame.movement_speed;
       }
     };
 
     //Up
     this.up.press = () => {
       if (this.right.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight_up);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkRight_up,
+        );
       } else if (this.left.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft_up);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkLeft_up,
+        );
       } else {
-        this.player.playAnimation(this.player.animationStates.walkUp);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       }
 
-      this.player.vy = -ClientGame.movement_speed;
+      this.my_sprite.vy = -ClientGame.movement_speed;
     };
 
     this.up.release = () => {
       if (this.right.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       } else if (this.left.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       } else if (this.down.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkDown);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
       } else {
-        this.player.show(this.player.animationStates.up);
+        this.my_sprite.show(this.my_sprite.animationStates.up);
       }
 
       if (!this.down.isDown) {
-        this.player.vy = 0;
+        this.my_sprite.vy = 0;
       } else {
-        this.player.vy = ClientGame.movement_speed;
+        this.my_sprite.vy = ClientGame.movement_speed;
       }
     };
 
     //Right
     this.right.press = () => {
       if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight_up);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkRight_up,
+        );
       } else if (this.down.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight_down);
+        this.my_sprite.playAnimation(
+          this.my_sprite.animationStates.walkRight_down,
+        );
       } else {
-        this.player.playAnimation(this.player.animationStates.walkRight);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       }
 
-      this.player.vx = ClientGame.movement_speed;
+      this.my_sprite.vx = ClientGame.movement_speed;
     };
     this.right.release = () => {
       if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkUp);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       } else if (this.down.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkDown);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
       } else if (this.left.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       } else {
-        this.player.show(this.player.animationStates.right);
+        this.my_sprite.show(this.my_sprite.animationStates.right);
       }
 
       if (!this.left.isDown) {
-        this.player.vx = 0;
+        this.my_sprite.vx = 0;
       } else {
-        this.player.vx = -ClientGame.movement_speed;
+        this.my_sprite.vx = -ClientGame.movement_speed;
       }
     };
 
     //Down
     this.down.press = () => {
       if (this.right.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       } else if (this.left.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       } else if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkUp);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       } else {
-        this.player.show(this.player.animationStates.up);
+        this.my_sprite.show(this.my_sprite.animationStates.up);
       }
 
-      this.player.vy = ClientGame.movement_speed;
+      this.my_sprite.vy = ClientGame.movement_speed;
     };
     this.down.release = () => {
       if (this.right.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkRight);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       } else if (this.left.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkLeft);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       } else if (this.up.isDown) {
-        this.player.playAnimation(this.player.animationStates.walkUp);
+        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       } else {
-        this.player.show(this.player.animationStates.down);
+        this.my_sprite.show(this.my_sprite.animationStates.down);
       }
 
       if (!this.up.isDown) {
-        this.player.vy = 0;
+        this.my_sprite.vy = 0;
       } else {
-        this.player.vy = -ClientGame.movement_speed;
+        this.my_sprite.vy = -ClientGame.movement_speed;
       }
     };
   }
