@@ -2,7 +2,7 @@ import Key from './key';
 import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop.ts';
 import { Vec2 } from 'planck-js';
-import {ClientMsg} from '../common/msg'
+import { ClientMsg } from '../common/msg';
 import SpriteUtilities from './spriteUtilities';
 const su = new SpriteUtilities(PIXI);
 
@@ -70,20 +70,17 @@ export default class ClientGame extends GameLoop {
     this.player.y += this.player.vy;
 
     const msg: ClientMsg = {
-                            seqNum: this.counter,
-                            inputs:
-                            {
-                              up: this.up.isDown,
-                              left: this.left.isDown,
-                              right: this.right.isDown,
-                              down: this.down.isDown,
-                              fire: this.fire.isDown
-                            }
-                          }
+      seqNum: this.counter,
+      inputs: {
+        up: this.up.isDown,
+        left: this.left.isDown,
+        right: this.right.isDown,
+        down: this.down.isDown,
+        fire: this.fire.isDown,
+      },
+    };
 
-    this.sendInputFun(
-      msg
-    );
+    this.sendInputFun(msg);
     this.counter = this.counter + 1;
   }
 

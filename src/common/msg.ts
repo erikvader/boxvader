@@ -8,12 +8,12 @@ import { State } from './state';
 export interface ClientMsg {
   seqNum: number;
   inputs: {
-    up: boolean,
-    down: boolean,
-    right: boolean,
-    left: boolean,
-    fire: boolean
-  }
+    up: boolean;
+    down: boolean;
+    right: boolean;
+    left: boolean;
+    fire: boolean;
+  };
 }
 
 /**
