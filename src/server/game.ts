@@ -23,10 +23,10 @@ export default class ServerGame extends GameLoop {
     if (!this.running) return;
     const pos = this.positions.get(player_id);
     const direction = decideDirection(
-      data['up'],
-      data['down'],
-      data['right'],
-      data['left'],
+      data['inputs']['up'],
+      data['inputs']['down'],
+      data['inputs']['right'],
+      data['inputs']['left'],
     );
     const vel = directionToVelocity(direction);
     if (pos !== undefined) {
