@@ -1,10 +1,10 @@
 import GameLoop from '../common/game-loop';
-import { Vec2 } from 'planck-js';
-
+import { Vec2, Velocity } from 'planck-js';
+import {Directions, decideDirection, directionToVelocity} from '../common/directions'
 export default class ServerGame extends GameLoop {
   private positions: Map<number, Vec2>;
   private broadcast;
-
+  private movement_speed = 3; //Move this somewhere good.
   // private sim: ServerSimulation;
   // private stateCur: State;
   // private statePrev: State;
@@ -22,9 +22,12 @@ export default class ServerGame extends GameLoop {
   clientMsg(player_id: number, data: any): void {
     if (!this.running) return;
     const pos = this.positions.get(player_id);
+    let direction = decideDirection(data["up"], data["down"], data["right"], data["left"])
+    let vel = directionToVelocity(direction)
     if (pos !== undefined) {
-      pos.x = data['x'];
-      pos.y = data['y'];
+      
+      pos.x = pos.x + this.movement_speed*vel[0];
+      pos.y = pos.y + this.movement_speed*vel[1];
     }
   }
 
@@ -36,4 +39,5 @@ export default class ServerGame extends GameLoop {
   afterUpdate(): void {
     return;
   }
+
 }

@@ -67,7 +67,11 @@ export default class ClientGame extends GameLoop {
   doUpdate(): void {
     this.player.x += this.player.vx;
     this.player.y += this.player.vy;
-    this.sendInputFun({ x: this.player.x, y: this.player.y });
+    this.sendInputFun({ up: this.up.isDown, 
+                        left: this.left.isDown, 
+                        right: this.right.isDown, 
+                        down: this.down.isDown 
+                      });
   }
 
   protected cleanup(): void {
