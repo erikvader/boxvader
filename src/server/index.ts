@@ -76,6 +76,8 @@ io.onConnection(channel => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`spela spel gratis på http://localhost:${port}`);
-});
+if ((process.env.NODE_SERVER_TEST ?? '') === '') {
+  server.listen(port, () => {
+    console.log(`spela spel gratis på http://localhost:${port}`);
+  });
+}

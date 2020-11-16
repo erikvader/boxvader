@@ -1,4 +1,4 @@
-import ClientGame from './game.ts';
+import ClientGame from './game';
 import * as PIXI from 'pixi.js';
 import pson from '../common/pson.ts';
 import geckos from '@geckos.io/client';

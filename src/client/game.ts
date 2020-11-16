@@ -1,4 +1,4 @@
-import Key from './key.ts';
+import Key from './key';
 import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop.ts';
 import { Vec2 } from 'planck-js';
