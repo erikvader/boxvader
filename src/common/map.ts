@@ -1,4 +1,3 @@
-import SpriteUtilities from './spriteUtilities.js';
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
 
@@ -28,9 +27,9 @@ export default class Map {
     return this.tileIds.map(id => this.tileset.tiles[id]);
   }
 
-  constructor(name: string, tilesetName: string, su: SpriteUtilities) {
+  constructor(name: string, tilesetName: string, loadTextures: boolean) {
     const jsonMap = getJson(name);
-    const tileset = new Tileset(tilesetName, su);
+    const tileset = new Tileset(tilesetName, loadTextures);
 
     const numLayers = jsonMap.layers.length;
     if (numLayers !== 1) {
