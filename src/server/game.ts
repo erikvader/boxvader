@@ -1,14 +1,18 @@
 import GameLoop from '../common/game-loop';
-import { Vec2 } from 'planck-js';
+
 import { Id } from '../common/misc';
 import State from '../common/state';
 import { Player } from '../common/entity';
 import pson from '../common/pson';
-import { serialize } from '../common/msg';
+import { serialize, deserializeCTS } from '../common/msg';
+
+import { Vec2, Velocity } from 'planck-js';
+import { decideDirection, directionToVelocity } from '../common/directions';
+
 export default class ServerGame extends GameLoop {
   private state: State;
   private broadcast;
-
+  private movementSpeed = 3; //Move this somewhere good.
   // private sim: ServerSimulation;
   // private stateCur: State;
   // private statePrev: State;
@@ -31,11 +35,22 @@ export default class ServerGame extends GameLoop {
 
   clientMsg(player_id: Id, data: any): void {
     if (!this.running) return;
-    data = pson.decode(data);
+
+    data = deserializeCTS(data);
+
     const pos = this.state.players[player_id]?.position;
+
+    const direction = decideDirection(
+      data['inputs']['up'],
+      data['inputs']['down'],
+      data['inputs']['right'],
+      data['inputs']['left'],
+    );
+    const vel = directionToVelocity(direction);
+
     if (pos !== undefined) {
-      pos.x = data['x'];
-      pos.y = data['y'];
+      pos.x = pos.x + this.movementSpeed * vel[0];
+      pos.y = pos.y + this.movementSpeed * vel[1];
     }
   }
 

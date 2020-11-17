@@ -2,8 +2,10 @@ import Key from './key';
 import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import pson from '../common/pson';
+import { Vec2 } from 'planck-js';
+
 import SpriteUtilities from './spriteUtilities';
-import { deserializeSTC } from '../common/msg';
+import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
 const su = new SpriteUtilities(PIXI);
 
@@ -28,7 +30,8 @@ export default class ClientGame extends GameLoop {
   private down;
   private left;
   private right;
-
+  private fire;
+  private counter = 0;
   private initialized;
 
   private sendInputFun;
@@ -67,9 +70,20 @@ export default class ClientGame extends GameLoop {
     if (this.my_sprite === undefined) return;
     this.my_sprite.x += this.my_sprite.vx;
     this.my_sprite.y += this.my_sprite.vy;
-    this.sendInputFun(
-      pson.encode({ x: this.my_sprite.x, y: this.my_sprite.y }).toArrayBuffer(),
-    );
+
+    const msg: ClientToServer = {
+      seqNum: this.counter,
+      inputs: {
+        up: this.up.isDown,
+        left: this.left.isDown,
+        right: this.right.isDown,
+        down: this.down.isDown,
+        fire: this.fire.isDown,
+      },
+    };
+
+    this.sendInputFun(serialize(msg));
+    this.counter = this.counter + 1;
   }
 
   protected cleanup(): void {
@@ -133,6 +147,7 @@ export default class ClientGame extends GameLoop {
     this.up = new Key('ArrowUp');
     this.right = new Key('ArrowRight');
     this.down = new Key('ArrowDown');
+    this.fire = new Key(' '); //Spacebar
 
     //Left arrow key `press` method
     this.left.press = () => {

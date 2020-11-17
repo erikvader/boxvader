@@ -9,7 +9,13 @@ import pson from './pson';
  */
 export interface ClientToServer {
   seqNum: number;
-  inputs: Input[];
+  inputs: {
+    up: boolean;
+    down: boolean;
+    right: boolean;
+    left: boolean;
+    fire: boolean;
+  };
 }
 
 /**
