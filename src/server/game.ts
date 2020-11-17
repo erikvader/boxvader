@@ -2,7 +2,7 @@ import GameLoop from '../common/game-loop';
 
 import { Id } from '../common/misc';
 import State from '../common/state';
-import { Player } from '../common/entity';
+import { Player, Enemy } from '../common/entity';
 import pson from '../common/pson';
 import { serialize, deserializeCTS } from '../common/msg';
 
@@ -31,6 +31,13 @@ export default class ServerGame extends GameLoop {
         'Agge',
       );
     }
+    this.state.enemies[0] = new Enemy(0, new Vec2(0, 0), 100, Vec2(100, 100));
+  }
+
+  moveEnemies() {
+    for (const enemy of Object.values(this.state.enemies)) {
+      enemy.position.y += 1;
+    }
   }
 
   clientMsg(player_id: Id, data: any): void {
@@ -52,6 +59,7 @@ export default class ServerGame extends GameLoop {
       pos.x = pos.x + this.movementSpeed * vel[0];
       pos.y = pos.y + this.movementSpeed * vel[1];
     }
+    this.moveEnemies();
   }
 
   doUpdate(): void {

@@ -24,7 +24,8 @@ export default class ClientGame extends GameLoop {
   private states: State[];
   public my_id?: number;
   private my_sprite?;
-  private sprite_list = {};
+  private sprite_list = {}; //rename
+  private enemy_list = {};
 
   private up;
   private down;
@@ -97,6 +98,7 @@ export default class ClientGame extends GameLoop {
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
+    console.log(message);
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
       this.states.push(message.state);
@@ -116,6 +118,18 @@ export default class ClientGame extends GameLoop {
         ].position.x;
         this.sprite_list[player.id].y = this.states[0].players[
           player.id
+        ].position.y;
+      }
+    }
+    for (const enemy of Object.values(message.state.enemies)) {
+      if (this.enemy_list[enemy.id] === undefined) {
+        this.add_enemy(100, 100, 0.05, 'imgs/b_yoda.png', enemy.id);
+      } else {
+        this.enemy_list[enemy.id].x = this.states[0].enemies[
+          enemy.id
+        ].position.x;
+        this.enemy_list[enemy.id].y = this.states[0].enemies[
+          enemy.id
         ].position.y;
       }
     }
@@ -140,6 +154,27 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(character);
 
     character.show(character.animationStates.down);
+  }
+
+  add_enemy(
+    x: number,
+    y: number,
+    scale: number,
+    img_filepath: string,
+    id: number,
+  ): void {
+    PIXI.loader.add(img_filepath);
+
+    const enemy = su.sprite(img_filepath);
+
+    enemy.position.set(x, y);
+    enemy.vx = 0;
+    enemy.vy = 0;
+    enemy.id = id;
+    enemy.scale.set(scale, scale);
+    enemy.anchor.set(0.5, 0.5);
+    this.enemy_list[id] = enemy;
+    this.stage.addChild(enemy);
   }
 
   key_presses(): void {
