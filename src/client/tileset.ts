@@ -7,6 +7,12 @@ interface TilesetJson {
   imageheight: number;
   tilewidth: number;
   tileheight: number;
+  tiles: {
+    id: number;
+    objectgroup: {
+      objects: { x: number; y: number; width: number; height: number }[];
+    };
+  }[];
 }
 
 function getJson(name: string): TilesetJson {
@@ -18,20 +24,32 @@ function getJson(name: string): TilesetJson {
   }
 }
 
+/**
+ * A tile in a tileset. It has an ID, a texture and is possibly non-walkable.
+ */
+export interface Tile {
+  readonly id: number;
+  readonly texture: SpriteUtilities.Texture;
+  readonly walkable: boolean;
+}
+
+/**
+ * Tilesets have names, an image name, width and height of its tiles and an array of the actual tiles.
+ */
 export default class Tileset {
   public readonly name: string;
   public readonly imageName: string;
   public readonly tileWidth: number;
   public readonly tileHeight: number;
-  public readonly tiles: SpriteUtilities.Texture[];
+  public readonly tiles: Tile[];
 
   constructor(name: string, su: SpriteUtilities) {
-    const json = getJson(name);
+    const jsonTileset = getJson(name);
 
-    const dx = json.tilewidth;
-    const dy = json.tileheight;
+    const dx = jsonTileset.tilewidth;
+    const dy = jsonTileset.tileheight;
 
-    let texturePath = json.image;
+    let texturePath = jsonTileset.image;
     const imgsIndex = texturePath.indexOf('imgs/');
     if (imgsIndex !== -1) texturePath = texturePath.substring(imgsIndex);
 
@@ -40,15 +58,29 @@ export default class Tileset {
       throw new Error(`No texture '${texturePath}' found.`);
     }
 
-    const tiles = new Array<SpriteUtilities.Texture>(dx * dy);
+    const tiles = new Array<Tile>(dx * dy);
+    let currentId = 0;
 
-    for (let y = 0; y < json.imageheight; y += dy) {
-      for (let x = 0; x < json.imagewidth; x += dx) {
+    for (let y = 0; y < jsonTileset.imageheight; y += dy) {
+      for (let x = 0; x < jsonTileset.imagewidth; x += dx) {
+        // create a texture
         const rectangle = new su.Rectangle(x, y, dx, dy);
         const texture = new su.Texture(baseTexture);
         texture.frame = rectangle;
 
-        tiles.push(texture);
+        // the tile is marked as non-walkable if it has any collisions at all
+        const walkable = jsonTileset.tiles
+          .filter(jsonTile => jsonTile.id === currentId)
+          .some(jsonTile => jsonTile.objectgroup.objects.length > 0);
+
+        const tile = {
+          id: currentId,
+          texture: texture,
+          walkable: walkable,
+        };
+
+        ++currentId;
+        tiles.push(tile);
       }
     }
 
