@@ -1,4 +1,4 @@
-import { Texture, Rectangle } from 'pixi.js'
+import { Texture, Rectangle } from 'pixi.js';
 import SpriteUtilities from './spriteUtilities.js';
 import scifi from '../../levels/vov-scifi-tileset.json';
 
@@ -44,7 +44,7 @@ export default class Tileset {
   public readonly tileHeight: number;
   public readonly tiles: Tile[];
 
-  constructor(name: string, su: SpriteUtilities) {
+  constructor(name: string, su: SpriteUtilities, loadTextures: boolean) {
     const jsonTileset = getJson(name);
 
     const dx = jsonTileset.tilewidth;
@@ -54,9 +54,12 @@ export default class Tileset {
     const imgsIndex = texturePath.indexOf('imgs/');
     if (imgsIndex !== -1) texturePath = texturePath.substring(imgsIndex);
 
-    const baseTexture = new su.Texture(su.TextureCache[texturePath]);
-    if (!baseTexture) {
-      throw new Error(`No texture '${texturePath}' found.`);
+    let baseTexture: Texture = null;
+    if (loadTextures) {
+      baseTexture = new su.Texture(su.TextureCache[texturePath]);
+      if (!baseTexture) {
+        throw new Error(`No texture '${texturePath}' found.`);
+      }
     }
 
     const tiles = new Array<Tile>(dx * dy);
@@ -64,10 +67,14 @@ export default class Tileset {
 
     for (let y = 0; y < jsonTileset.imageheight; y += dy) {
       for (let x = 0; x < jsonTileset.imagewidth; x += dx) {
-        // create a texture
-        const rectangle = new Rectangle(x, y, dx, dy);
-        const texture = new Texture(baseTexture);
-        texture.frame = rectangle;
+        let texture: Texture = null;
+
+        if (loadTextures) {
+          // create a texture
+          const rectangle = new Rectangle(x, y, dx, dy);
+          texture = new Texture(baseTexture);
+          texture.frame = rectangle;
+        }
 
         // the tile is marked as non-walkable if it has any collisions at all
         const walkable = jsonTileset.tiles
