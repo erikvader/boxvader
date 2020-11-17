@@ -1,3 +1,4 @@
+import { Texture, Rectangle } from 'pixi.js'
 import SpriteUtilities from './spriteUtilities.js';
 import scifi from '../../levels/vov-scifi-tileset.json';
 
@@ -29,7 +30,7 @@ function getJson(name: string): TilesetJson {
  */
 export interface Tile {
   readonly id: number;
-  readonly texture: SpriteUtilities.Texture;
+  readonly texture: Texture;
   readonly walkable: boolean;
 }
 
@@ -64,8 +65,8 @@ export default class Tileset {
     for (let y = 0; y < jsonTileset.imageheight; y += dy) {
       for (let x = 0; x < jsonTileset.imagewidth; x += dx) {
         // create a texture
-        const rectangle = new su.Rectangle(x, y, dx, dy);
-        const texture = new su.Texture(baseTexture);
+        const rectangle = new Rectangle(x, y, dx, dy);
+        const texture = new Texture(baseTexture);
         texture.frame = rectangle;
 
         // the tile is marked as non-walkable if it has any collisions at all
