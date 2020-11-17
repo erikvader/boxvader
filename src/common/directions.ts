@@ -1,42 +1,42 @@
 export enum Directions {
-  Up = 'UP',
-  Up_right = 'UP_RIGHT',
-  Up_left = 'UP_LEFT',
-  Down = 'DOWN',
-  Down_right = 'DOWN_RIGHT',
-  Down_left = 'DOWN_LEFT',
-  Left = 'LEFT',
-  Right = 'RIGHT',
-  Still = 'STILL',
+  UP = 'UP',
+  UP_RIGHT = 'UP_RIGHT',
+  UP_LEFT = 'UP_LEFT',
+  DOWN = 'DOWN',
+  DOWN_RIGHT = 'DOWN_RIGHT',
+  DOWN_LEFT = 'DOWN_LEFT',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+  STILL = 'STILL',
 }
 
 export function directionToVelocity(dir: Directions): [number, number] {
   switch (dir) {
-    case Directions.Up:
+    case Directions.UP:
       return [0, -1];
       break;
-    case Directions.Up_right:
+    case Directions.UP_RIGHT:
       return [1, -1];
       break;
-    case Directions.Up_left:
+    case Directions.UP_LEFT:
       return [-1, -1];
       break;
-    case Directions.Down:
+    case Directions.DOWN:
       return [0, 1];
       break;
-    case Directions.Down_right:
+    case Directions.DOWN_RIGHT:
       return [1, 1];
       break;
-    case Directions.Down_left:
+    case Directions.DOWN_LEFT:
       return [-1, 1];
       break;
-    case Directions.Left:
+    case Directions.LEFT:
       return [-1, 0];
       break;
-    case Directions.Right:
+    case Directions.RIGHT:
       return [1, 0];
       break;
-    case Directions.Still:
+    case Directions.STILL:
       return [0, 0];
   }
 }
@@ -49,29 +49,29 @@ export function decideDirection(
 ): Directions {
   if (up) {
     if (right) {
-      return Directions.Up_right;
+      return Directions.UP_RIGHT;
     }
     if (left) {
-      return Directions.Up_left;
+      return Directions.UP_LEFT;
     } else {
-      return Directions.Up;
+      return Directions.UP;
     }
   }
   if (down) {
     if (right) {
-      return Directions.Down_right;
+      return Directions.DOWN_RIGHT;
     }
     if (left) {
-      return Directions.Down_left;
+      return Directions.DOWN_LEFT;
     } else {
-      return Directions.Down;
+      return Directions.DOWN;
     }
   }
   if (right) {
-    return Directions.Right;
+    return Directions.RIGHT;
   }
   if (left) {
-    return Directions.Left;
+    return Directions.LEFT;
   }
-  return Directions.Still;
+  return Directions.STILL;
 }
