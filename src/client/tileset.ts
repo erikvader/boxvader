@@ -1,5 +1,5 @@
 import { Texture, Rectangle } from 'pixi.js';
-import SpriteUtilities from './spriteUtilities.js';
+import * as pixi from 'pixi.js';
 import scifi from '../../levels/vov-scifi-tileset.json';
 
 interface TilesetJson {
@@ -44,7 +44,7 @@ export default class Tileset {
   public readonly tileHeight: number;
   public readonly tiles: Tile[];
 
-  constructor(name: string, su: SpriteUtilities, loadTextures: boolean) {
+  constructor(name: string, loadTextures: boolean) {
     const jsonTileset = getJson(name);
 
     const dx = jsonTileset.tilewidth;
@@ -56,7 +56,9 @@ export default class Tileset {
 
     let baseTexture: Texture = null;
     if (loadTextures) {
-      baseTexture = new su.Texture(su.TextureCache[texturePath]);
+      baseTexture = new Texture(
+        pixi.renderingEngine.utils.TextureCache[texturePath],
+      );
       if (!baseTexture) {
         throw new Error(`No texture '${texturePath}' found.`);
       }
