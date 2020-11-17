@@ -1,10 +1,9 @@
 import Key from './key';
 import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
-import { Vec2 } from 'planck-js';
 import pson from '../common/pson';
 import SpriteUtilities from './spriteUtilities';
-import { deserializeSTC, serialize } from '../common/msg';
+import { deserializeSTC } from '../common/msg';
 import State from '../common/state';
 const su = new SpriteUtilities(PIXI);
 
@@ -49,8 +48,6 @@ export default class ClientGame extends GameLoop {
 
   public start(): Promise<void> {
     if (this.my_id === undefined) throw new Error('my_id is not set');
-    //this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
-    //  this.key_presses();
     return super.start();
   }
 
@@ -84,18 +81,18 @@ export default class ClientGame extends GameLoop {
   }
 
   serverMsg(data: any): void {
-    if (!this.running) return;
+    if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
-    //TODO change this when we have client side prediction
-    if (this.states === []) {
+    //TODO: change this when we have client side prediction
+    if (this.states.length === 0) {
       this.states.push(message.state);
-      this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id!);
-      this.my_sprite = this.sprite_list[this.my_id!];
+      this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
+      this.my_sprite = this.sprite_list[this.my_id];
       this.key_presses();
     } else {
       this.states[0] = message.state;
     }
-    console.log(this.states);
+
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
         this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', player.id);
@@ -105,7 +102,7 @@ export default class ClientGame extends GameLoop {
         ].position.x;
         this.sprite_list[player.id].y = this.states[0].players[
           player.id
-        ].position.x;
+        ].position.y;
       }
     }
   }

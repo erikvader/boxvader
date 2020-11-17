@@ -1,4 +1,4 @@
-import { Id } from './misc';
+import { Id, reviveVec2, isObjectWithKeys } from './misc';
 import { Body, BodyDef, Circle, Vec2, World } from 'planck-js';
 
 /**
@@ -25,6 +25,33 @@ abstract class Entity {
 
   public abstract createBody(world: World): Body;
   public abstract draw(pixi): void;
+
+  public static revive(
+    obj: unknown,
+    construct: (id: Id, hitbox: Vec2, health: number, position: Vec2) => Entity,
+  ): Entity {
+    if (
+      isObjectWithKeys(obj, [
+        'id',
+        'hitbox',
+        'maxHealth',
+        '_position',
+        '_health',
+        '_velocity',
+      ])
+    ) {
+      const e = construct(
+        obj['id'],
+        reviveVec2(obj['hitbox']),
+        obj['maxHealth'],
+        reviveVec2(obj['_position']),
+      );
+      e._health = obj['_health'];
+      e._velocity = reviveVec2(obj['_velocity']);
+      return e;
+    }
+    throw new Error("couldn't revive Entity");
+  }
 
   public get health(): number {
     return this._health;
@@ -101,6 +128,21 @@ export class Player extends Entity {
   public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
+
+  public static revive(obj: unknown): Player {
+    if (isObjectWithKeys(obj, ['name', '_firing', '_score'])) {
+      return Entity.revive(
+        obj,
+        (id: Id, hitbox: Vec2, health: number, position: Vec2) => {
+          const p = new Player(id, hitbox, health, position, obj['name']);
+          p._firing = obj['_firing'];
+          p._score = obj['_score'];
+          return p;
+        },
+      ) as Player;
+    }
+    throw new Error("coudln't revive Player");
+  }
 }
 
 export class Enemy extends Entity {
@@ -114,6 +156,17 @@ export class Enemy extends Entity {
 
   public draw(pixi): void {
     throw new Error('Method not implemented.');
+  }
+
+  public static revive(obj: unknown): Enemy {
+    if (isObjectWithKeys(obj, [])) {
+      return Entity.revive(
+        obj,
+        (id: Id, hitbox: Vec2, health: number, position: Vec2) =>
+          new Enemy(id, hitbox, health, position),
+      ) as Enemy;
+    }
+    throw new Error("coudln't revive Enemy");
   }
 }
 

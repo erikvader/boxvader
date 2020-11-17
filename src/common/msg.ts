@@ -1,6 +1,6 @@
 import { Input } from './misc';
 import State from './state';
-import ByteBuffer from 'ByteBuffer';
+import { ByteBuffer } from 'bytebuffer';
 import pson from './pson';
 /**
  * Messages sent from clients to servers.
@@ -29,9 +29,14 @@ export function serialize(
 }
 
 export function deserializeCTS(message: ByteBuffer): ClientToServer {
+  // NOTE: doesn't need reviving as everything is interfaces
   return pson.decode(message);
 }
 
 export function deserializeSTC(message: ByteBuffer): ServerToClient {
-  return pson.decode(message);
+  const d = pson.decode(message);
+  return {
+    ackNum: d['ackNum'],
+    state: State.revive(d['state']),
+  };
 }

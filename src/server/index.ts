@@ -9,7 +9,6 @@ const port = 3000;
 import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
 
-import pson from '../common/pson';
 import ServerGame from './game';
 
 io.addServer(server);
