@@ -1,6 +1,5 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
-import pson from '../common/pson.ts';
 import geckos from '@geckos.io/client';
 
 function setup() {
@@ -12,7 +11,7 @@ function setup() {
 
   const game = new ClientGame({
     sendInputFun: x => {
-      channel.raw.emit(pson.encode(x).toArrayBuffer());
+      channel.raw.emit(x);
     },
     renderer,
     stage,
@@ -24,7 +23,7 @@ function setup() {
       return;
     }
 
-    channel.onRaw(data => game.serverMsg(pson.decode(data)));
+    channel.onRaw(data => game.serverMsg(data));
 
     channel.on('start', data => {
       game.my_id = data['id'];
@@ -34,6 +33,7 @@ function setup() {
       });
     });
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     channel.onDisconnect(reason => {
       game.stop();
       // TODO: how to make gecko reconnect?

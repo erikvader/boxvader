@@ -24,3 +24,23 @@ export function interpolate(src: Vec2, dst: Vec2, delta: number): Vec2 {
   const y = Vec2.mul(dst, delta);
   return Vec2.add(x, y);
 }
+
+export function reviveVec2(obj: unknown): Vec2 {
+  if (isObjectWithKeys(obj, ['x', 'y'])) {
+    return new Vec2(obj['x'], obj['y']);
+  }
+  throw new Error("can't revive Vec2");
+}
+
+export function isObjectWithKeys(
+  obj: unknown,
+  keys: Array<string>,
+): obj is NonNullable<Record<string, any>> {
+  if (typeof obj === 'object' && obj !== null) {
+    for (const k of keys) {
+      if (!(k in obj)) return false;
+    }
+    return true;
+  }
+  return false;
+}

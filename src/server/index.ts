@@ -9,7 +9,6 @@ const port = 3000;
 import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
 
-import pson from '../common/pson';
 import ServerGame from './game';
 
 io.addServer(server);
@@ -30,13 +29,13 @@ let game: ServerGame | undefined;
 function startGame() {
   game = new ServerGame(
     // TODO: check if the emitted object is too big
-    x => io.raw.room().emit(pson.encode(x).toArrayBuffer()),
+    x => io.raw.room().emit(x),
     Array.from(player_list.map(p => p.player_id)),
   );
 
   for (const p of player_list) {
     p.channel.emit('start', { id: p.player_id }, { reliable: true });
-    p.channel.onRaw(data => game?.clientMsg(p.player_id, pson.decode(data)));
+    p.channel.onRaw(data => game?.clientMsg(p.player_id, data));
   }
 
   game.start().then(() => {
