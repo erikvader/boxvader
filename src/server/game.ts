@@ -4,7 +4,7 @@ import { decideDirection, directionToVelocity } from '../common/directions';
 export default class ServerGame extends GameLoop {
   private positions: Map<number, Vec2>;
   private broadcast;
-  private movement_speed = 3; //Move this somewhere good.
+  private movementSpeed = 3; //Move this somewhere good.
   // private sim: ServerSimulation;
   // private stateCur: State;
   // private statePrev: State;
@@ -30,8 +30,8 @@ export default class ServerGame extends GameLoop {
     );
     const vel = directionToVelocity(direction);
     if (pos !== undefined) {
-      pos.x = pos.x + this.movement_speed * vel[0];
-      pos.y = pos.y + this.movement_speed * vel[1];
+      pos.x = pos.x + this.movementSpeed * vel[0];
+      pos.y = pos.y + this.movementSpeed * vel[1];
     }
   }
 
