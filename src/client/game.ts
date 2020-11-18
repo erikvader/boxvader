@@ -7,7 +7,12 @@ import { Vec2 } from 'planck-js';
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
-import {PLAYERSPRITE, PLAYERSPAWNX, PLAYERSPAWNY, PLAYERSCALE} from '../common/constants'
+import {
+  PLAYERSPRITE,
+  PLAYERSPAWNX,
+  PLAYERSPAWNY,
+  PLAYERSCALE,
+} from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -101,7 +106,13 @@ export default class ClientGame extends GameLoop {
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
       this.states.push(message.state);
-      this.add_character(PLAYERSPAWNX, PLAYERSPAWNY, PLAYERSCALE, PLAYERSPRITE, this.my_id);
+      this.add_character(
+        PLAYERSPAWNX,
+        PLAYERSPAWNY,
+        PLAYERSCALE,
+        PLAYERSPRITE,
+        this.my_id,
+      );
       this.my_sprite = this.sprite_list[this.my_id];
       this.key_presses();
     } else {
@@ -110,7 +121,13 @@ export default class ClientGame extends GameLoop {
 
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
-        this.add_character(PLAYERSPAWNX, PLAYERSPAWNY, PLAYERSCALE, PLAYERSPRITE, player.id);
+        this.add_character(
+          PLAYERSPAWNX,
+          PLAYERSPAWNY,
+          PLAYERSCALE,
+          PLAYERSPRITE,
+          player.id,
+        );
       } else {
         this.sprite_list[player.id].x = this.states[0].players[
           player.id

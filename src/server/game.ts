@@ -9,7 +9,7 @@ import { serialize, deserializeCTS } from '../common/msg';
 import { Vec2, Velocity } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
-import {MOVEMENTSPEED, FPS, UPS} from '../common/constants'
+import { MOVEMENTSPEED, FPS, UPS } from '../common/constants';
 
 export default class ServerGame extends GameLoop {
   private state: State;

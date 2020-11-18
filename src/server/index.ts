@@ -1,5 +1,5 @@
 import path from 'path';
-import {PLAYERLIMIT, PORT} from '../common/constants'
+import { PLAYERLIMIT, PORT } from '../common/constants';
 
 import express from 'express';
 import http from 'http';
