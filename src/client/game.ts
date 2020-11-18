@@ -69,8 +69,6 @@ export default class ClientGame extends GameLoop {
 
   doUpdate(): void {
     if (this.my_sprite === undefined) return;
-    this.my_sprite.x += this.my_sprite.vx;
-    this.my_sprite.y += this.my_sprite.vy;
 
     const msg: ClientToServer = {
       seqNum: this.counter,
@@ -145,8 +143,6 @@ export default class ClientGame extends GameLoop {
     const character = load_zombie(img_filepath);
 
     character.position.set(x, y);
-    character.vx = 0;
-    character.vy = 0;
     character.id = id;
     character.scale.set(scale, scale);
     character.anchor.set(0.5, 0.5);
@@ -197,8 +193,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       }
-
-      this.my_sprite.vx = -ClientGame.movement_speed;
     };
 
     //Left arrow key `release` method
@@ -211,12 +205,6 @@ export default class ClientGame extends GameLoop {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.left);
-      }
-
-      if (!this.right.isDown) {
-        this.my_sprite.vx = 0;
-      } else {
-        this.my_sprite.vx = ClientGame.movement_speed;
       }
     };
 
@@ -233,8 +221,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       }
-
-      this.my_sprite.vy = -ClientGame.movement_speed;
     };
 
     this.up.release = () => {
@@ -246,12 +232,6 @@ export default class ClientGame extends GameLoop {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.up);
-      }
-
-      if (!this.down.isDown) {
-        this.my_sprite.vy = 0;
-      } else {
-        this.my_sprite.vy = ClientGame.movement_speed;
       }
     };
 
@@ -268,8 +248,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       }
-
-      this.my_sprite.vx = ClientGame.movement_speed;
     };
     this.right.release = () => {
       if (this.up.isDown) {
@@ -280,12 +258,6 @@ export default class ClientGame extends GameLoop {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.right);
-      }
-
-      if (!this.left.isDown) {
-        this.my_sprite.vx = 0;
-      } else {
-        this.my_sprite.vx = -ClientGame.movement_speed;
       }
     };
 
@@ -300,8 +272,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.up);
       }
-
-      this.my_sprite.vy = ClientGame.movement_speed;
     };
     this.down.release = () => {
       if (this.right.isDown) {
@@ -312,12 +282,6 @@ export default class ClientGame extends GameLoop {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.down);
-      }
-
-      if (!this.up.isDown) {
-        this.my_sprite.vy = 0;
-      } else {
-        this.my_sprite.vy = -ClientGame.movement_speed;
       }
     };
   }

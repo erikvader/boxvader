@@ -2,6 +2,7 @@
     "extends": "./tsconfig.json",
     "exclude": [
         "./src/server",
-        "node_modules"
+        "node_modules",
+        "levels"
     ]
 }
