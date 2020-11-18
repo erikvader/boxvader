@@ -48,6 +48,8 @@ export default class ClientGame extends GameLoop {
     this.renderer = args.renderer;
     this.stage = args.stage;
     this.states = [];
+
+    PIXI.loader.add('imgs/b_yoda.png'); //TODO move this
   }
 
   public start(): Promise<void> {
@@ -96,7 +98,6 @@ export default class ClientGame extends GameLoop {
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
-    console.log(message);
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
       this.states.push(message.state);
@@ -119,9 +120,10 @@ export default class ClientGame extends GameLoop {
         ].position.y;
       }
     }
+    // TODO: remove sprites when enemies despawn
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
-        this.add_enemy(100, 100, 0.05, 'imgs/b_yoda.png', enemy.id);
+        this.add_enemy(enemy.x, enemy.y, 0.05, 'imgs/b_yoda.png', enemy.id);
       } else {
         this.enemy_list[enemy.id].x = this.states[0].enemies[
           enemy.id
@@ -159,8 +161,6 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    PIXI.loader.add(img_filepath);
-
     const enemy = su.sprite(img_filepath);
 
     enemy.position.set(x, y);

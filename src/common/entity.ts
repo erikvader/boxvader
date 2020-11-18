@@ -158,6 +158,10 @@ export class Enemy extends Entity {
     throw new Error('Method not implemented.');
   }
 
+  public move(): void {
+    this._position.add(Vec2(0, 1));
+  }
+
   public static revive(obj: unknown): Enemy {
     if (isObjectWithKeys(obj, [])) {
       return Entity.revive(

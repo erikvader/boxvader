@@ -16,6 +16,7 @@ export default class ServerGame extends GameLoop {
   // private sim: ServerSimulation;
   // private stateCur: State;
   // private statePrev: State;
+  private enemyIdCounter: number;
 
   constructor(broadcast: (any) => void, players: Array<Id>) {
     super({ ups: 60, fps: 60 });
@@ -31,12 +32,35 @@ export default class ServerGame extends GameLoop {
         'Agge',
       );
     }
-    this.state.enemies[0] = new Enemy(0, new Vec2(0, 0), 100, Vec2(100, 100));
+    this.enemyIdCounter = players.length;
   }
 
-  moveEnemies() {
+  private moveEnemies() {
     for (const enemy of Object.values(this.state.enemies)) {
-      enemy.position.y += 1;
+      enemy.move();
+    }
+  }
+
+  private spawnEnemies() {
+    this.state.enemies[this.enemyIdCounter] = new Enemy(
+      this.enemyIdCounter,
+      new Vec2(0, 0),
+      100,
+      Vec2(this.enemyIdCounter * 4, 0),
+    );
+    this.enemyIdCounter += 1;
+  }
+
+  private despawnEnemies() {
+    for (const enemy of Object.values(this.state.enemies)) {
+      if (
+        enemy.position.x < 0 ||
+        enemy.position.x > 512 ||
+        enemy.position.y < 0 ||
+        enemy.position.y > 512
+      ) {
+        delete this.state.enemies[enemy.id];
+      }
     }
   }
 
@@ -68,6 +92,11 @@ export default class ServerGame extends GameLoop {
   }
 
   afterUpdate(): void {
+    //spawns a baby yoda per second
+    if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
+      this.spawnEnemies();
+      this.despawnEnemies();
+    }
     return;
   }
 }
