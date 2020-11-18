@@ -1,13 +1,18 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
-import { PLAYERSPRITE, PORT, MAPSIZEX, MAPSIZEY } from '../common/constants';
+import {
+  PLAYER_SPRITE,
+  PORT,
+  MAP_SIZE_X,
+  MAP_SIZE_Y,
+} from '../common/constants';
 
 function setup() {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer({
-    width: MAPSIZEX,
-    height: MAPSIZEY,
+    width: MAP_SIZE_X,
+    height: MAP_SIZE_Y,
   });
   renderer.backgroundColor = 0xffd700;
   document.body.appendChild(renderer.view);
@@ -45,4 +50,4 @@ function setup() {
   });
 }
 
-PIXI.loader.add(PLAYERSPRITE).load(setup);
+PIXI.loader.add(PLAYER_SPRITE).load(setup);

@@ -9,12 +9,12 @@ import { serialize, deserializeCTS } from '../common/msg';
 import { Vec2, Velocity } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
-import { MOVEMENTSPEED, FPS, UPS } from '../common/constants';
+import { MOVEMENT_SPEED, FPS, UPS } from '../common/constants';
 
 export default class ServerGame extends GameLoop {
   private state: State;
   private broadcast;
-  private movementSpeed = MOVEMENTSPEED; //Move this somewhere good.
+  private movementSpeed = MOVEMENT_SPEED; //Move this somewhere good.
   // private sim: ServerSimulation;
   // private stateCur: State;
   // private statePrev: State;

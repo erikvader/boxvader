@@ -1,5 +1,5 @@
 import path from 'path';
-import { PLAYERLIMIT, PORT } from '../common/constants';
+import { PLAYER_LIMIT, PORT } from '../common/constants';
 
 import express from 'express';
 import http from 'http';
@@ -71,7 +71,7 @@ io.onConnection(channel => {
   });
 
   // NOTE: temporary start condition
-  if (player_list.length === PLAYERLIMIT) {
+  if (player_list.length === PLAYER_LIMIT) {
     startGame();
   }
 });

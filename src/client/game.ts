@@ -8,10 +8,10 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
 import {
-  PLAYERSPRITE,
-  PLAYERSPAWNX,
-  PLAYERSPAWNY,
-  PLAYERSCALE,
+  PLAYER_SPRITE,
+  PLAYER_SPAWN_X,
+  PLAYER_SPAWN_Y,
+  PLAYER_SCALE,
 } from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
@@ -107,10 +107,10 @@ export default class ClientGame extends GameLoop {
     if (this.states.length === 0) {
       this.states.push(message.state);
       this.add_character(
-        PLAYERSPAWNX,
-        PLAYERSPAWNY,
-        PLAYERSCALE,
-        PLAYERSPRITE,
+        PLAYER_SPAWN_X,
+        PLAYER_SPAWN_Y,
+        PLAYER_SCALE,
+        PLAYER_SPRITE,
         this.my_id,
       );
       this.my_sprite = this.sprite_list[this.my_id];
@@ -122,10 +122,10 @@ export default class ClientGame extends GameLoop {
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
         this.add_character(
-          PLAYERSPAWNX,
-          PLAYERSPAWNY,
-          PLAYERSCALE,
-          PLAYERSPRITE,
+          PLAYER_SPAWN_X,
+          PLAYER_SPAWN_Y,
+          PLAYER_SCALE,
+          PLAYER_SPRITE,
           player.id,
         );
       } else {
