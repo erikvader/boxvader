@@ -51,4 +51,9 @@ export default class Map {
     this.tileset = tileset;
     this.tileIds = jsonMap.layers[0].data;
   }
+
+  public at(x: number, y: number): Tile {
+    const index = y * this.width + x;
+    return this.tiles[index];
+  }
 }
