@@ -1,8 +1,7 @@
 import Key from './key';
 import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
-import pson from '../common/pson';
-import { Vec2 } from 'planck-js';
+import ByteBuffer from 'bytebuffer';
 
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
@@ -16,7 +15,7 @@ import {
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
-  sendInputFun: (any) => void;
+  sendInputFun: (buf: ByteBuffer) => void;
   renderer: any; // TODO: figure out type
   stage: PIXI.Stage;
 }

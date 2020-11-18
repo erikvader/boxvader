@@ -3,10 +3,10 @@ import GameLoop from '../common/game-loop';
 import { Id } from '../common/misc';
 import State from '../common/state';
 import { Player } from '../common/entity';
-import pson from '../common/pson';
 import { serialize, deserializeCTS } from '../common/msg';
+import ByteBuffer from 'bytebuffer';
 
-import { Vec2, Velocity } from 'planck-js';
+import { Vec2 } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
 import { MOVEMENT_SPEED, SERVER_FPS, SERVER_UPS } from '../common/constants';
@@ -19,7 +19,7 @@ export default class ServerGame extends GameLoop {
   // private stateCur: State;
   // private statePrev: State;
 
-  constructor(broadcast: (any) => void, players: Array<Id>) {
+  constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
     super({ ups: SERVER_UPS, fps: SERVER_FPS });
     this.broadcast = broadcast;
     this.state = new State();
