@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import pson from '../common/pson';
 import { Vec2 } from 'planck-js';
+import Tileset from '../common/tileset';
 
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
@@ -12,6 +13,7 @@ import {
   PLAYER_SPAWN_X,
   PLAYER_SPAWN_Y,
   PLAYER_SCALE,
+  //TILESET,
 } from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
@@ -103,6 +105,7 @@ export default class ClientGame extends GameLoop {
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
       this.states.push(message.state);
+      this.display_map();
       this.add_character(
         PLAYER_SPAWN_X,
         PLAYER_SPAWN_Y,
@@ -153,6 +156,19 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(character);
 
     character.show(character.animationStates.down);
+  }
+
+  display_map() {
+    const tileset = new Tileset('scifi', true);
+    /*  let tile_counter = 0;
+    for (let row = 0; row < 16; row++) {
+      for (let column = 0; column < 16; column++) {
+        let tile = tileset.tiles[tile_counter].texture;
+        tile.position.set(row * tileset.tileWidth, column * tileset.tileHeight);
+        this.stage.addChild(tile);
+        tile_counter += 1;
+      }
+    }*/
   }
 
   key_presses(): void {
