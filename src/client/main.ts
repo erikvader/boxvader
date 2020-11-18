@@ -56,5 +56,5 @@ function setup() {
 
 PIXI.loader
   .add(PLAYER_SPRITE)
-  .add('imgs/tilesheets/scifitiles-sheet')
+  .add('imgs/tilesheets/scifitiles-sheet.png')
   .load(setup);

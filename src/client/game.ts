@@ -3,8 +3,8 @@ import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import pson from '../common/pson';
 import { Vec2 } from 'planck-js';
-import Tileset from '../common/tileset';
-
+//import Tileset from '../common/tileset';
+import Map from '../common/map';
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
@@ -104,8 +104,8 @@ export default class ClientGame extends GameLoop {
     const message = deserializeSTC(data);
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
-      this.states.push(message.state);
       this.display_map();
+      this.states.push(message.state);
       this.add_character(
         PLAYER_SPAWN_X,
         PLAYER_SPAWN_Y,
@@ -154,18 +154,72 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.sprite_list[id] = character;
     this.stage.addChild(character);
-
+    console.log(character);
     character.show(character.animationStates.down);
   }
 
-  display_map() {
-    const tileset = new Tileset('scifi', true);
-    /*  let tile_counter = 0;
+  get_tile(tile_type: number) {
+    let type_counter = 0;
+    for (let row = 0; row < 6; row++) {
+      for (let column = 0; column < 14; column++) {
+        if (tile_type === type_counter) {
+          return [row, column];
+        }
+
+        type_counter += 1;
+      }
+    }
+    return [0, 0];
+  }
+  display_tile(pos: number, tile_type: number, texture) {
+    let pos_counter = 0;
+    let x = 0;
+    let y = 0;
+    let tile_pos = this.get_tile(tile_type);
+
     for (let row = 0; row < 16; row++) {
       for (let column = 0; column < 16; column++) {
-        let tile = tileset.tiles[tile_counter].texture;
-        tile.position.set(row * tileset.tileWidth, column * tileset.tileHeight);
+        if (pos_counter === pos) {
+          x = column;
+          y = row;
+        }
+        pos_counter += 1;
+      }
+    }
+
+    let xa = 32 * tile_pos[1];
+    let ya = 32 * tile_pos[0];
+    let rectangle = new PIXI.Rectangle(xa, ya, 32, 32);
+    texture.frame = rectangle;
+    console.log(texture);
+
+    let tile = new PIXI.Sprite(texture);
+    tile.x = 32 * x;
+    tile.y = 32 * y;
+    console.log(tile);
+    this.stage.addChild(tile);
+  }
+
+  display_map() {
+    const map = new Map('scifi-1', 'scifi', true);
+
+    for (let i = 0; i < map.tileIds.length; i++) {
+      let texture =
+        PIXI.utils.TextureCache['imgs/tilesheets/scifitiles-sheet.png'];
+      this.display_tile(i, map.tileIds[i], texture);
+    }
+
+    /*
+    let tile_counter = 0;
+    for (let row = 0; row < 16; row++) {
+      for (let column = 0; column < 16; column++) {
+        let tile = map.tileset.tiles[1024 + map.tileIds[tile_counter]].texture;
+        //  tile.position.set(row * 32, column * 32);
+        tile.x = row * 32;
+        tile.y = column * 32;
+        console.log(tile);
         this.stage.addChild(tile);
+
         tile_counter += 1;
       }
     }*/
