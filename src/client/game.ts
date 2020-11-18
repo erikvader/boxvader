@@ -7,6 +7,12 @@ import { Vec2 } from 'planck-js';
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
+import {
+  PLAYER_SPRITE,
+  PLAYER_SPAWN_X,
+  PLAYER_SPAWN_Y,
+  PLAYER_SCALE,
+} from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -17,7 +23,6 @@ export interface ClientGameOpt extends GameLoopOpt {
 
 export default class ClientGame extends GameLoop {
   private static readonly movement_speed = 2;
-
   private renderer;
   private stage;
 
@@ -98,7 +103,13 @@ export default class ClientGame extends GameLoop {
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
       this.states.push(message.state);
-      this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', this.my_id);
+      this.add_character(
+        PLAYER_SPAWN_X,
+        PLAYER_SPAWN_Y,
+        PLAYER_SCALE,
+        PLAYER_SPRITE,
+        this.my_id,
+      );
       this.my_sprite = this.sprite_list[this.my_id];
       this.key_presses();
     } else {
@@ -107,7 +118,13 @@ export default class ClientGame extends GameLoop {
 
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
-        this.add_character(200, 200, 0.5, 'imgs/zombie_0.png', player.id);
+        this.add_character(
+          PLAYER_SPAWN_X,
+          PLAYER_SPAWN_Y,
+          PLAYER_SCALE,
+          PLAYER_SPRITE,
+          player.id,
+        );
       } else {
         this.sprite_list[player.id].x = this.states[0].players[
           player.id
