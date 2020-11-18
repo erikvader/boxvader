@@ -1,10 +1,10 @@
 import { Id, reviveVec2, isObjectWithKeys } from './misc';
-import { Body, BodyDef, Circle, Vec2, World } from 'planck-js';
+import { Body, Vec2 } from 'planck-js';
 
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
-abstract class Entity {
+export abstract class Entity {
   public readonly id: Id;
   public readonly hitbox: Vec2;
   public readonly maxHealth: number;
@@ -23,7 +23,6 @@ abstract class Entity {
     this._velocity = Vec2.zero();
   }
 
-  public abstract createBody(world: World): Body;
   public abstract draw(pixi): void;
 
   public static revive(
@@ -121,10 +120,6 @@ export class Player extends Entity {
     this._score += points;
   }
 
-  public createBody(world: World): Body {
-    return createBody(world, this);
-  }
-
   public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
@@ -150,10 +145,6 @@ export class Enemy extends Entity {
     super(id, hitbox, health, position);
   }
 
-  public createBody(world: World): Body {
-    return createBody(world, this);
-  }
-
   public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
@@ -168,19 +159,4 @@ export class Enemy extends Entity {
     }
     throw new Error("coudln't revive Enemy");
   }
-}
-
-function createBody(world: World, entity: Entity): Body {
-  const bodyDef: BodyDef = {
-    position: entity.position,
-    linearVelocity: entity.velocity,
-  };
-
-  // shape must have type any to silence this error:
-  // 'CircleShape' is not assignable to parameter of type 'Shape'
-  const body = world.createDynamicBody(bodyDef);
-  const shape: any = new Circle(1);
-  body.createFixture(shape);
-
-  return body;
 }
