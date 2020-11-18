@@ -23,7 +23,6 @@ export interface ClientGameOpt extends GameLoopOpt {
 
 export default class ClientGame extends GameLoop {
   private static readonly movement_speed = 2;
-
   private renderer;
   private stage;
 

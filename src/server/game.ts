@@ -9,7 +9,7 @@ import { serialize, deserializeCTS } from '../common/msg';
 import { Vec2, Velocity } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
-import { MOVEMENT_SPEED, FPS, UPS } from '../common/constants';
+import { MOVEMENT_SPEED, SERVER_FPS, SERVER_UPS } from '../common/constants';
 
 export default class ServerGame extends GameLoop {
   private state: State;
@@ -20,7 +20,7 @@ export default class ServerGame extends GameLoop {
   // private statePrev: State;
 
   constructor(broadcast: (any) => void, players: Array<Id>) {
-    super({ ups: UPS, fps: FPS });
+    super({ ups: SERVER_UPS, fps: SERVER_FPS });
     this.broadcast = broadcast;
     this.state = new State();
 

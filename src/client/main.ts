@@ -6,6 +6,8 @@ import {
   PORT,
   MAP_SIZE_X,
   MAP_SIZE_Y,
+  CLIENT_UPS,
+  CLIENT_FPS,
 } from '../common/constants';
 
 function setup() {
@@ -23,6 +25,8 @@ function setup() {
       channel.raw.emit(x);
     },
     renderer,
+    ups: CLIENT_UPS,
+    fps: CLIENT_FPS,
     stage,
   });
 

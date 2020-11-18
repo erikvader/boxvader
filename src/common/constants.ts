@@ -1,6 +1,8 @@
 export const MOVEMENT_SPEED = 5;
-export const FPS = 60;
-export const UPS = 60;
+export const SERVER_FPS = 60;
+export const SERVER_UPS = 60;
+export const CLIENT_UPS = 60;
+export const CLIENT_FPS = 60;
 export const PLAYER_LIMIT = 2;
 export const PORT = 3000;
 
