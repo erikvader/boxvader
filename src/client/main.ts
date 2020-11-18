@@ -1,10 +1,11 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
+import {PLAYERSPRITE, PORT, MAPSIZEX, MAPSIZEY} from '../common/constants'
 
 function setup() {
-  const channel = geckos({ port: 3000 });
-  const renderer = PIXI.autoDetectRenderer({ width: 512, height: 512 });
+  const channel = geckos({ port: PORT });
+  const renderer = PIXI.autoDetectRenderer({ width: MAPSIZEX, height: MAPSIZEY });
   renderer.backgroundColor = 0xffd700;
   document.body.appendChild(renderer.view);
   const stage = new PIXI.Container();
@@ -41,4 +42,4 @@ function setup() {
   });
 }
 
-PIXI.loader.add('imgs/zombie_0.png').load(setup);
+PIXI.loader.add(PLAYERSPRITE).load(setup);
