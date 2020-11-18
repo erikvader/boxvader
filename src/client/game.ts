@@ -158,7 +158,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
       }
-
     };
 
     //Left arrow key `release` method
@@ -172,8 +171,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.left);
       }
-
-
     };
 
     //Up
@@ -189,7 +186,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
       }
-
     };
 
     this.up.release = () => {
@@ -202,7 +198,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.up);
       }
-
     };
 
     //Right
@@ -218,7 +213,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
       }
-
     };
     this.right.release = () => {
       if (this.up.isDown) {
@@ -230,7 +224,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.right);
       }
-
     };
 
     //Down
@@ -244,7 +237,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.up);
       }
-
     };
     this.down.release = () => {
       if (this.right.isDown) {
@@ -256,7 +248,6 @@ export default class ClientGame extends GameLoop {
       } else {
         this.my_sprite.show(this.my_sprite.animationStates.down);
       }
-
     };
   }
 }
