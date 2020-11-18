@@ -2,6 +2,10 @@ import { Vec2 } from 'planck-js';
 
 export type Id = number;
 
+export interface NumMap<T> {
+  [num: number]: T;
+}
+
 /**
  * User inputs at some point in time.
  */
