@@ -140,6 +140,12 @@ export default class ClientGame extends GameLoop {
         ].position.y;
       }
     }
+
+    for (const enemy_id of message.state.dead_enemies){
+      this.stage.removeChild(this.enemy_list[enemy_id]);
+      delete this.enemy_list[enemy_id];
+    }
+
     // TODO: remove sprites when enemies despawn
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {

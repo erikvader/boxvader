@@ -54,6 +54,7 @@ export default class ServerGame extends GameLoop {
   }
 
   private despawnEnemies() {
+    this.state.dead_enemies = [];
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
@@ -61,6 +62,8 @@ export default class ServerGame extends GameLoop {
         enemy.position.y < 0 ||
         enemy.position.y > 250
       ) {
+        this.state.dead_enemies.push(enemy.id);
+
         delete this.state.enemies[enemy.id];
       }
     }
@@ -86,6 +89,7 @@ export default class ServerGame extends GameLoop {
       pos.y = pos.y + this.movementSpeed * vel[1];
     }
     this.moveEnemies();
+
   }
 
   doUpdate(): void {
