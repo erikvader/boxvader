@@ -1,30 +1,27 @@
-import { Input } from './misc';
+import { Input, NumMap } from './misc';
 import State from './state';
 import { ByteBuffer } from 'bytebuffer';
 import pson from './pson';
+import Deque from './deque';
+
 /**
  * Messages sent from clients to servers.
- * @property seqNum Sequence number for the first input instance in this message. Used to order and identify the input messages.
- * @property inputs The state of the inputs.
+ * @property inputs The inputs to send with their associated sequence numbers.
  */
 export interface ClientToServer {
-  seqNum: number;
-  inputs: {
-    up: boolean;
-    down: boolean;
-    right: boolean;
-    left: boolean;
-    fire: boolean;
-  };
+  inputs: Deque<Input>;
 }
 
 /**
  * Messages sent from servers to clients.
- * @property ackNum Which seqNum the server has acknowledged.
+ * @property inputAck Which seqNum in [[ClientToServer]] the server has
+ * acknowledged for all clients.
+ * @property stateNum Which state this is.
  * @property state The current state of the simulation.
  */
 export interface ServerToClient {
-  ackNum: number;
+  inputAck: NumMap<number>;
+  stateNum: number;
   state: State;
 }
 
@@ -35,14 +32,17 @@ export function serialize(
 }
 
 export function deserializeCTS(message: ByteBuffer): ClientToServer {
-  // NOTE: doesn't need reviving as everything is interfaces
-  return pson.decode(message);
+  const d = pson.decode(message);
+  return {
+    inputs: Deque.revive(d['inputs'], ele => ele as Input),
+  };
 }
 
 export function deserializeSTC(message: ByteBuffer): ServerToClient {
   const d = pson.decode(message);
   return {
-    ackNum: d['ackNum'],
+    inputAck: d['inputAck'],
+    stateNum: d['stateNum'],
     state: State.revive(d['state']),
   };
 }
