@@ -7,9 +7,9 @@ import { Enemy, Entity, Player } from './entity';
 export default abstract class Simulation {
   public readonly updateStep: number;
 
-  private _world: World;
-  private _bodies: Map<Id, Body>;
-  private _state: State;
+  protected _world: World;
+  protected _bodies: Map<Id, Body>;
+  protected _state: State;
 
   public get world(): World {
     return this._world;
@@ -30,7 +30,27 @@ export default abstract class Simulation {
     this._state = new State();
   }
 
-  public abstract snapshot(): State;
+  public snapshot(): State {
+    return this.state.clone();
+  }
+
+  protected updateState(): void {
+    this.bodies.forEach((body, id) => {
+      if (id in this.state.players) {
+        const player = this.state.players[id];
+        player.position = body.getPosition();
+        player.velocity = body.getLinearVelocity();
+      } else if (id in this.state.enemies) {
+        const enemy = this.state.enemies[id];
+        enemy.position = body.getPosition();
+        enemy.velocity = body.getLinearVelocity();
+      } else {
+        throw new Error(
+          `Body with ID ${id} belongs to neither a player nor an enemy.`,
+        );
+      }
+    });
+  }
 }
 
 function createWorld(map: Level): World {
@@ -60,9 +80,16 @@ function createWorld(map: Level): World {
     }
   }
 
+  // TODO: add callbacks if necessary, for example:
+  //   world.on('begin-contact', contact => {});
   return world;
 }
 
+/**
+ * Create and return a body for the given entity in the given world.
+ * @param world The world that the entity belongs to
+ * @param entity The entity to create a body for
+ */
 function createBody(world: World, entity: Entity): Body {
   if (entity instanceof Player) {
     return circleBody(world, entity.position, entity.velocity, 1);
@@ -74,11 +101,19 @@ function createBody(world: World, entity: Entity): Body {
   throw new Error(`Entity ${entity.id} is not an instace of any known class.`);
 }
 
-function circleBody(world: World, position: Vec2, velocity: Vec2, radius: number): Body {
+function circleBody(
+  world: World,
+  position: Vec2,
+  velocity: Vec2,
+  radius: number,
+): Body {
   // shape must have type any to silence this error:
   // 'CircleShape' is not assignable to parameter of type 'Shape'
   const shape: any = new Circle(radius);
-  const body = world.createDynamicBody({ position: position, linearVelocity: velocity });
+  const body = world.createDynamicBody({
+    position: position,
+    linearVelocity: velocity,
+  });
   body.createFixture(shape);
   return body;
 }
