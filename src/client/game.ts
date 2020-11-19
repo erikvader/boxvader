@@ -147,7 +147,7 @@ export default class ClientGame extends GameLoop {
     const dy =
       this.states[0].players[player_id].position.y -
       this.sprite_list[player_id].y;
-    let pi = 3.141592;
+    const pi = 3.141592;
     //Right
     if (dy === 0 && dx > 0) {
       this.sprite_list[player_id].rotation = pi * 0.5;
