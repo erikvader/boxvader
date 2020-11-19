@@ -2,7 +2,7 @@ import { Body } from 'planck-js';
 import { Player } from '../common/entity';
 import Level from '../common/map'; // alias to not conflict with a map collection
 import { Id, Input } from '../common/misc';
-import Simulation from '../common/sim';
+import Simulation, { updatePlayerBodyFromInput } from '../common/sim';
 
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
@@ -25,19 +25,7 @@ export default class ServerSimulation extends Simulation {
       if (!(body instanceof Body))
         throw new Error(`No body belonging ID ${id} exists.`);
 
-      // we move a player by simply increasing or decreasing its velocity in the cardinal directions
-
-      const MOVE_FORCE_STRENGTH = 10;
-      const velocity = body.getLinearVelocity();
-
-      if (input.up && !input.down) velocity.y -= MOVE_FORCE_STRENGTH;
-      else if (input.down && !input.up) velocity.y += MOVE_FORCE_STRENGTH;
-
-      if (input.left && !input.right) velocity.x -= MOVE_FORCE_STRENGTH;
-      else if (input.right && !input.left) velocity.x += MOVE_FORCE_STRENGTH;
-
-      body.setLinearVelocity(velocity);
-      body.setAwake(true);
+      updatePlayerBodyFromInput(body, input);
     });
 
     // TODO: update enemies with AI?
