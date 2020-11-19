@@ -15,7 +15,6 @@ import {
   PLAYER_SPAWN_X,
   PLAYER_SPAWN_Y,
   PLAYER_SCALE,
-  //TILESET,
 } from '../common/constants';
 import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
@@ -27,7 +26,6 @@ export interface ClientGameOpt extends GameLoopOpt {
 }
 
 export default class ClientGame extends GameLoop {
-  private static readonly movement_speed = 2;
   private renderer;
   private stage;
 
@@ -157,7 +155,6 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.sprite_list[id] = character;
     this.stage.addChild(character);
-    console.log(character);
     character.show(character.animationStates.down);
   }
 
