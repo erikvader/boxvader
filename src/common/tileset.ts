@@ -41,7 +41,7 @@ export default class Tileset {
   public readonly tileHeight: number;
   public readonly tiles: Tile[];
 
-  constructor(name: string, loadTextures: boolean) {
+  constructor(name: string) {
     const jsonTileset = getJson(name);
 
     const dx = jsonTileset.tilewidth;

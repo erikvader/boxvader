@@ -4,10 +4,12 @@ import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import pson from '../common/pson';
 import { Vec2 } from 'planck-js';
 //import Tileset from '../common/tileset';
-import Map from '../common/map';
+
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
+import display_map from './renderMap';
+
 import {
   PLAYER_SPRITE,
   PLAYER_SPAWN_X,
@@ -15,6 +17,7 @@ import {
   PLAYER_SCALE,
   //TILESET,
 } from '../common/constants';
+import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -104,7 +107,7 @@ export default class ClientGame extends GameLoop {
     const message = deserializeSTC(data);
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
-      this.display_map();
+      display_map(this.stage);
       this.states.push(message.state);
       this.add_character(
         PLAYER_SPAWN_X,
@@ -156,73 +159,6 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(character);
     console.log(character);
     character.show(character.animationStates.down);
-  }
-
-  get_tile(tile_type: number) {
-    let type_counter = 0;
-    for (let row = 0; row < 6; row++) {
-      for (let column = 0; column < 14; column++) {
-        if (tile_type === type_counter) {
-          return [row, column];
-        }
-
-        type_counter += 1;
-      }
-    }
-    return [0, 0];
-  }
-  display_tile(pos: number, tile_type: number, texture) {
-    let pos_counter = 0;
-    let x = 0;
-    let y = 0;
-    let tile_pos = this.get_tile(tile_type);
-
-    for (let row = 0; row < 16; row++) {
-      for (let column = 0; column < 16; column++) {
-        if (pos_counter === pos) {
-          x = column;
-          y = row;
-        }
-        pos_counter += 1;
-      }
-    }
-
-    let xa = 32 * tile_pos[1];
-    let ya = 32 * tile_pos[0];
-    let rectangle = new PIXI.Rectangle(xa, ya, 32, 32);
-    texture.frame = rectangle;
-    console.log(texture);
-
-    let tile = new PIXI.Sprite(texture);
-    tile.x = 32 * x;
-    tile.y = 32 * y;
-    console.log(tile);
-    this.stage.addChild(tile);
-  }
-
-  display_map() {
-    const map = new Map('scifi-1', 'scifi', true);
-
-    for (let i = 0; i < map.tileIds.length; i++) {
-      let texture =
-        PIXI.utils.TextureCache['imgs/tilesheets/scifitiles-sheet.png'];
-      this.display_tile(i, map.tileIds[i], texture);
-    }
-
-    /*
-    let tile_counter = 0;
-    for (let row = 0; row < 16; row++) {
-      for (let column = 0; column < 16; column++) {
-        let tile = map.tileset.tiles[1024 + map.tileIds[tile_counter]].texture;
-        //  tile.position.set(row * 32, column * 32);
-        tile.x = row * 32;
-        tile.y = column * 32;
-        console.log(tile);
-        this.stage.addChild(tile);
-
-        tile_counter += 1;
-      }
-    }*/
   }
 
   key_presses(): void {
