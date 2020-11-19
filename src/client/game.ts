@@ -129,7 +129,6 @@ export default class ClientGame extends GameLoop {
           player.id,
         );
       } else {
-        //this.sprite_list[player.id].rotation = 180;
         this.decide_direction(player.id);
         this.sprite_list[player.id].x = this.states[0].players[
           player.id
@@ -141,15 +140,47 @@ export default class ClientGame extends GameLoop {
       }
     }
   }
-  decide_direction(player_id){
+  decide_direction(player_id: number){
     const dx = this.states[0].players[player_id].position.x-this.sprite_list[player_id].x;
     const dy = this.states[0].players[player_id].position.y-this.sprite_list[player_id].y;
-    //this.sprite_list[player_id].playAnimation(this.sprite_list[player_id].animationStates.walkRight)
-    if(this.counter==200){
-      this.sprite_list[player_id].playAnimation(this.sprite_list[player_id].animationStates.walkRight)
+    let pi = 3.141592;
+    //Right
+    if(dy === 0 && dx > 0){
+      this.sprite_list[player_id].rotation=pi*0.5;
     }
-    
-    //console.log(dx);
+    //Right Up
+    if(dy < 0 && dx > 0){
+      this.sprite_list[player_id].rotation=pi*0.25;
+    }
+    //Right Down
+    if(dy > 0 && dx > 0){
+      this.sprite_list[player_id].rotation=pi*0.75;
+      
+    }
+    //Left
+    if(dy === 0 && dx < 0){
+      this.sprite_list[player_id].rotation=-pi*0.5;
+    }
+    //Left Up
+    if(dy < 0 && dx < 0){
+      this.sprite_list[player_id].rotation=-pi*0.25;
+    }
+    //Left Down
+    if(dy > 0 && dx < 0){
+      this.sprite_list[player_id].rotation=-pi*0.75;
+    }
+    //Down
+    if(dy > 0 && dx === 0){
+      this.sprite_list[player_id].rotation=pi;
+    }
+    //Up
+    if(dy < 0 && dx === 0){
+      this.sprite_list[player_id].rotation = 0;
+    }
+    //Still
+    if(dy === 0 && dx === 0){
+      this.sprite_list[player_id].playAnimation(this.sprite_list[player_id].animationStates.walkUp)
+    }
   }
   add_character(
     x: number,
