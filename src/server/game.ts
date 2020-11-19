@@ -54,7 +54,6 @@ export default class ServerGame extends GameLoop {
   }
 
   private despawnEnemies() {
-    this.state.dead_enemies = [];
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
@@ -95,6 +94,7 @@ export default class ServerGame extends GameLoop {
   doUpdate(): void {
     // TODO: figure out better way to send this. Flatten the list maybe
     this.broadcast(serialize({ ackNum: 0, state: this.state }));
+    this.state.dead_enemies = [];
   }
 
   afterUpdate(): void {
