@@ -55,9 +55,9 @@ export default class ServerGame extends GameLoop {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
-        enemy.position.x > 512 ||
+        enemy.position.x > 250 ||
         enemy.position.y < 0 ||
-        enemy.position.y > 512
+        enemy.position.y > 250
       ) {
         delete this.state.enemies[enemy.id];
       }
