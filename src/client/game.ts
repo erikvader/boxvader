@@ -140,46 +140,51 @@ export default class ClientGame extends GameLoop {
       }
     }
   }
-  decide_direction(player_id: number){
-    const dx = this.states[0].players[player_id].position.x-this.sprite_list[player_id].x;
-    const dy = this.states[0].players[player_id].position.y-this.sprite_list[player_id].y;
+  decide_direction(player_id: number) {
+    const dx =
+      this.states[0].players[player_id].position.x -
+      this.sprite_list[player_id].x;
+    const dy =
+      this.states[0].players[player_id].position.y -
+      this.sprite_list[player_id].y;
     let pi = 3.141592;
     //Right
-    if(dy === 0 && dx > 0){
-      this.sprite_list[player_id].rotation=pi*0.5;
+    if (dy === 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.5;
     }
     //Right Up
-    if(dy < 0 && dx > 0){
-      this.sprite_list[player_id].rotation=pi*0.25;
+    if (dy < 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.25;
     }
     //Right Down
-    if(dy > 0 && dx > 0){
-      this.sprite_list[player_id].rotation=pi*0.75;
-      
+    if (dy > 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.75;
     }
     //Left
-    if(dy === 0 && dx < 0){
-      this.sprite_list[player_id].rotation=-pi*0.5;
+    if (dy === 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.5;
     }
     //Left Up
-    if(dy < 0 && dx < 0){
-      this.sprite_list[player_id].rotation=-pi*0.25;
+    if (dy < 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.25;
     }
     //Left Down
-    if(dy > 0 && dx < 0){
-      this.sprite_list[player_id].rotation=-pi*0.75;
+    if (dy > 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.75;
     }
     //Down
-    if(dy > 0 && dx === 0){
-      this.sprite_list[player_id].rotation=pi;
+    if (dy > 0 && dx === 0) {
+      this.sprite_list[player_id].rotation = pi;
     }
     //Up
-    if(dy < 0 && dx === 0){
+    if (dy < 0 && dx === 0) {
       this.sprite_list[player_id].rotation = 0;
     }
     //Still
-    if(dy === 0 && dx === 0){
-      this.sprite_list[player_id].playAnimation(this.sprite_list[player_id].animationStates.walkUp)
+    if (dy === 0 && dx === 0) {
+      this.sprite_list[player_id].playAnimation(
+        this.sprite_list[player_id].animationStates.walkUp,
+      );
     }
   }
   add_character(
