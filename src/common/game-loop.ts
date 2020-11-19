@@ -65,7 +65,7 @@ export default abstract class GameLoop {
     }
 
     while (this.timeacc >= this.ups) {
-      this.timeacc -= 1000 / this.ups;
+      this.timeacc -= this.ups;
       this.doUpdate();
     }
 

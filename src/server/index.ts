@@ -1,10 +1,11 @@
 import path from 'path';
+import { PLAYER_LIMIT, PORT } from '../common/constants';
 
 import express from 'express';
 import http from 'http';
 const app = express();
 const server = http.createServer(app);
-const port = 3000;
+const port = PORT;
 
 import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
@@ -70,7 +71,7 @@ io.onConnection(channel => {
   });
 
   // NOTE: temporary start condition
-  if (player_list.length === 2) {
+  if (player_list.length === PLAYER_LIMIT) {
     startGame();
   }
 });
