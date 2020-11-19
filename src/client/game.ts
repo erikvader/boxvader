@@ -7,12 +7,15 @@ import { Vec2 } from 'planck-js';
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
 import State from '../common/state';
+import display_map from './renderMap';
+
 import {
   PLAYER_SPRITE,
   PLAYER_SPAWN_X,
   PLAYER_SPAWN_Y,
   PLAYER_SCALE,
 } from '../common/constants';
+import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -22,7 +25,6 @@ export interface ClientGameOpt extends GameLoopOpt {
 }
 
 export default class ClientGame extends GameLoop {
-  private static readonly movement_speed = 2;
   private renderer;
   private stage;
 
@@ -102,6 +104,7 @@ export default class ClientGame extends GameLoop {
     const message = deserializeSTC(data);
     //TODO: change this when we have client side prediction
     if (this.states.length === 0) {
+      display_map(this.stage);
       this.states.push(message.state);
       this.add_character(
         PLAYER_SPAWN_X,
@@ -151,7 +154,6 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.sprite_list[id] = character;
     this.stage.addChild(character);
-
     character.show(character.animationStates.down);
   }
 

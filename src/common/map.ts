@@ -27,9 +27,9 @@ export default class Map {
     return this.tileIds.map(id => this.tileset.tiles[id]);
   }
 
-  constructor(name: string, tilesetName: string, loadTextures: boolean) {
+  constructor(name: string, tilesetName: string) {
     const jsonMap = getJson(name);
-    const tileset = new Tileset(tilesetName, loadTextures);
+    const tileset = new Tileset(tilesetName);
 
     const numLayers = jsonMap.layers.length;
     if (numLayers !== 1) {
