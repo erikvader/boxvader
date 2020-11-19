@@ -3,7 +3,6 @@ import * as PIXI from 'pixi.js';
 import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
 import pson from '../common/pson';
 import { Vec2 } from 'planck-js';
-//import Tileset from '../common/tileset';
 
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
