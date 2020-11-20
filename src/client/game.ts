@@ -147,7 +147,7 @@ export default class ClientGame extends GameLoop {
     const dy =
       this.states[0].players[player_id].position.y -
       this.sprite_list[player_id].y;
-    const pi = 3.141592;
+    const pi = Math.PI;
     //Right
     if (dy === 0 && dx > 0) {
       this.sprite_list[player_id].rotation = pi * 0.5;
@@ -224,14 +224,14 @@ function load_zombie(img_filepath) {
   animation.fps = 12;
   animation.animationStates = {
     left: 0,
-    left_up: stripSize,
+    leftUp: stripSize,
     up: stripSize * 2,
-    up_right: stripSize * 3,
+    upRight: stripSize * 3,
     right: stripSize * 4,
-    right_down: stripSize * 5,
+    rightDown: stripSize * 5,
     down: stripSize * 6,
-    left_down: stripSize * 7,
-    walkLeft_down: [
+    leftDown: stripSize * 7,
+    walkLeftDown: [
       stripSize * 0 + walkOffset,
       stripSize * 0 + walkOffset + walkAnimationLength,
     ],
@@ -239,7 +239,7 @@ function load_zombie(img_filepath) {
       stripSize * 1 + walkOffset,
       stripSize * 1 + walkOffset + walkAnimationLength,
     ],
-    walkLeft_up: [
+    walkLeftUp: [
       stripSize * 2 + walkOffset,
       stripSize * 2 + walkOffset + walkAnimationLength,
     ],
@@ -247,7 +247,7 @@ function load_zombie(img_filepath) {
       stripSize * 3 + walkOffset,
       stripSize * 3 + walkOffset + walkAnimationLength,
     ],
-    walkRight_up: [
+    walkRightUp: [
       stripSize * 4 + walkOffset,
       stripSize * 4 + walkOffset + walkAnimationLength,
     ],
@@ -255,7 +255,7 @@ function load_zombie(img_filepath) {
       stripSize * 5 + walkOffset,
       stripSize * 5 + walkOffset + walkAnimationLength,
     ],
-    walkRight_down: [
+    walkRightDown: [
       stripSize * 6 + walkOffset,
       stripSize * 6 + walkOffset + walkAnimationLength,
     ],
