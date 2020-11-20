@@ -22,7 +22,7 @@ export default class State {
       }
 
       for (const pid in obj['dead_enemies']) {
-        r.dead_enemies[pid] = (obj['dead_enemies'][pid]);
+        r.dead_enemies[pid] = obj['dead_enemies'][pid];
       }
       return r;
     }
