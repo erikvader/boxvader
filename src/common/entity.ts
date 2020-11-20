@@ -175,6 +175,6 @@ export class Enemy extends Entity {
           new Enemy(id, hitbox, health, position),
       ) as Enemy;
     }
-    throw new Error("coudln't revive Enemy");
+    throw new Error("couldn't revive Enemy");
   }
 }
