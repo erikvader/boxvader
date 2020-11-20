@@ -55,8 +55,6 @@ export default class ClientGame extends GameLoop {
     this.renderer = args.renderer;
     this.stage = args.stage;
     this.states = [];
-
-    PIXI.loader.add('imgs/b_yoda.png'); //TODO move this
   }
 
   public start(): Promise<void> {

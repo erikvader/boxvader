@@ -53,8 +53,8 @@ function setup() {
     });
   });
 }
-
 PIXI.loader
   .add(PLAYER_SPRITE)
+  .add('imgs/b_yoda.png')
   .add('imgs/tilesheets/scifitiles-sheet.png')
   .load(setup);
