@@ -129,16 +129,64 @@ export default class ClientGame extends GameLoop {
           player.id,
         );
       } else {
+        this.decide_direction(player.id);
         this.sprite_list[player.id].x = this.states[0].players[
           player.id
         ].position.x;
+
         this.sprite_list[player.id].y = this.states[0].players[
           player.id
         ].position.y;
       }
     }
   }
-
+  decide_direction(player_id: number) {
+    const dx =
+      this.states[0].players[player_id].position.x -
+      this.sprite_list[player_id].x;
+    const dy =
+      this.states[0].players[player_id].position.y -
+      this.sprite_list[player_id].y;
+    const pi = Math.PI;
+    //Right
+    if (dy === 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.5;
+    }
+    //Right Up
+    if (dy < 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.25;
+    }
+    //Right Down
+    if (dy > 0 && dx > 0) {
+      this.sprite_list[player_id].rotation = pi * 0.75;
+    }
+    //Left
+    if (dy === 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.5;
+    }
+    //Left Up
+    if (dy < 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.25;
+    }
+    //Left Down
+    if (dy > 0 && dx < 0) {
+      this.sprite_list[player_id].rotation = -pi * 0.75;
+    }
+    //Down
+    if (dy > 0 && dx === 0) {
+      this.sprite_list[player_id].rotation = pi;
+    }
+    //Up
+    if (dy < 0 && dx === 0) {
+      this.sprite_list[player_id].rotation = 0;
+    }
+    //Still
+    if (dy === 0 && dx === 0) {
+      this.sprite_list[player_id].playAnimation(
+        this.sprite_list[player_id].animationStates.walkUp,
+      );
+    }
+  }
   add_character(
     x: number,
     y: number,
@@ -163,111 +211,6 @@ export default class ClientGame extends GameLoop {
     this.right = new Key('ArrowRight');
     this.down = new Key('ArrowDown');
     this.fire = new Key(' '); //Spacebar
-
-    //Left arrow key `press` method
-    this.left.press = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_up,
-        );
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_down,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      }
-    };
-
-    //Left arrow key `release` method
-    this.left.release = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.left);
-      }
-    };
-
-    //Up
-    this.up.press = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_up,
-        );
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_up,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      }
-    };
-
-    this.up.release = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.up);
-      }
-    };
-
-    //Right
-    this.right.press = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_up,
-        );
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_down,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      }
-    };
-    this.right.release = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.right);
-      }
-    };
-
-    //Down
-    this.down.press = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.up);
-      }
-    };
-    this.down.release = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.down);
-      }
-    };
   }
 }
 
@@ -281,42 +224,42 @@ function load_zombie(img_filepath) {
   animation.fps = 12;
   animation.animationStates = {
     left: 0,
-    left_up: stripSize,
+    leftUp: stripSize,
     up: stripSize * 2,
-    up_right: stripSize * 3,
+    upRight: stripSize * 3,
     right: stripSize * 4,
-    right_down: stripSize * 5,
+    rightDown: stripSize * 5,
     down: stripSize * 6,
-    left_down: stripSize * 7,
-    walkLeft: [
+    leftDown: stripSize * 7,
+    walkLeftDown: [
       stripSize * 0 + walkOffset,
       stripSize * 0 + walkOffset + walkAnimationLength,
     ],
-    walkLeft_up: [
+    walkLeft: [
       stripSize * 1 + walkOffset,
       stripSize * 1 + walkOffset + walkAnimationLength,
     ],
-    walkUp: [
+    walkLeftUp: [
       stripSize * 2 + walkOffset,
       stripSize * 2 + walkOffset + walkAnimationLength,
     ],
-    walkRight_up: [
+    walkUp: [
       stripSize * 3 + walkOffset,
       stripSize * 3 + walkOffset + walkAnimationLength,
     ],
-    walkRight: [
+    walkRightUp: [
       stripSize * 4 + walkOffset,
       stripSize * 4 + walkOffset + walkAnimationLength,
     ],
-    walkRight_down: [
+    walkRight: [
       stripSize * 5 + walkOffset,
       stripSize * 5 + walkOffset + walkAnimationLength,
     ],
-    walkDown: [
+    walkRightDown: [
       stripSize * 6 + walkOffset,
       stripSize * 6 + walkOffset + walkAnimationLength,
     ],
-    walkLeft_down: [
+    walkDown: [
       stripSize * 7 + walkOffset,
       stripSize * 7 + walkOffset + walkAnimationLength,
     ],
