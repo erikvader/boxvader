@@ -101,7 +101,7 @@ export default class ClientGame extends GameLoop {
     this.down.unsubscribe();
     this.up.unsubscribe();
   }
-
+  // this is not pretty
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
@@ -140,13 +140,12 @@ export default class ClientGame extends GameLoop {
         ].position.y;
       }
     }
-
-    for (const enemy_id of message.state.dead_enemies){
+    // removes sprites when enemies despawn
+    for (const enemy_id of message.state.dead_enemies) {
       this.stage.removeChild(this.enemy_list[enemy_id]);
       delete this.enemy_list[enemy_id];
     }
 
-    // TODO: remove sprites when enemies despawn
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(enemy.x, enemy.y, 0.05, 'imgs/b_yoda.png', enemy.id);

@@ -43,6 +43,8 @@ export default class ServerGame extends GameLoop {
     }
   }
 
+  //spawns in a fixed location, should probably have a vec2 array as input for location
+  // Should probably have a type of enemy as well for later
   private spawnEnemies() {
     this.state.enemies[this.enemyIdCounter] = new Enemy(
       this.enemyIdCounter,
@@ -52,7 +54,7 @@ export default class ServerGame extends GameLoop {
     );
     this.enemyIdCounter += 1;
   }
-
+  // despawns with a weird criteria atm, but is easily changed
   private despawnEnemies() {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
@@ -62,7 +64,6 @@ export default class ServerGame extends GameLoop {
         enemy.position.y > 250
       ) {
         this.state.dead_enemies.push(enemy.id);
-
         delete this.state.enemies[enemy.id];
       }
     }
@@ -88,7 +89,6 @@ export default class ServerGame extends GameLoop {
       pos.y = pos.y + this.movementSpeed * vel[1];
     }
     this.moveEnemies();
-
   }
 
   doUpdate(): void {
@@ -99,10 +99,10 @@ export default class ServerGame extends GameLoop {
 
   afterUpdate(): void {
     //spawns a baby yoda per second
-    if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
+    /* if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
       this.spawnEnemies();
       this.despawnEnemies();
-    }
+    }*/
     return;
   }
 }
