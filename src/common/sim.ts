@@ -3,6 +3,7 @@ import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
+import { PLAYER_MOVE_VELOCITY } from './constants';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -121,14 +122,13 @@ function circleBody(
 export function updatePlayerBodyFromInput(body: Body, input: Input): void {
   // we move a player by simply increasing or decreasing its velocity in the cardinal directions
 
-  const MOVE_FORCE_STRENGTH = 10;
   const velocity = body.getLinearVelocity();
 
-  if (input.up && !input.down) velocity.y -= MOVE_FORCE_STRENGTH;
-  else if (input.down && !input.up) velocity.y += MOVE_FORCE_STRENGTH;
+  if (input.up && !input.down) velocity.y -= PLAYER_MOVE_VELOCITY;
+  else if (input.down && !input.up) velocity.y += PLAYER_MOVE_VELOCITY;
 
-  if (input.left && !input.right) velocity.x -= MOVE_FORCE_STRENGTH;
-  else if (input.right && !input.left) velocity.x += MOVE_FORCE_STRENGTH;
+  if (input.left && !input.right) velocity.x -= PLAYER_MOVE_VELOCITY;
+  else if (input.right && !input.left) velocity.x += PLAYER_MOVE_VELOCITY;
 
   body.setLinearVelocity(velocity);
   body.setAwake(true);
