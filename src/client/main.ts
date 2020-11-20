@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
 import {
   PLAYER_SPRITE,
+  ENEMY_SPRITE,
   PORT,
   MAP_SIZE_X,
   MAP_SIZE_Y,
@@ -55,6 +56,6 @@ function setup() {
 }
 PIXI.loader
   .add(PLAYER_SPRITE)
-  .add('imgs/b_yoda.png')
+  .add(ENEMY_SPRITE)
   .add('imgs/tilesheets/scifitiles-sheet.png')
   .load(setup);

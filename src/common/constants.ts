@@ -11,5 +11,8 @@ export const PLAYER_SPAWN_X = 200;
 export const PLAYER_SPAWN_Y = 200;
 export const PLAYER_SCALE = 0.5;
 
+export const ENEMY_SPRITE = 'imgs/b_yoda.png';
+export const ENEMY_SCALE = 0.05;
+
 export const MAP_SIZE_X = 512;
 export const MAP_SIZE_Y = 512;

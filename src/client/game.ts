@@ -14,6 +14,8 @@ import {
   PLAYER_SPAWN_X,
   PLAYER_SPAWN_Y,
   PLAYER_SCALE,
+  ENEMY_SCALE,
+  ENEMY_SPRITE,
 } from '../common/constants';
 import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
@@ -31,7 +33,7 @@ export default class ClientGame extends GameLoop {
   private states: State[];
   public my_id?: number;
   private my_sprite?;
-  private sprite_list = {}; //rename
+  private player_list = {};
   private enemy_list = {};
 
   private up;
@@ -114,14 +116,14 @@ export default class ClientGame extends GameLoop {
         PLAYER_SPRITE,
         this.my_id,
       );
-      this.my_sprite = this.sprite_list[this.my_id];
+      this.my_sprite = this.player_list[this.my_id];
       this.key_presses();
     } else {
       this.states[0] = message.state;
     }
 
     for (const player of Object.values(message.state.players)) {
-      if (this.sprite_list[player.id] === undefined) {
+      if (this.player_list[player.id] === undefined) {
         this.add_character(
           PLAYER_SPAWN_X,
           PLAYER_SPAWN_Y,
@@ -130,10 +132,10 @@ export default class ClientGame extends GameLoop {
           player.id,
         );
       } else {
-        this.sprite_list[player.id].x = this.states[0].players[
+        this.player_list[player.id].x = this.states[0].players[
           player.id
         ].position.x;
-        this.sprite_list[player.id].y = this.states[0].players[
+        this.player_list[player.id].y = this.states[0].players[
           player.id
         ].position.y;
       }
@@ -146,7 +148,7 @@ export default class ClientGame extends GameLoop {
 
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
-        this.add_enemy(enemy.x, enemy.y, 0.05, 'imgs/b_yoda.png', enemy.id);
+        this.add_enemy(enemy.x, enemy.y, ENEMY_SCALE, ENEMY_SPRITE, enemy.id);
       } else {
         this.enemy_list[enemy.id].x = this.states[0].enemies[
           enemy.id
@@ -171,7 +173,7 @@ export default class ClientGame extends GameLoop {
     character.id = id;
     character.scale.set(scale, scale);
     character.anchor.set(0.5, 0.5);
-    this.sprite_list[id] = character;
+    this.player_list[id] = character;
     this.stage.addChild(character);
     character.show(character.animationStates.down);
   }
