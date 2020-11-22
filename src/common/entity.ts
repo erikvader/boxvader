@@ -121,13 +121,16 @@ export class Player extends Entity {
    * Returns a deep copy of a `Player`.
    */
   public clone(): Player {
-    return new Player(
+    const player = new Player(
       this.id,
       this.hitbox.clone(),
       this.health,
       this.position.clone(),
       (' ' + this.name).slice(1), // https://stackoverflow.com/a/31733628
     );
+
+    player.velocity = this.velocity.clone();
+    return player;
   }
 
   public static revive(obj: unknown): Player {
@@ -159,12 +162,15 @@ export class Enemy extends Entity {
    * Returns a deep copy of an `Enemy`.
    */
   public clone(): Enemy {
-    return new Enemy(
+    const enemy = new Enemy(
       this.id,
       this.hitbox.clone(),
       this.health,
       this.position.clone(),
     );
+
+    enemy.velocity = this.velocity.clone();
+    return enemy;
   }
 
   public static revive(obj: unknown): Enemy {
