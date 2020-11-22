@@ -91,7 +91,7 @@ function createWorld(map: Level): World {
  * @param world The world that the entity belongs to
  * @param entity The entity to create a body for
  */
-function createBody(world: World, entity: Entity): Body {
+export function createBody(world: World, entity: Entity): Body {
   if (entity instanceof Player) {
     return circleBody(world, entity.position, entity.velocity, 1);
   } else if (entity instanceof Enemy) {
