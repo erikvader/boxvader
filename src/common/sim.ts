@@ -3,7 +3,7 @@ import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
-import { PLAYER_MOVE_VELOCITY } from './constants';
+import { MOVEMENT_SPEED } from './constants';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -124,11 +124,11 @@ export function updatePlayerBodyFromInput(body: Body, input: Input): void {
 
   const velocity = body.getLinearVelocity();
 
-  if (input.up && !input.down) velocity.y -= PLAYER_MOVE_VELOCITY;
-  else if (input.down && !input.up) velocity.y += PLAYER_MOVE_VELOCITY;
+  if (input.up && !input.down) velocity.y -= MOVEMENT_SPEED;
+  else if (input.down && !input.up) velocity.y += MOVEMENT_SPEED;
 
-  if (input.left && !input.right) velocity.x -= PLAYER_MOVE_VELOCITY;
-  else if (input.right && !input.left) velocity.x += PLAYER_MOVE_VELOCITY;
+  if (input.left && !input.right) velocity.x -= MOVEMENT_SPEED;
+  else if (input.right && !input.left) velocity.x += MOVEMENT_SPEED;
 
   body.setLinearVelocity(velocity);
   body.setAwake(true);

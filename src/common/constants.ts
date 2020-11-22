@@ -10,7 +10,6 @@ export const PLAYER_SPRITE = 'imgs/zombie_0.png';
 export const PLAYER_SPAWN_X = 200;
 export const PLAYER_SPAWN_Y = 200;
 export const PLAYER_SCALE = 0.5;
-export const PLAYER_MOVE_VELOCITY = 10;
 
 export const MAP_SIZE_X = 512;
 export const MAP_SIZE_Y = 512;
