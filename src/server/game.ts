@@ -63,7 +63,6 @@ export default class ServerGame extends GameLoop {
         enemy.position.y < 0 ||
         enemy.position.y > 250
       ) {
-        this.state.dead_enemies.push(enemy.id);
         delete this.state.enemies[enemy.id];
       }
     }
@@ -94,15 +93,14 @@ export default class ServerGame extends GameLoop {
   doUpdate(): void {
     // TODO: figure out better way to send this. Flatten the list maybe
     this.broadcast(serialize({ ackNum: 0, state: this.state }));
-    this.state.dead_enemies = [];
   }
 
   afterUpdate(): void {
     //spawns a baby yoda per second
-    /* if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
+    if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
       this.spawnEnemies();
       this.despawnEnemies();
-    }*/
+    }
     return;
   }
 }

@@ -101,7 +101,7 @@ export default class ClientGame extends GameLoop {
     this.down.unsubscribe();
     this.up.unsubscribe();
   }
-  // this is not pretty
+  // TODO: split this function into smaller sub-functions
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
@@ -141,10 +141,18 @@ export default class ClientGame extends GameLoop {
       }
     }
     // removes sprites when enemies despawn
-    for (const enemy_id of message.state.dead_enemies) {
-      this.stage.removeChild(this.enemy_list[enemy_id]);
-      delete this.enemy_list[enemy_id];
+    for (const enemy_id in this.enemy_list) {
+      if (this.states[0].enemies[enemy_id] === undefined) {
+        this.stage.removeChild(this.enemy_list[enemy_id]);
+        delete this.enemy_list[enemy_id];
+      }
     }
+    /*  for (const enemy of Object.values(this.enemy_list)) {
+      if (message.state.enemies[enemy.id] === undefined) {
+        this.stage.removeChild(this.enemy_list[enemy_id]);
+        delete this.enemy_list[enemy_id];
+      }
+    }*/
 
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
