@@ -27,12 +27,15 @@ let client_id = 0;
 const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
-function startGame() {
-  game = new ServerGame(
-    // TODO: check if the emitted object is too big
-    x => io.raw.room().emit(x),
-    Array.from(player_list.map(p => p.player_id)),
-  );
+function startGame(maxMessageSize?: number) {
+  game = new ServerGame(x => {
+    if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
+      console.warn(
+        `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
+      );
+    }
+    io.raw.room().emit(x);
+  }, Array.from(player_list.map(p => p.player_id)));
 
   for (const p of player_list) {
     p.channel.emit('start', { id: p.player_id }, { reliable: true });
@@ -48,7 +51,7 @@ function startGame() {
 io.onConnection(channel => {
   console.log(`${channel.id} connected`);
   channel.onDrop(drop => {
-    console.warn(`We are dropping packets: ${drop}`);
+    console.warn('We are dropping packets: ', drop);
   });
 
   const my_id = client_id;
@@ -72,7 +75,8 @@ io.onConnection(channel => {
 
   // NOTE: temporary start condition
   if (player_list.length === PLAYER_LIMIT) {
-    startGame();
+    const { maxMessageSize } = channel;
+    startGame(maxMessageSize);
   }
 });
 

@@ -1,11 +1,12 @@
 import Key from './key';
 import * as PIXI from 'pixi.js';
-import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
-import pson from '../common/pson';
-import { Vec2 } from 'planck-js';
+import GameLoop, { GameLoopOpt } from '../common/game-loop';
+import ByteBuffer from 'bytebuffer';
+import Deque from '../common/deque';
+import { Input } from '../common/misc';
 
 import SpriteUtilities from './spriteUtilities';
-import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
+import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 
@@ -19,7 +20,7 @@ import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
-  sendInputFun: (any) => void;
+  sendInputFun: (buf: ByteBuffer) => void;
   renderer: any; // TODO: figure out type
   stage: PIXI.Stage;
 }
@@ -28,7 +29,15 @@ export default class ClientGame extends GameLoop {
   private renderer;
   private stage;
 
-  private states: State[];
+  // predicted states where the first one always is a `true` state from the
+  // server.
+  private states: Deque<State>;
+  // inputs that caused all states in `states`.
+  // private statesInputs: Deque<Input>
+
+  // inputs not confirmed by server
+  private inputHistory: Deque<Input>;
+
   public my_id?: number;
   private my_sprite?;
   private sprite_list = {};
@@ -38,26 +47,26 @@ export default class ClientGame extends GameLoop {
   private left;
   private right;
   private fire;
-  private counter = 0;
   private initialized;
 
   private sendInputFun;
 
   // TODO: planned instance variables
   // private simulation: ClientSimulation;
-  // private static readonly historyLength = 10;
-  // private inputs: Input[];
 
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
     this.renderer = args.renderer;
     this.stage = args.stage;
-    this.states = [];
+    this.states = new Deque();
+    this.inputHistory = new Deque();
   }
 
   public start(): Promise<void> {
     if (this.my_id === undefined) throw new Error('my_id is not set');
+    display_map(this.stage);
+    this.key_presses();
     return super.start();
   }
 
@@ -76,19 +85,17 @@ export default class ClientGame extends GameLoop {
   doUpdate(): void {
     if (this.my_sprite === undefined) return;
 
-    const msg: ClientToServer = {
-      seqNum: this.counter,
-      inputs: {
-        up: this.up.isDown,
-        left: this.left.isDown,
-        right: this.right.isDown,
-        down: this.down.isDown,
-        fire: this.fire.isDown,
-      },
+    const inp: Input = {
+      up: this.up.isDown,
+      left: this.left.isDown,
+      right: this.right.isDown,
+      down: this.down.isDown,
+      fire: this.fire.isDown,
     };
 
-    this.sendInputFun(serialize(msg));
-    this.counter = this.counter + 1;
+    this.inputHistory.push_back(inp);
+
+    this.sendInputFun(serialize({ inputs: this.inputHistory }));
   }
 
   protected cleanup(): void {
@@ -102,23 +109,17 @@ export default class ClientGame extends GameLoop {
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
     const message = deserializeSTC(data);
-    //TODO: change this when we have client side prediction
-    if (this.states.length === 0) {
-      display_map(this.stage);
-      this.states.push(message.state);
-      this.add_character(
-        PLAYER_SPAWN_X,
-        PLAYER_SPAWN_Y,
-        PLAYER_SCALE,
-        PLAYER_SPRITE,
-        this.my_id,
-      );
-      this.my_sprite = this.sprite_list[this.my_id];
-      this.key_presses();
-    } else {
-      this.states[0] = message.state;
+
+    if (this.my_id in message.inputAck) {
+      this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
+    if (message.stateNum <= this.states.first) {
+      console.debug('got an old state');
+    }
+    this.states.reset(message.state, message.stateNum);
+
+    // spawn new players
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
         this.add_character(
@@ -128,25 +129,26 @@ export default class ClientGame extends GameLoop {
           PLAYER_SPRITE,
           player.id,
         );
+
+        if (player.id === this.my_id) {
+          this.my_sprite = this.sprite_list[this.my_id];
+        }
       } else {
         this.decide_direction(player.id);
-        this.sprite_list[player.id].x = this.states[0].players[
-          player.id
-        ].position.x;
-
-        this.sprite_list[player.id].y = this.states[0].players[
-          player.id
-        ].position.y;
+        const p = this.states.last_elem()!.players[player.id];
+        this.sprite_list[player.id].x = p.position.x;
+        this.sprite_list[player.id].y = p.position.y;
       }
     }
   }
-  decide_direction(player_id: number) {
+
+  decide_direction(player_id: number): void {
+    const state = this.states.last_elem();
+    if (state === undefined) return;
     const dx =
-      this.states[0].players[player_id].position.x -
-      this.sprite_list[player_id].x;
+      state.players[player_id].position.x - this.sprite_list[player_id].x;
     const dy =
-      this.states[0].players[player_id].position.y -
-      this.sprite_list[player_id].y;
+      state.players[player_id].position.y - this.sprite_list[player_id].y;
     const pi = Math.PI;
     //Right
     if (dy === 0 && dx > 0) {
@@ -187,6 +189,7 @@ export default class ClientGame extends GameLoop {
       );
     }
   }
+
   add_character(
     x: number,
     y: number,

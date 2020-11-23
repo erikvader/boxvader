@@ -1,13 +1,9 @@
 import { Player, Enemy } from './entity';
-import { isObjectWithKeys } from './misc';
-
-export interface IdMap<T> {
-  [id: number]: T;
-}
+import { isObjectWithKeys, NumMap } from './misc';
 
 export default class State {
-  public players: IdMap<Player> = {};
-  public enemies: IdMap<Enemy> = {};
+  public players: NumMap<Player> = {};
+  public enemies: NumMap<Enemy> = {};
 
   /**
    * Returns a deep copy of this `State`.
