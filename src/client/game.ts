@@ -130,7 +130,7 @@ export default class ClientGame extends GameLoop {
           this.key_presses();
         }
       } else {
-        const p = this.states.last_ele()!.players[player.id];
+        const p = this.states.last_elem()!.players[player.id];
         this.sprite_list[player.id].x = p.position.x;
         this.sprite_list[player.id].y = p.position.y;
       }

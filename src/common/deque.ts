@@ -53,7 +53,7 @@ export default class Deque<T> {
   /**
    * @returns The first element, if any.
    */
-  public first_ele(): T | undefined {
+  public first_elem(): T | undefined {
     if (this._last === null) {
       return undefined;
     }
@@ -63,7 +63,7 @@ export default class Deque<T> {
   /**
    * @returns The last element, if any.
    */
-  public last_ele(): T | undefined {
+  public last_elem(): T | undefined {
     if (this._last === null) {
       return undefined;
     }
@@ -82,16 +82,16 @@ export default class Deque<T> {
 
   /**
    * Adds an element at the end.
-   * @param ele The element to add
+   * @param elem The element to add
    */
-  public push_back(ele: T): void {
+  public push_back(elem: T): void {
     if (this._last === null) {
       this._first += 1;
       this._last = this._first;
     } else {
       this._last += 1;
     }
-    this.data[this._last] = ele;
+    this.data[this._last] = elem;
   }
 
   /**
@@ -189,11 +189,11 @@ export default class Deque<T> {
 
   /**
    * Resets this Deque to contains a value `ele` with sequence number `seq`.
-   * @param ele The element this should contain
-   * @param seq The sequence to place `ele` at.
+   * @param elem The element this should contain
+   * @param seq The sequence to place `elem` at.
    */
-  public reset(ele: T, seq: number): void {
-    this.data = { [seq]: ele };
+  public reset(elem: T, seq: number): void {
+    this.data = { [seq]: elem };
     this._first = seq;
     this._last = this._first;
   }
