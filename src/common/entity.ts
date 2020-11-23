@@ -1,17 +1,18 @@
 import { Id, reviveVec2, isObjectWithKeys } from './misc';
-import { Body, BodyDef, Circle, Vec2, World } from 'planck-js';
+import { Body, Vec2 } from 'planck-js';
 
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
-abstract class Entity {
+export abstract class Entity {
   public readonly id: Id;
   public readonly hitbox: Vec2;
   public readonly maxHealth: number;
 
+  public position: Vec2;
+  public velocity: Vec2;
+
   private _health: number;
-  protected _position: Vec2;
-  protected _velocity: Vec2;
 
   public constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
     this.id = id;
@@ -19,11 +20,10 @@ abstract class Entity {
     this.maxHealth = health;
 
     this._health = health;
-    this._position = position;
-    this._velocity = Vec2.zero();
+    this.position = position;
+    this.velocity = Vec2.zero();
   }
 
-  public abstract createBody(world: World): Body;
   public abstract draw(pixi): void;
 
   public static revive(
@@ -35,19 +35,19 @@ abstract class Entity {
         'id',
         'hitbox',
         'maxHealth',
-        '_position',
+        'position',
         '_health',
-        '_velocity',
+        'velocity',
       ])
     ) {
       const e = construct(
         obj['id'],
         reviveVec2(obj['hitbox']),
         obj['maxHealth'],
-        reviveVec2(obj['_position']),
+        reviveVec2(obj['position']),
       );
       e._health = obj['_health'];
-      e._velocity = reviveVec2(obj['_velocity']);
+      e.velocity = reviveVec2(obj['velocity']);
       return e;
     }
     throw new Error("couldn't revive Entity");
@@ -55,14 +55,6 @@ abstract class Entity {
 
   public get health(): number {
     return this._health;
-  }
-
-  public get position(): Vec2 {
-    return this._position;
-  }
-
-  public get velocity(): Vec2 {
-    return this._velocity;
   }
 
   public get alive(): boolean {
@@ -78,8 +70,8 @@ abstract class Entity {
   }
 
   public updateFromBody(body: Body): void {
-    this._position = body.getPosition();
-    this._velocity = body.getLinearVelocity();
+    this.position = body.getPosition();
+    this.velocity = body.getLinearVelocity();
   }
 }
 
@@ -121,12 +113,24 @@ export class Player extends Entity {
     this._score += points;
   }
 
-  public createBody(world: World): Body {
-    return createBody(world, this);
-  }
-
   public draw(pixi): void {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Returns a deep copy of a `Player`.
+   */
+  public clone(): Player {
+    const player = new Player(
+      this.id,
+      this.hitbox.clone(),
+      this.health,
+      this.position.clone(),
+      this.name, // name is NOT deep-copied
+    );
+
+    player.velocity = this.velocity.clone();
+    return player;
   }
 
   public static revive(obj: unknown): Player {
@@ -150,12 +154,23 @@ export class Enemy extends Entity {
     super(id, hitbox, health, position);
   }
 
-  public createBody(world: World): Body {
-    return createBody(world, this);
-  }
-
   public draw(pixi): void {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Returns a deep copy of an `Enemy`.
+   */
+  public clone(): Enemy {
+    const enemy = new Enemy(
+      this.id,
+      this.hitbox.clone(),
+      this.health,
+      this.position.clone(),
+    );
+
+    enemy.velocity = this.velocity.clone();
+    return enemy;
   }
 
   public static revive(obj: unknown): Enemy {
@@ -166,21 +181,6 @@ export class Enemy extends Entity {
           new Enemy(id, hitbox, health, position),
       ) as Enemy;
     }
-    throw new Error("coudln't revive Enemy");
+    throw new Error("couldn't revive Enemy");
   }
-}
-
-function createBody(world: World, entity: Entity): Body {
-  const bodyDef: BodyDef = {
-    position: entity.position,
-    linearVelocity: entity.velocity,
-  };
-
-  // shape must have type any to silence this error:
-  // 'CircleShape' is not assignable to parameter of type 'Shape'
-  const body = world.createDynamicBody(bodyDef);
-  const shape: any = new Circle(1);
-  body.createFixture(shape);
-
-  return body;
 }
