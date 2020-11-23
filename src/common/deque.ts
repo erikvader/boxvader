@@ -16,11 +16,10 @@ export default class Deque<T> {
    * Create an empty Deque
    * @param ind The start number in the timeline, default as 0
    */
-  constructor();
-  constructor(ind?: number) {
+  constructor(ind = 0) {
     this.data = {};
     this._last = null;
-    this._first = ind === undefined ? 0 : ind;
+    this._first = ind;
     this._first -= 1; // NOTE: compensate for `push_back`
   }
 
