@@ -5,6 +5,23 @@ export default class State {
   public players: NumMap<Player> = {};
   public enemies: NumMap<Enemy> = {};
 
+  /**
+   * Returns a deep copy of this `State`.
+   */
+  public clone(): State {
+    const state = new State();
+
+    for (const id in this.players) {
+      state.players[id] = this.players[id].clone();
+    }
+
+    for (const id in this.enemies) {
+      state.enemies[id] = this.enemies[id].clone();
+    }
+
+    return state;
+  }
+
   public static revive(obj: unknown): State {
     if (isObjectWithKeys(obj, ['players', 'enemies'])) {
       const r = new State();
