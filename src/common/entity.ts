@@ -126,7 +126,7 @@ export class Player extends Entity {
       this.hitbox.clone(),
       this.health,
       this.position.clone(),
-      (' ' + this.name).slice(1), // https://stackoverflow.com/a/31733628
+      this.name, // name is NOT deep-copied
     );
 
     player.velocity = this.velocity.clone();
