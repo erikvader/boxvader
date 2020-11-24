@@ -51,7 +51,7 @@ export default class Tileset {
     const imgsIndex = texturePath.indexOf('imgs/');
     if (imgsIndex !== -1) texturePath = texturePath.substring(imgsIndex);
 
-    const tiles = new Array<Tile>(dx * dy);
+    const tiles: Tile[] = [];
     let currentId = 0;
 
     for (let y = 0; y < jsonTileset.imageheight; y += dy) {

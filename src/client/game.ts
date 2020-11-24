@@ -111,9 +111,9 @@ export default class ClientGame extends GameLoop {
   // TODO: split this function into smaller sub-functions
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
-    console.log('data: ', data);
+
     const message = deserializeSTC(data);
-    console.log(message);
+
     if (this.my_id in message.inputAck) {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }

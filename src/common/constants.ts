@@ -14,8 +14,8 @@ export const PLAYER_SCALE = 0.5;
 export const ENEMY_SPRITE = 'imgs/b_yoda.png';
 export const ENEMY_SCALE = 0.05;
 
-export const MAP_SIZE_X = 512;
-export const MAP_SIZE_Y = 512;
+export const MAP_WIDTH = 512;
+export const MAP_HEIGHT = 512;
 
 /**
  * How seldom the server broadcasts it's state to all clients. Can be an integer

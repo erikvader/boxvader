@@ -4,7 +4,6 @@ import Tileset from '../common/tileset';
 
 export default function display_map(stage: PIXI.stage) {
   const map = new Map('scifi-1', 'scifi');
-
   for (let i = 0; i < map.tileIds.length; i++) {
     const texture = PIXI.utils.TextureCache[map.tileset.imageName].clone();
     stage.addChild(display_tile(i, map.tileIds[i], texture, map));
