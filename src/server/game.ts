@@ -18,6 +18,7 @@ export default class ServerGame extends GameLoop {
   private broadcast;
   // private sim: ServerSimulation;
   private playerInputs: NumMap<Deque<Input>>;
+  private inputAcks: NumMap<number>;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
     super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
@@ -25,6 +26,7 @@ export default class ServerGame extends GameLoop {
     this.state = new State();
     this.stateNum = 0;
     this.playerInputs = {};
+    this.inputAcks = {};
 
     for (const p of players) {
       this.state.players[p] = new Player(
@@ -44,20 +46,17 @@ export default class ServerGame extends GameLoop {
 
     data = deserializeCTS(data);
 
-    if (!this.playerInputs[player_id]?.merge_back(data.inputs)) {
-      console.error('There was a gap in the inputs, or the player disappeared');
-    }
+    const pi = this.playerInputs[player_id]!;
+    pi.merge_back(data.inputs); // TODO: check if pi and data.inputs are disjunct
+    this.inputAcks[player_id] = pi.last;
   }
 
   doUpdate(): void {
-    const inputAcks = {};
-
     for (const p in this.state.players) {
       const pos = this.state.players[p].position;
 
       if (this.playerInputs[p].length > 0) {
-        const [inp, ack] = this.playerInputs[p].pop_front();
-        inputAcks[p] = ack;
+        const inp = this.playerInputs[p].pop_front()[0];
         const direction = decideDirection(
           inp.up,
           inp.down,
@@ -73,7 +72,7 @@ export default class ServerGame extends GameLoop {
     if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
       this.broadcast(
         serialize({
-          inputAck: inputAcks,
+          inputAck: this.inputAcks,
           stateNum: this.stateNum,
           state: this.state,
         }),
