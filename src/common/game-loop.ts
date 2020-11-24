@@ -35,9 +35,11 @@ export default abstract class GameLoop {
   private updateCount = 0;
   public runningFPS = 0; // our current FPS
 
+  public stepCount = 0;
+
   constructor(args?: GameLoopOpt) {
     this.ups = 1000.0 / (args?.ups ?? 30);
-    this.fps = 1000.0 / (args?.fps ?? 60);
+    this.fps = 1000.0 / (args?.fps ?? 60); //bad variable name
     this.maxUpdateStep = args?.maxUpdateStep ?? 1000.0 / 4;
   }
 
@@ -45,6 +47,8 @@ export default abstract class GameLoop {
     const now = performance.now();
     let step = now - this.prevNow;
     this.prevNow = now;
+
+    this.stepCount += 1;
 
     if (step > this.maxUpdateStep) {
       step = this.maxUpdateStep;

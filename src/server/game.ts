@@ -2,7 +2,7 @@ import GameLoop from '../common/game-loop';
 
 import { Id, NumMap, Input } from '../common/misc';
 import State from '../common/state';
-import { Player } from '../common/entity';
+import { Player, Enemy } from '../common/entity';
 import { serialize, deserializeCTS } from '../common/msg';
 import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
@@ -25,6 +25,7 @@ export default class ServerGame extends GameLoop {
   private stateNum: number;
   private broadcast;
   // private sim: ServerSimulation;
+  private enemyIdCounter: number;
   private playerInputs: NumMap<Deque<TimedInput>>;
   private inputAcks: NumMap<number>;
 
@@ -47,6 +48,38 @@ export default class ServerGame extends GameLoop {
 
       this.playerInputs[p] = new Deque();
     }
+    this.enemyIdCounter = players.length;
+  }
+
+  private moveEnemies() {
+    for (const enemy of Object.values(this.state.enemies)) {
+      enemy.move();
+    }
+  }
+
+  //spawns in a fixed location, should probably have a vec2 array as input for location
+  // Should probably have a type of enemy as well for later
+  private spawnEnemies() {
+    this.state.enemies[this.enemyIdCounter] = new Enemy(
+      this.enemyIdCounter,
+      new Vec2(0, 0),
+      100,
+      Vec2(this.enemyIdCounter * 4, 0),
+    );
+    this.enemyIdCounter += 1;
+  }
+  // despawns with a weird criteria atm, but is easily changed
+  private despawnEnemies() {
+    for (const enemy of Object.values(this.state.enemies)) {
+      if (
+        enemy.position.x < 0 ||
+        enemy.position.x > 250 ||
+        enemy.position.y < 0 ||
+        enemy.position.y > 250
+      ) {
+        delete this.state.enemies[enemy.id];
+      }
+    }
   }
 
   clientMsg(player_id: Id, data: any): void {
@@ -62,6 +95,8 @@ export default class ServerGame extends GameLoop {
     });
     pi.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
     this.inputAcks[player_id] = pi.last;
+
+    this.moveEnemies();
   }
 
   doUpdate(): void {
@@ -94,6 +129,11 @@ export default class ServerGame extends GameLoop {
   }
 
   afterUpdate(): void {
+    //spawns a baby yoda per second
+    if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
+      this.spawnEnemies();
+      this.despawnEnemies();
+    }
     return;
   }
 
