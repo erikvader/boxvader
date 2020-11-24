@@ -9,7 +9,7 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
-
+import { Player } from '../common/entity';
 import {
   PLAYER_SPRITE,
   PLAYER_SPAWN_X,
@@ -111,20 +111,26 @@ export default class ClientGame extends GameLoop {
   // TODO: split this function into smaller sub-functions
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
-    console.log('data: ', data);
+
     const message = deserializeSTC(data);
-    console.log(message);
+
     if (this.my_id in message.inputAck) {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
+    this.update_players(message.state);
+    this.update_enemies(message.state);
+
     if (message.stateNum <= this.states.first) {
       console.debug('got an old state');
     }
-    this.states.reset(message.state, message.stateNum);
 
+    this.states.reset(message.state, message.stateNum);
+  }
+
+  update_players(state: State) {
     // spawn new players
-    for (const player of Object.values(message.state.players)) {
+    for (const player of Object.values(state.players)) {
       if (this.player_list[player.id] === undefined) {
         this.add_character(
           PLAYER_SPAWN_X,
@@ -134,7 +140,7 @@ export default class ClientGame extends GameLoop {
           player.id,
         );
 
-        if (player.id === this.my_id) {
+        if (player.id === this.my_id && this.my_id !== undefined) {
           this.my_sprite = this.player_list[this.my_id];
         }
       } else {
@@ -144,15 +150,12 @@ export default class ClientGame extends GameLoop {
         this.player_list[player.id].y = p.position.y;
       }
     }
-    // removes sprites when enemies despawn
-    for (const enemy_id in this.enemy_list) {
-      if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
-        this.stage.removeChild(this.enemy_list[enemy_id]);
-        delete this.enemy_list[enemy_id];
-      }
-    }
+  }
 
-    for (const enemy of Object.values(message.state.enemies)) {
+  update_enemies(state: State) {
+    this.remove_enemies();
+
+    for (const enemy of Object.values(state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(enemy.x, enemy.y, ENEMY_SCALE, ENEMY_SPRITE, enemy.id);
       } else {
@@ -162,6 +165,15 @@ export default class ClientGame extends GameLoop {
         this.enemy_list[enemy.id].y = this.states.last_elem()!.enemies[
           enemy.id
         ].position.y;
+      }
+    }
+  }
+
+  remove_enemies() {
+    for (const enemy_id in this.enemy_list) {
+      if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
+        this.stage.removeChild(this.enemy_list[enemy_id]);
+        delete this.enemy_list[enemy_id];
       }
     }
   }
