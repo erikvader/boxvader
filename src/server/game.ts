@@ -11,6 +11,8 @@ import { Vec2 } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
 import * as constants from '../common/constants';
+import ServerSimulation from './server-sim';
+import Level from '../common/map';
 
 /**
  * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
@@ -24,17 +26,22 @@ export default class ServerGame extends GameLoop {
   private state: State;
   private stateNum: number;
   private broadcast;
-  // private sim: ServerSimulation;
+  private simulation: ServerSimulation;
   private playerInputs: NumMap<Deque<TimedInput>>;
   private inputAcks: NumMap<number>;
 
-  constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
+  constructor(
+    map: Level,
+    broadcast: (buf: ByteBuffer) => void,
+    players: Array<Id>,
+  ) {
     super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
     this.broadcast = broadcast;
     this.state = new State();
     this.stateNum = 0;
     this.playerInputs = {};
     this.inputAcks = {};
+    this.simulation = new ServerSimulation(map, this.ups);
 
     for (const p of players) {
       this.state.players[p] = new Player(
@@ -65,21 +72,18 @@ export default class ServerGame extends GameLoop {
   }
 
   doUpdate(): void {
+    const inputs = new Map<Id, Input>();
+
     for (const p in this.state.players) {
+      const player = this.state.players[p];
       const inp = this.getNextInput(p);
       if (inp !== undefined) {
-        const direction = decideDirection(
-          inp.up,
-          inp.down,
-          inp.right,
-          inp.left,
-        );
-        const pos = this.state.players[p].position;
-        const vel = directionToVelocity(direction);
-        pos.x += constants.MOVEMENT_SPEED * vel[0];
-        pos.y += constants.MOVEMENT_SPEED * vel[1];
+        inputs.set(player.id, inp);
       }
     }
+
+    this.simulation.update(inputs);
+    this.state = this.simulation.snapshot();
 
     if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
       this.broadcast(

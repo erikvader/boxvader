@@ -119,17 +119,22 @@ function circleBody(
   return body;
 }
 
-export function updatePlayerBodyFromInput(body: Body, input: Input): void {
+export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
   // we move a player by simply increasing or decreasing its velocity in the cardinal directions
 
-  const velocity = body.getLinearVelocity();
+  if (input === undefined) {
+    // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
+  } else {
+    const velocity = body.getLinearVelocity();
 
-  if (input.up && !input.down) velocity.y -= MOVEMENT_SPEED;
-  else if (input.down && !input.up) velocity.y += MOVEMENT_SPEED;
+    if (input.up && !input.down) velocity.y -= MOVEMENT_SPEED;
+    else if (input.down && !input.up) velocity.y += MOVEMENT_SPEED;
 
-  if (input.left && !input.right) velocity.x -= MOVEMENT_SPEED;
-  else if (input.right && !input.left) velocity.x += MOVEMENT_SPEED;
+    if (input.left && !input.right) velocity.x -= MOVEMENT_SPEED;
+    else if (input.right && !input.left) velocity.x += MOVEMENT_SPEED;
 
-  body.setLinearVelocity(velocity);
+    body.setLinearVelocity(velocity);
+  }
+
   body.setAwake(true);
 }

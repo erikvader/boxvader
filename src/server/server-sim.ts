@@ -15,18 +15,14 @@ export default class ServerSimulation extends Simulation {
   public update(inputs: Map<Id, Input>) {
     // update players based on their inputs
     // TODO: handle 'fire' input
-    inputs.forEach((input, id) => {
-      const player: Player = this._state[id];
-      const body = this.bodies.get(id);
 
-      if (!(player instanceof Player))
-        throw new Error(`No player with ID ${id} exists.`);
-
-      if (!(body instanceof Body))
-        throw new Error(`No body belonging ID ${id} exists.`);
-
+    for (const [id, player] of Object.values(this.state.players)) {
+      const body = this.bodies.get(id)!;
+      const input = inputs.get(id);
       updatePlayerBodyFromInput(body, input);
-    });
+    }
+
+    this.world.step(this.updateStep);
 
     // TODO: update enemies with AI?
 
