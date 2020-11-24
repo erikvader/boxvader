@@ -10,7 +10,7 @@ import Deque from '../common/deque';
 import { Vec2 } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
-import { MOVEMENT_SPEED, SERVER_FPS, SERVER_UPS } from '../common/constants';
+import * as constants from '../common/constants';
 
 export default class ServerGame extends GameLoop {
   private state: State;
@@ -20,7 +20,7 @@ export default class ServerGame extends GameLoop {
   private playerInputs: NumMap<Deque<Input>>;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
-    super({ ups: SERVER_UPS, fps: SERVER_FPS });
+    super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
     this.broadcast = broadcast;
     this.state = new State();
     this.stateNum = 0;
@@ -65,18 +65,20 @@ export default class ServerGame extends GameLoop {
           inp.left,
         );
         const vel = directionToVelocity(direction);
-        pos.x += MOVEMENT_SPEED * vel[0];
-        pos.y += MOVEMENT_SPEED * vel[1];
+        pos.x += constants.MOVEMENT_SPEED * vel[0];
+        pos.y += constants.MOVEMENT_SPEED * vel[1];
       }
     }
 
-    this.broadcast(
-      serialize({
-        inputAck: inputAcks,
-        stateNum: this.stateNum,
-        state: this.state,
-      }),
-    );
+    if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
+      this.broadcast(
+        serialize({
+          inputAck: inputAcks,
+          stateNum: this.stateNum,
+          state: this.state,
+        }),
+      );
+    }
     this.stateNum += 1;
   }
 
