@@ -21,8 +21,14 @@ function setup() {
   document.body.appendChild(renderer.view);
   const stage = new PIXI.Container();
 
+  const { maxMessageSize } = channel;
   const game = new ClientGame({
     sendInputFun: x => {
+      if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
+        console.warn(
+          `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
+        );
+      }
       channel.raw.emit(x);
     },
     renderer,

@@ -1,11 +1,12 @@
 import Key from './key';
 import * as PIXI from 'pixi.js';
-import { default as GameLoop, GameLoopOpt } from '../common/game-loop';
-import pson from '../common/pson';
-import { Vec2 } from 'planck-js';
+import GameLoop, { GameLoopOpt } from '../common/game-loop';
+import ByteBuffer from 'bytebuffer';
+import Deque from '../common/deque';
+import { Input } from '../common/misc';
 
 import SpriteUtilities from './spriteUtilities';
-import { deserializeSTC, ClientToServer, serialize } from '../common/msg';
+import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 
@@ -21,7 +22,7 @@ import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
-  sendInputFun: (any) => void;
+  sendInputFun: (buf: ByteBuffer) => void;
   renderer: any; // TODO: figure out type
   stage: PIXI.Stage;
 }
@@ -30,7 +31,15 @@ export default class ClientGame extends GameLoop {
   private renderer;
   private stage;
 
-  private states: State[];
+  // predicted states where the first one always is a `true` state from the
+  // server.
+  private states: Deque<State>;
+  // inputs that caused all states in `states`.
+  // private statesInputs: Deque<Input>
+
+  // inputs not confirmed by server
+  private inputHistory: Deque<Input>;
+
   public my_id?: number;
   private my_sprite?;
   private player_list = {};
@@ -41,26 +50,26 @@ export default class ClientGame extends GameLoop {
   private left;
   private right;
   private fire;
-  private counter = 0;
   private initialized;
 
   private sendInputFun;
 
   // TODO: planned instance variables
   // private simulation: ClientSimulation;
-  // private static readonly historyLength = 10;
-  // private inputs: Input[];
 
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
     this.renderer = args.renderer;
     this.stage = args.stage;
-    this.states = [];
+    this.states = new Deque();
+    this.inputHistory = new Deque();
   }
 
   public start(): Promise<void> {
     if (this.my_id === undefined) throw new Error('my_id is not set');
+    display_map(this.stage);
+    this.key_presses();
     return super.start();
   }
 
@@ -79,19 +88,17 @@ export default class ClientGame extends GameLoop {
   doUpdate(): void {
     if (this.my_sprite === undefined) return;
 
-    const msg: ClientToServer = {
-      seqNum: this.counter,
-      inputs: {
-        up: this.up.isDown,
-        left: this.left.isDown,
-        right: this.right.isDown,
-        down: this.down.isDown,
-        fire: this.fire.isDown,
-      },
+    const inp: Input = {
+      up: this.up.isDown,
+      left: this.left.isDown,
+      right: this.right.isDown,
+      down: this.down.isDown,
+      fire: this.fire.isDown,
     };
 
-    this.sendInputFun(serialize(msg));
-    this.counter = this.counter + 1;
+    this.inputHistory.push_back(inp);
+
+    this.sendInputFun(serialize({ inputs: this.inputHistory }));
   }
 
   protected cleanup(): void {
@@ -104,24 +111,19 @@ export default class ClientGame extends GameLoop {
   // TODO: split this function into smaller sub-functions
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
+    console.log('data: ', data);
     const message = deserializeSTC(data);
-    //TODO: change this when we have client side prediction
-    if (this.states.length === 0) {
-      display_map(this.stage);
-      this.states.push(message.state);
-      this.add_character(
-        PLAYER_SPAWN_X,
-        PLAYER_SPAWN_Y,
-        PLAYER_SCALE,
-        PLAYER_SPRITE,
-        this.my_id,
-      );
-      this.my_sprite = this.player_list[this.my_id];
-      this.key_presses();
-    } else {
-      this.states[0] = message.state;
+    console.log(message);
+    if (this.my_id in message.inputAck) {
+      this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
+    if (message.stateNum <= this.states.first) {
+      console.debug('got an old state');
+    }
+    this.states.reset(message.state, message.stateNum);
+
+    // spawn new players
     for (const player of Object.values(message.state.players)) {
       if (this.player_list[player.id] === undefined) {
         this.add_character(
@@ -131,40 +133,84 @@ export default class ClientGame extends GameLoop {
           PLAYER_SPRITE,
           player.id,
         );
+
+        if (player.id === this.my_id) {
+          this.my_sprite = this.player_list[this.my_id];
+        }
       } else {
-        this.player_list[player.id].x = this.states[0].players[
-          player.id
-        ].position.x;
-        this.player_list[player.id].y = this.states[0].players[
-          player.id
-        ].position.y;
+        this.decide_direction(player.id);
+        const p = this.states.last_elem()!.players[player.id];
+        this.player_list[player.id].x = p.position.x;
+        this.player_list[player.id].y = p.position.y;
       }
     }
     // removes sprites when enemies despawn
     for (const enemy_id in this.enemy_list) {
-      if (this.states[0].enemies[enemy_id] === undefined) {
+      if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
       }
     }
-    /*  for (const enemy of Object.values(this.enemy_list)) {
-      if (message.state.enemies[enemy.id] === undefined) {
-        this.stage.removeChild(this.enemy_list[enemy_id]);
-        delete this.enemy_list[enemy_id];
-      }
-    }*/
 
     for (const enemy of Object.values(message.state.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(enemy.x, enemy.y, ENEMY_SCALE, ENEMY_SPRITE, enemy.id);
       } else {
-        this.enemy_list[enemy.id].x = this.states[0].enemies[
+        this.enemy_list[enemy.id].x = this.states.last_elem()!.enemies[
           enemy.id
         ].position.x;
-        this.enemy_list[enemy.id].y = this.states[0].enemies[
+        this.enemy_list[enemy.id].y = this.states.last_elem()!.enemies[
           enemy.id
         ].position.y;
       }
+    }
+  }
+
+  decide_direction(player_id: number): void {
+    const state = this.states.last_elem();
+    if (state === undefined) return;
+    const dx =
+      state.players[player_id].position.x - this.player_list[player_id].x;
+    const dy =
+      state.players[player_id].position.y - this.player_list[player_id].y;
+    const pi = Math.PI;
+    //Right
+    if (dy === 0 && dx > 0) {
+      this.player_list[player_id].rotation = pi * 0.5;
+    }
+    //Right Up
+    if (dy < 0 && dx > 0) {
+      this.player_list[player_id].rotation = pi * 0.25;
+    }
+    //Right Down
+    if (dy > 0 && dx > 0) {
+      this.player_list[player_id].rotation = pi * 0.75;
+    }
+    //Left
+    if (dy === 0 && dx < 0) {
+      this.player_list[player_id].rotation = -pi * 0.5;
+    }
+    //Left Up
+    if (dy < 0 && dx < 0) {
+      this.player_list[player_id].rotation = -pi * 0.25;
+    }
+    //Left Down
+    if (dy > 0 && dx < 0) {
+      this.player_list[player_id].rotation = -pi * 0.75;
+    }
+    //Down
+    if (dy > 0 && dx === 0) {
+      this.player_list[player_id].rotation = pi;
+    }
+    //Up
+    if (dy < 0 && dx === 0) {
+      this.player_list[player_id].rotation = 0;
+    }
+    //Still
+    if (dy === 0 && dx === 0) {
+      this.player_list[player_id].playAnimation(
+        this.player_list[player_id].animationStates.walkUp,
+      );
     }
   }
 
@@ -211,111 +257,6 @@ export default class ClientGame extends GameLoop {
     this.right = new Key('ArrowRight');
     this.down = new Key('ArrowDown');
     this.fire = new Key(' '); //Spacebar
-
-    //Left arrow key `press` method
-    this.left.press = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_up,
-        );
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_down,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      }
-    };
-
-    //Left arrow key `release` method
-    this.left.release = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.left);
-      }
-    };
-
-    //Up
-    this.up.press = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_up,
-        );
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkLeft_up,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      }
-    };
-
-    this.up.release = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.up);
-      }
-    };
-
-    //Right
-    this.right.press = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_up,
-        );
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(
-          this.my_sprite.animationStates.walkRight_down,
-        );
-      } else {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      }
-    };
-    this.right.release = () => {
-      if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else if (this.down.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkDown);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.right);
-      }
-    };
-
-    //Down
-    this.down.press = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.up);
-      }
-    };
-    this.down.release = () => {
-      if (this.right.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkRight);
-      } else if (this.left.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkLeft);
-      } else if (this.up.isDown) {
-        this.my_sprite.playAnimation(this.my_sprite.animationStates.walkUp);
-      } else {
-        this.my_sprite.show(this.my_sprite.animationStates.down);
-      }
-    };
   }
 }
 
@@ -329,42 +270,42 @@ function load_zombie(img_filepath) {
   animation.fps = 12;
   animation.animationStates = {
     left: 0,
-    left_up: stripSize,
+    leftUp: stripSize,
     up: stripSize * 2,
-    up_right: stripSize * 3,
+    upRight: stripSize * 3,
     right: stripSize * 4,
-    right_down: stripSize * 5,
+    rightDown: stripSize * 5,
     down: stripSize * 6,
-    left_down: stripSize * 7,
-    walkLeft: [
+    leftDown: stripSize * 7,
+    walkLeftDown: [
       stripSize * 0 + walkOffset,
       stripSize * 0 + walkOffset + walkAnimationLength,
     ],
-    walkLeft_up: [
+    walkLeft: [
       stripSize * 1 + walkOffset,
       stripSize * 1 + walkOffset + walkAnimationLength,
     ],
-    walkUp: [
+    walkLeftUp: [
       stripSize * 2 + walkOffset,
       stripSize * 2 + walkOffset + walkAnimationLength,
     ],
-    walkRight_up: [
+    walkUp: [
       stripSize * 3 + walkOffset,
       stripSize * 3 + walkOffset + walkAnimationLength,
     ],
-    walkRight: [
+    walkRightUp: [
       stripSize * 4 + walkOffset,
       stripSize * 4 + walkOffset + walkAnimationLength,
     ],
-    walkRight_down: [
+    walkRight: [
       stripSize * 5 + walkOffset,
       stripSize * 5 + walkOffset + walkAnimationLength,
     ],
-    walkDown: [
+    walkRightDown: [
       stripSize * 6 + walkOffset,
       stripSize * 6 + walkOffset + walkAnimationLength,
     ],
-    walkLeft_down: [
+    walkDown: [
       stripSize * 7 + walkOffset,
       stripSize * 7 + walkOffset + walkAnimationLength,
     ],
