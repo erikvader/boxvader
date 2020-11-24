@@ -209,6 +209,22 @@ export default class Deque<T> {
   }
 
   /**
+   * Modifies this Deque in place, mapping all values to some other value.
+   * @param callback The function to call on all elements.
+   * @typeParam R The new type for the contents.
+   * @returns `this` but containing values of type `R` instead of `T`.
+   */
+  public map_mut<R>(callback: (T) => R): Deque<R> {
+    if (this._last !== null) {
+      for (let i = this._first; i <= this._last; i++) {
+        this.data[i] = callback(this.data[i]) as any;
+      }
+    }
+
+    return this as any;
+  }
+
+  /**
    * Reconstruct a deque from a `JSON.parse` or similar.
    * @param obj A object with the same instance variables as [[Deque]] (even
    * private).

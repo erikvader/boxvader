@@ -10,26 +10,32 @@ import Deque from '../common/deque';
 import { Vec2 } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
-import { MOVEMENT_SPEED, SERVER_FPS, SERVER_UPS } from '../common/constants';
+import * as constants from '../common/constants';
+
+/**
+ * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
+ * added on.
+ */
+interface TimedInput extends Input {
+  stateNum: number;
+}
 
 export default class ServerGame extends GameLoop {
   private state: State;
   private stateNum: number;
   private broadcast;
   // private sim: ServerSimulation;
-
-  // private stateCur: State;
-  // private statePrev: State;
   private enemyIdCounter: number;
-
-  private playerInputs: NumMap<Deque<Input>>;
+  private playerInputs: NumMap<Deque<TimedInput>>;
+  private inputAcks: NumMap<number>;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
-    super({ ups: SERVER_UPS, fps: SERVER_FPS });
+    super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
     this.broadcast = broadcast;
     this.state = new State();
     this.stateNum = 0;
     this.playerInputs = {};
+    this.inputAcks = {};
 
     for (const p of players) {
       this.state.players[p] = new Player(
@@ -81,40 +87,44 @@ export default class ServerGame extends GameLoop {
 
     data = deserializeCTS(data);
 
-    if (!this.playerInputs[player_id]?.merge_back(data.inputs)) {
-      console.error('There was a gap in the inputs, or the player disappeared');
-    }
+    const pi = this.playerInputs[player_id]!;
+    const newInputs = data.inputs.map_mut(i => {
+      const j = i as TimedInput;
+      j.stateNum = this.stateNum;
+      return j;
+    });
+    pi.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
+    this.inputAcks[player_id] = pi.last;
+
     this.moveEnemies();
   }
 
   doUpdate(): void {
-    const inputAcks = {};
-
     for (const p in this.state.players) {
-      const pos = this.state.players[p].position;
-
-      if (this.playerInputs[p].length > 0) {
-        const [inp, ack] = this.playerInputs[p].pop_front();
-        inputAcks[p] = ack;
+      const inp = this.getNextInput(p);
+      if (inp !== undefined) {
         const direction = decideDirection(
           inp.up,
           inp.down,
           inp.right,
           inp.left,
         );
+        const pos = this.state.players[p].position;
         const vel = directionToVelocity(direction);
-        pos.x += MOVEMENT_SPEED * vel[0];
-        pos.y += MOVEMENT_SPEED * vel[1];
+        pos.x += constants.MOVEMENT_SPEED * vel[0];
+        pos.y += constants.MOVEMENT_SPEED * vel[1];
       }
     }
 
-    this.broadcast(
-      serialize({
-        inputAck: inputAcks,
-        stateNum: this.stateNum,
-        state: this.state,
-      }),
-    );
+    if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
+      this.broadcast(
+        serialize({
+          inputAck: this.inputAcks,
+          stateNum: this.stateNum,
+          state: this.state,
+        }),
+      );
+    }
     this.stateNum += 1;
   }
 
@@ -125,5 +135,25 @@ export default class ServerGame extends GameLoop {
       this.despawnEnemies();
     }
     return;
+  }
+
+  private getNextInput(p: string): TimedInput {
+    const pi = this.playerInputs[p];
+    let inp;
+    while (pi.length > 0) {
+      inp = pi.pop_front()[0];
+      if (
+        pi.length === 0 ||
+        !this.isOld(inp.stateNum) ||
+        this.isOld(pi.last_elem()!.stateNum)
+      ) {
+        break;
+      }
+    }
+    return inp;
+  }
+
+  private isOld(stateNum): boolean {
+    return this.stateNum - stateNum >= constants.INPUT_QUEUE_MAX_AGE;
   }
 }

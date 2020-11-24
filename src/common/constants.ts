@@ -16,3 +16,16 @@ export const ENEMY_SCALE = 0.05;
 
 export const MAP_SIZE_X = 512;
 export const MAP_SIZE_Y = 512;
+
+/**
+ * How seldom the server broadcasts it's state to all clients. Can be an integer
+ * in the range [1,∞). 1 means send every update, 2 means send every other
+ * update etc.
+ */
+export const SERVER_BROADCAST_RATE = 2;
+
+/**
+ * An [[Input]] is considered old if it has been in the input queue for this
+ * many updates without getting popped.
+ */
+export const INPUT_QUEUE_MAX_AGE = 3;
