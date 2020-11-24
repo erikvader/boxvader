@@ -23,7 +23,6 @@ interface TimedInput extends Input {
 }
 
 export default class ServerGame extends GameLoop {
-  private state: State;
   private stateNum: number;
   private broadcast;
   private simulation: ServerSimulation;
@@ -37,21 +36,13 @@ export default class ServerGame extends GameLoop {
   ) {
     super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
     this.broadcast = broadcast;
-    this.state = new State();
     this.stateNum = 0;
     this.playerInputs = {};
     this.inputAcks = {};
     this.simulation = new ServerSimulation(map, this.ups);
 
     for (const p of players) {
-      this.state.players[p] = new Player(
-        p,
-        new Vec2(0, 0),
-        100,
-        new Vec2(200, 200),
-        'Agge',
-      );
-
+      this.simulation.addPlayer(p, 'TODO');
       this.playerInputs[p] = new Deque();
     }
   }
@@ -74,8 +65,8 @@ export default class ServerGame extends GameLoop {
   doUpdate(): void {
     const inputs = new Map<Id, Input>();
 
-    for (const p in this.state.players) {
-      const player = this.state.players[p];
+    for (const p in this.simulation.state.players) {
+      const player = this.simulation.state.players[p];
       const inp = this.getNextInput(p);
       if (inp !== undefined) {
         inputs.set(player.id, inp);
@@ -83,14 +74,13 @@ export default class ServerGame extends GameLoop {
     }
 
     this.simulation.update(inputs);
-    this.state = this.simulation.snapshot();
 
     if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
       this.broadcast(
         serialize({
           inputAck: this.inputAcks,
           stateNum: this.stateNum,
-          state: this.state,
+          state: this.simulation.state,
         }),
       );
     }

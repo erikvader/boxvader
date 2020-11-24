@@ -3,7 +3,14 @@ import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
-import { MOVEMENT_SPEED } from './constants';
+import {
+  MOVEMENT_SPEED,
+  PLAYER_HEALTH_MAX,
+  PLAYER_HITBOX_X,
+  PLAYER_HITBOX_Y,
+  PLAYER_SPAWN_X,
+  PLAYER_SPAWN_Y,
+} from './constants';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -63,16 +70,17 @@ function createWorld(map: Level): World {
   };
 
   for (let y = 0; y < map.height; ++y) {
-    for (let x = 0; x < map.width; ++y) {
+    for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
-        const center = Vec2(x + 0.5, y + 0.5);
-        const shape: any = new Box(1, 1, center, 0.0);
+        // TODO: ändra tillbaka till 1x1-rutor typ
+        const center = Vec2(x * 32 + 16, y * 32 + 16);
+        const shape: any = new Box(32, 32, center, 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,
           position: center,
           fixedRotation: true,
-          active: false,
+          active: true,
           awake: false,
         });
 
@@ -93,10 +101,10 @@ function createWorld(map: Level): World {
  */
 export function createBody(world: World, entity: Entity): Body {
   if (entity instanceof Player) {
-    return circleBody(world, entity.position, entity.velocity, 1);
+    return circleBody(world, entity.position, entity.velocity, 16);
   } else if (entity instanceof Enemy) {
     // enemies are identical to players for now
-    return circleBody(world, entity.position, entity.velocity, 1);
+    return circleBody(world, entity.position, entity.velocity, 16);
   }
 
   throw new Error(`Entity ${entity.id} is not an instace of any known class.`);
@@ -127,11 +135,11 @@ export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
   } else {
     const velocity = body.getLinearVelocity();
 
-    if (input.up && !input.down) velocity.y -= MOVEMENT_SPEED;
-    else if (input.down && !input.up) velocity.y += MOVEMENT_SPEED;
+    if (input.up && !input.down) velocity.y = -MOVEMENT_SPEED;
+    else if (input.down && !input.up) velocity.y = MOVEMENT_SPEED;
 
-    if (input.left && !input.right) velocity.x -= MOVEMENT_SPEED;
-    else if (input.right && !input.left) velocity.x += MOVEMENT_SPEED;
+    if (input.left && !input.right) velocity.x = -MOVEMENT_SPEED;
+    else if (input.right && !input.left) velocity.x = MOVEMENT_SPEED;
 
     body.setLinearVelocity(velocity);
   }
