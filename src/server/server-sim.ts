@@ -15,7 +15,7 @@ export default class ServerSimulation extends Simulation {
     // TODO: handle 'fire' input
 
     for (const id in this.state.players) {
-      let idNum = parseInt(id);
+      const idNum = parseInt(id);
       const body = this.bodies.get(idNum)!;
       const input = inputs.get(idNum);
 

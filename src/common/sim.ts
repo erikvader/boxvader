@@ -38,6 +38,29 @@ export default abstract class Simulation {
     this._state = new State();
   }
 
+  /**
+   * Create a new `Player` in the simulation and add it to the physics world.
+   * @param id ID for the new player.
+   * @param name Name of the new player.
+   */
+  public addPlayer(id: number, name: string): void {
+    if (id in this.state.players)
+      throw new Error(`ID ${id} is already taken (by a player).`);
+
+    if (id in this.state.enemies)
+      throw new Error(`ID ${id} is already taken (by an enemy).`);
+
+    const player = new Player(
+      id,
+      Vec2(PLAYER_HITBOX_X, PLAYER_HITBOX_Y),
+      PLAYER_HEALTH_MAX,
+      Vec2(PLAYER_SPAWN_X, PLAYER_SPAWN_Y),
+      name,
+    );
+    this.state.players[id] = player;
+    this.bodies.set(id, createBody(this.world, player));
+  }
+
   public snapshot(): State {
     return this.state.clone();
   }
@@ -65,7 +88,7 @@ function createWorld(map: Level): World {
   const world = new World();
 
   const fixDef: any = {
-    friction: 1.0,
+    friction: 0.0,
     restitution: 0.0,
   };
 
@@ -73,8 +96,9 @@ function createWorld(map: Level): World {
     for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
         // TODO: ändra tillbaka till 1x1-rutor typ
+        // TODO: hårdkoda inte 32 och 16
         const center = Vec2(x * 32 + 16, y * 32 + 16);
-        const shape: any = new Box(32, 32, center, 0.0);
+        const shape: any = new Box(16, 16, Vec2.zero(), 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,
@@ -89,8 +113,15 @@ function createWorld(map: Level): World {
     }
   }
 
-  // TODO: add callbacks if necessary, for example:
-  //   world.on('begin-contact', contact => {});
+  // TODO: hantera kollisioner om något speciellt ska hända
+  // world.on('begin-contact', contact => {
+  //   let a = contact.getFixtureA(),
+  //     b = contact.getFixtureB();
+
+  //   console.log('A: ', a.getType(), a.getBody().getPosition());
+  //   console.log('B: ', b.getType(), b.getBody().getPosition());
+  // });
+
   return world;
 }
 
@@ -120,6 +151,7 @@ function circleBody(
   // 'CircleShape' is not assignable to parameter of type 'Shape'
   const shape: any = new Circle(radius);
   const body = world.createDynamicBody({
+    fixedRotation: true,
     position: position,
     linearVelocity: velocity,
   });
@@ -137,9 +169,11 @@ export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
 
     if (input.up && !input.down) velocity.y = -MOVEMENT_SPEED;
     else if (input.down && !input.up) velocity.y = MOVEMENT_SPEED;
+    else velocity.y = 0;
 
     if (input.left && !input.right) velocity.x = -MOVEMENT_SPEED;
     else if (input.right && !input.left) velocity.x = MOVEMENT_SPEED;
+    else velocity.x = 0;
 
     body.setLinearVelocity(velocity);
   }
