@@ -49,7 +49,7 @@ export default class Map {
     this.width = jsonMap.width;
     this.height = jsonMap.height;
     this.tileset = tileset;
-    this.tileIds = jsonMap.layers[0].data;
+    this.tileIds = jsonMap.layers[0].data.map(id => id - 1);
   }
 
   public at(x: number, y: number): Tile {
