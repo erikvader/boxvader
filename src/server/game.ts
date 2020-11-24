@@ -12,12 +12,20 @@ import { decideDirection, directionToVelocity } from '../common/directions';
 
 import * as constants from '../common/constants';
 
+/**
+ * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
+ * added on.
+ */
+interface TimedInput extends Input {
+  stateNum: number;
+}
+
 export default class ServerGame extends GameLoop {
   private state: State;
   private stateNum: number;
   private broadcast;
   // private sim: ServerSimulation;
-  private playerInputs: NumMap<Deque<Input>>;
+  private playerInputs: NumMap<Deque<TimedInput>>;
   private inputAcks: NumMap<number>;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
@@ -47,22 +55,26 @@ export default class ServerGame extends GameLoop {
     data = deserializeCTS(data);
 
     const pi = this.playerInputs[player_id]!;
-    pi.merge_back(data.inputs); // TODO: check if pi and data.inputs are disjunct
+    const newInputs = data.inputs.map_mut(i => {
+      const j = i as TimedInput;
+      j.stateNum = this.stateNum;
+      return j;
+    });
+    pi.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
     this.inputAcks[player_id] = pi.last;
   }
 
   doUpdate(): void {
     for (const p in this.state.players) {
-      const pos = this.state.players[p].position;
-
-      if (this.playerInputs[p].length > 0) {
-        const inp = this.playerInputs[p].pop_front()[0];
+      const inp = this.getNextInput(p);
+      if (inp !== undefined) {
         const direction = decideDirection(
           inp.up,
           inp.down,
           inp.right,
           inp.left,
         );
+        const pos = this.state.players[p].position;
         const vel = directionToVelocity(direction);
         pos.x += constants.MOVEMENT_SPEED * vel[0];
         pos.y += constants.MOVEMENT_SPEED * vel[1];
@@ -83,5 +95,25 @@ export default class ServerGame extends GameLoop {
 
   afterUpdate(): void {
     return;
+  }
+
+  private getNextInput(p: string): TimedInput {
+    const pi = this.playerInputs[p];
+    let inp;
+    while (pi.length > 0) {
+      inp = pi.pop_front()[0];
+      if (
+        pi.length === 0 ||
+        !this.isOld(inp.stateNum) ||
+        this.isOld(pi.last_elem()!.stateNum)
+      ) {
+        break;
+      }
+    }
+    return inp;
+  }
+
+  private isOld(stateNum): boolean {
+    return this.stateNum - stateNum >= constants.INPUT_QUEUE_MAX_AGE;
   }
 }
