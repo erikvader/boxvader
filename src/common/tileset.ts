@@ -57,13 +57,13 @@ export default class Tileset {
     for (let y = 0; y < jsonTileset.imageheight; y += dy) {
       for (let x = 0; x < jsonTileset.imagewidth; x += dx) {
         // the tile is marked as non-walkable if it has any collisions at all
-        const walkable = jsonTileset.tiles
+        const collision = jsonTileset.tiles
           .filter(jsonTile => jsonTile.id === currentId)
           .some(jsonTile => jsonTile.objectgroup.objects.length > 0);
 
         const tile = {
           id: currentId,
-          walkable: walkable,
+          walkable: !collision,
         };
 
         ++currentId;

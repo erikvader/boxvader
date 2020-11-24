@@ -49,46 +49,99 @@ export default class Map {
     this.width = jsonMap.width;
     this.height = jsonMap.height;
     this.tileset = tileset;
-    this.tileIds = jsonMap.layers[0].data;
-
+    this.tileIds = jsonMap.layers[0].data.map(id => id - 1);
     this.floydWarshallMatrix = [[]];
 
     this.floydWarshallAlgorithm();
   }
-  // nw = -17, n = -16, ne = -15, v = -1, e = 1, sw = 15, s = 16, se = 17
+
   private floydWarshallAlgorithm() {
     const tiles = this.tiles;
+    const floydWarshallWeight: number[][] = [[]];
 
     for (let i = 0; i < this.width * this.height; i++) {
+      floydWarshallWeight[i] = [];
       this.floydWarshallMatrix[i] = [];
-      for (let j = 0; j < this.height * this.width; j++)
-        this.floydWarshallMatrix[i][j] = Infinity;
-    }
-    for (let i = 0; i < this.width * this.height; i++) {
-      this.floydWarshallMatrix[i][i] = 0;
-      if (this.tiles[i].walkable) {
-        if (i - 16 >= 0 && this.tiles[i - 16].walkable) {
-          //checks north
-          this.floydWarshallMatrix[i][i - 16] = 1;
-        }
-        if (i + 16 <= this.width * this.height && this.tiles[i + 16].walkable) {
-          //checks south
-          this.floydWarshallMatrix[i][i + 16] = 1;
-        }
-        if (
-          i - (1 % this.width) !== this.width - 1 &&
-          this.tiles[i - 1].walkable
-        ) {
-          //checks west
-          this.floydWarshallMatrix[i][i - 1] = 1;
-        }
-        if (i + (1 % this.width) !== 0 && this.tiles[i + 1].walkable) {
-          //checks east
-          this.floydWarshallMatrix[i][i + 1] = 1;
+      for (let j = 0; j < this.height * this.width; j++) {
+        floydWarshallWeight[i][j] = Infinity;
+        if (this.tiles[j].walkable) {
+          this.floydWarshallMatrix[i][j] = j;
+        } else {
+          this.floydWarshallMatrix[i][j] = NaN;
         }
       }
     }
-    console.log(this.floydWarshallMatrix);
+    for (let i = 0; i < this.width * this.height; i++) {
+      floydWarshallWeight[i][i] = 0;
+      this.floydWarshallMatrix[i][i] = i;
+      if (this.tiles[i].walkable) {
+        //checks north
+        if (i - 16 >= 0 && this.tiles[i - 16].walkable) {
+          floydWarshallWeight[i][i - 16] = 1;
+        }
+        //checks south
+        if (i + 16 <= this.width * this.height && this.tiles[i + 16].walkable) {
+          floydWarshallWeight[i][i + 16] = 1;
+        }
+        //checks west
+        if (
+          (i - 1) % this.width !== this.width - 1 &&
+          this.tiles[i - 1].walkable
+        ) {
+          floydWarshallWeight[i][i - 1] = 1;
+        }
+        //checks east
+        if ((i + 1) % this.width !== 0 && this.tiles[i + 1].walkable) {
+          floydWarshallWeight[i][i + 1] = 1;
+        }
+        //checks northeast
+        if (
+          (i - 17) % this.width !== this.width - 1 &&
+          i - 17 >= 0 &&
+          this.tiles[i - 17].walkable
+        ) {
+          floydWarshallWeight[i][i - 17] = Math.sqrt(2);
+        }
+        //checks northwest
+        if (
+          (i - 15) % this.width !== 0 &&
+          i - 15 >= 0 &&
+          this.tiles[i - 15].walkable
+        ) {
+          floydWarshallWeight[i][i - 15] = Math.sqrt(2);
+        }
+        //checks southeast
+        if (
+          (i + 17) % this.width !== this.width - 1 &&
+          i + 17 <= this.width * this.height &&
+          this.tiles[i + 17].walkable
+        ) {
+          floydWarshallWeight[i][i + 17] = Math.sqrt(2);
+        }
+        //checks southwest
+        if (
+          (i + 15) % this.width !== 0 &&
+          i + 15 <= this.width * this.height &&
+          this.tiles[i + 15].walkable
+        ) {
+          floydWarshallWeight[i][i + 15] = Math.sqrt(2);
+        }
+      }
+    }
+    for (let k = 0; k < this.width * this.height; k++) {
+      for (let j = 0; j < this.width * this.height; j++) {
+        for (let i = 0; i < this.width * this.height; i++) {
+          if (
+            floydWarshallWeight[i][j] >
+            floydWarshallWeight[i][k] + floydWarshallWeight[k][j]
+          ) {
+            floydWarshallWeight[i][j] =
+              floydWarshallWeight[i][k] + floydWarshallWeight[k][j];
+            this.floydWarshallMatrix[i][j] = this.floydWarshallMatrix[i][k];
+          }
+        }
+      }
+    }
   }
 
   public at(x: number, y: number): Tile {

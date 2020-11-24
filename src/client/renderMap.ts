@@ -48,7 +48,7 @@ function display_tile(
 }
 
 function get_tile(tile_type: number, texture: PIXI.Texture, tileset: Tileset) {
-  let type_counter = 1;
+  let type_counter = 0;
   for (let row = 0; row < texture.height / tileset.tileHeight; row++) {
     for (let column = 0; column < texture.width / tileset.tileWidth; column++) {
       if (tile_type === type_counter) {
