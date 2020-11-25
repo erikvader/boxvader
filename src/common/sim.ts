@@ -3,12 +3,7 @@ import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
-import {
-  MOVEMENT_SPEED,
-  PLAYER_HEALTH_MAX,
-  PLAYER_SPAWN_X,
-  PLAYER_SPAWN_Y,
-} from './constants';
+import * as constants from './constants';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -50,8 +45,8 @@ export default abstract class Simulation {
 
     const player = new Player(
       id,
-      PLAYER_HEALTH_MAX,
-      Vec2(PLAYER_SPAWN_X, PLAYER_SPAWN_Y),
+      constants.PLAYER_HEALTH_MAX,
+      Vec2(constants.PLAYER_SPAWN_X, constants.PLAYER_SPAWN_Y),
       name,
     );
     this.state.players[id] = player;
@@ -89,13 +84,20 @@ function createWorld(map: Level): World {
     restitution: 0.0,
   };
 
+  const tileWidth = constants.TILE_WIDTH;
+  const tileHeight = constants.TILE_HEIGHT;
+  const halfWidth = tileWidth / 2;
+  const halfHeight = tileHeight / 2;
+
   for (let y = 0; y < map.height; ++y) {
     for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
         // TODO: ändra tillbaka till 1x1-rutor typ
-        // TODO: hårdkoda inte 32 och 16
-        const center = Vec2(x * 32 + 16, y * 32 + 16);
-        const shape: any = new Box(16, 16, Vec2.zero(), 0.0);
+        const center = Vec2(
+          x * tileWidth + halfWidth,
+          y * tileHeight + halfHeight,
+        );
+        const shape: any = new Box(halfWidth, halfHeight, Vec2.zero(), 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,
@@ -129,10 +131,20 @@ function createWorld(map: Level): World {
  */
 export function createBody(world: World, entity: Entity): Body {
   if (entity instanceof Player) {
-    return circleBody(world, entity.position, entity.velocity, 16);
+    return circleBody(
+      world,
+      entity.position,
+      entity.velocity,
+      constants.PLAYER_RADIUS,
+    );
   } else if (entity instanceof Enemy) {
     // enemies are identical to players for now
-    return circleBody(world, entity.position, entity.velocity, 16);
+    return circleBody(
+      world,
+      entity.position,
+      entity.velocity,
+      constants.PLAYER_RADIUS,
+    );
   }
 
   throw new Error(`Entity ${entity.id} is not an instace of any known class.`);
@@ -164,12 +176,12 @@ export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
   } else {
     const velocity = body.getLinearVelocity();
 
-    if (input.up && !input.down) velocity.y = -MOVEMENT_SPEED;
-    else if (input.down && !input.up) velocity.y = MOVEMENT_SPEED;
+    if (input.up && !input.down) velocity.y = -constants.MOVEMENT_SPEED;
+    else if (input.down && !input.up) velocity.y = constants.MOVEMENT_SPEED;
     else velocity.y = 0;
 
-    if (input.left && !input.right) velocity.x = -MOVEMENT_SPEED;
-    else if (input.right && !input.left) velocity.x = MOVEMENT_SPEED;
+    if (input.left && !input.right) velocity.x = -constants.MOVEMENT_SPEED;
+    else if (input.right && !input.left) velocity.x = constants.MOVEMENT_SPEED;
     else velocity.x = 0;
 
     body.setLinearVelocity(velocity);
