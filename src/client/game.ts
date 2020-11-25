@@ -52,9 +52,6 @@ export default class ClientGame extends GameLoop {
 
   private sendInputFun;
 
-  // TODO: planned instance variables
-  // private simulation: ClientSimulation;
-
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
@@ -105,7 +102,7 @@ export default class ClientGame extends GameLoop {
     this.down.unsubscribe();
     this.up.unsubscribe();
   }
-  // TODO: split this function into smaller sub-functions
+
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
 
