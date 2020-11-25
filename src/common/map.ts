@@ -1,8 +1,7 @@
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
 import { Vec2 } from 'planck-js';
-
-interface MapJson {
+export interface MapJson {
   width: number;
   height: number;
   layers: { data: number[] }[];
@@ -54,8 +53,6 @@ export default class Map {
     this.floydWarshallMatrix = [[]];
 
     this.floydWarshallAlgorithm();
-
-    console.log(this.getInput(new Vec2(64, 64), new Vec2(460, 460)));
   }
 
   private floydWarshallAlgorithm() {
@@ -150,7 +147,7 @@ export default class Map {
     }
   }
 
-  private getInput(current: Vec2, target: Vec2): Vec2 {
+  public getInput(current: Vec2, target: Vec2): Vec2 {
     const currentTile = this.positionToTile(current);
     const targetTile = this.positionToTile(target);
 
@@ -160,18 +157,20 @@ export default class Map {
   }
 
   private positionToTile(position: Vec2): number {
-    const widthCoord = Math.round(position.x / this.tileset.tileWidth);
-    const heightCoord = Math.round(position.y / this.tileset.tileHeight);
+    const widthCoord =
+      Math.round((position.x + 0.1) / this.tileset.tileWidth) - 1;
+    const heightCoord =
+      Math.round((position.y + 0.1) / this.tileset.tileHeight) - 1;
 
     return this.height * heightCoord + widthCoord;
   }
 
-  private tileToPosition(position: number): Vec2 {
+  private tileToPosition(tilePosition: number): Vec2 {
     const x =
-      Math.floor(position % this.width) * this.tileset.tileWidth +
+      Math.floor(tilePosition % this.width) * this.tileset.tileWidth +
       this.tileset.tileWidth / 2;
     const y =
-      Math.floor(position / this.height) * this.tileset.tileHeight +
+      Math.floor(tilePosition / this.height) * this.tileset.tileHeight +
       this.tileset.tileHeight / 2;
 
     return new Vec2(x, y);

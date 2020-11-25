@@ -6,7 +6,7 @@ import { Player, Enemy } from '../common/entity';
 import { serialize, deserializeCTS } from '../common/msg';
 import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
-
+import Map from '../common/map';
 import { Vec2 } from 'planck-js';
 import { decideDirection, directionToVelocity } from '../common/directions';
 
@@ -28,7 +28,7 @@ export default class ServerGame extends GameLoop {
   private enemyIdCounter: number;
   private playerInputs: NumMap<Deque<TimedInput>>;
   private inputAcks: NumMap<number>;
-  private floydWarshallMatrix;
+  private map: Map;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
     super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
@@ -37,6 +37,7 @@ export default class ServerGame extends GameLoop {
     this.stateNum = 0;
     this.playerInputs = {};
     this.inputAcks = {};
+    this.map = new Map('scifi-1', 'scifi');
 
     for (const p of players) {
       this.state.players[p] = new Player(
@@ -50,12 +51,26 @@ export default class ServerGame extends GameLoop {
       this.playerInputs[p] = new Deque();
     }
     this.enemyIdCounter = players.length;
-    console.log(this.floydWarshallMatrix);
+    this.spawnEnemies();
   }
 
   private moveEnemies() {
+    let maxDistance = Infinity;
+    let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
-      enemy.move();
+      for (const player of Object.values(this.state.players)) {
+        if (
+          Math.abs(enemy.position.x - player.position.x) +
+            Math.abs(enemy.position.y - player.position.y) <
+          maxDistance
+        ) {
+          maxDistance =
+            Math.abs(enemy.position.x - player.position.x) +
+            Math.abs(enemy.position.y - player.position.y);
+          targetPlayerPosition = player.position;
+        }
+      }
+      enemy.move(this.map, targetPlayerPosition);
     }
   }
 
@@ -66,7 +81,7 @@ export default class ServerGame extends GameLoop {
       this.enemyIdCounter,
       new Vec2(0, 0),
       100,
-      Vec2(this.enemyIdCounter * 4, 0),
+      Vec2(48, 48),
     );
     this.enemyIdCounter += 1;
   }
@@ -75,9 +90,9 @@ export default class ServerGame extends GameLoop {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
-        enemy.position.x > 250 ||
+        enemy.position.x > 450 ||
         enemy.position.y < 0 ||
-        enemy.position.y > 250
+        enemy.position.y > 450
       ) {
         delete this.state.enemies[enemy.id];
       }
@@ -133,9 +148,10 @@ export default class ServerGame extends GameLoop {
   afterUpdate(): void {
     //spawns a baby yoda per second
     if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
-      this.spawnEnemies();
+      //this.spawnEnemies();
       this.despawnEnemies();
     }
+
     return;
   }
 

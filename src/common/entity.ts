@@ -1,5 +1,6 @@
 import { Id, reviveVec2, isObjectWithKeys } from './misc';
 import { Body, Vec2 } from 'planck-js';
+import Map from './map';
 
 /**
  * A generic entity. It has health, a position, and a velocity.
@@ -158,8 +159,34 @@ export class Enemy extends Entity {
     throw new Error('Method not implemented.');
   }
   //should be fixed in the future
-  public move(): void {
-    this.position.add(Vec2(0, 1));
+  public move(map: Map, target: Vec2): void {
+    const targetPosition = map.getInput(this.position, target);
+
+    if (targetPosition.x > this.position.x) {
+      if (targetPosition.y > this.position.y) {
+        this.position.add(Vec2(1, 1));
+      } else if (targetPosition.y < this.position.y) {
+        this.position.add(Vec2(1, -1));
+      } else {
+        this.position.add(Vec2(1, 0));
+      }
+    } else if (targetPosition.x < this.position.x) {
+      if (targetPosition.y > this.position.y) {
+        this.position.add(Vec2(-1, 1));
+      } else if (targetPosition.y < this.position.y) {
+        this.position.add(Vec2(-1, -1));
+      } else {
+        this.position.add(Vec2(-1, 0));
+      }
+    } else {
+      if (targetPosition.y > this.position.y) {
+        this.position.add(Vec2(0, 1));
+      } else if (targetPosition.y < this.position.y) {
+        this.position.add(Vec2(0, -1));
+      } else {
+        this.position.add(Vec2(0, 0));
+      }
+    }
   }
   /**
    * Returns a deep copy of an `Enemy`.
