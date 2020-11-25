@@ -28,6 +28,7 @@ export default class ServerGame extends GameLoop {
   private enemyIdCounter: number;
   private playerInputs: NumMap<Deque<TimedInput>>;
   private inputAcks: NumMap<number>;
+  private floydWarshallMatrix;
 
   constructor(broadcast: (buf: ByteBuffer) => void, players: Array<Id>) {
     super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
@@ -49,6 +50,7 @@ export default class ServerGame extends GameLoop {
       this.playerInputs[p] = new Deque();
     }
     this.enemyIdCounter = players.length;
+    console.log(this.floydWarshallMatrix);
   }
 
   private moveEnemies() {

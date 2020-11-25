@@ -1,5 +1,6 @@
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
+import { Vec2 } from 'planck-js';
 
 interface MapJson {
   width: number;
@@ -53,6 +54,8 @@ export default class Map {
     this.floydWarshallMatrix = [[]];
 
     this.floydWarshallAlgorithm();
+
+    console.log(this.getInput(new Vec2(64, 64), new Vec2(460, 460)));
   }
 
   private floydWarshallAlgorithm() {
@@ -76,12 +79,15 @@ export default class Map {
       this.floydWarshallMatrix[i][i] = i;
       if (this.tiles[i].walkable) {
         //checks north
-        if (i - 16 >= 0 && this.tiles[i - 16].walkable) {
-          floydWarshallWeight[i][i - 16] = 1;
+        if (i - this.width >= 0 && this.tiles[i - this.width].walkable) {
+          floydWarshallWeight[i][i - this.width] = 1;
         }
         //checks south
-        if (i + 16 <= this.width * this.height && this.tiles[i + 16].walkable) {
-          floydWarshallWeight[i][i + 16] = 1;
+        if (
+          i + this.width <= this.width * this.height &&
+          this.tiles[i + this.width].walkable
+        ) {
+          floydWarshallWeight[i][i + this.width] = 1;
         }
         //checks west
         if (
@@ -96,35 +102,35 @@ export default class Map {
         }
         //checks northeast
         if (
-          (i - 17) % this.width !== this.width - 1 &&
-          i - 17 >= 0 &&
-          this.tiles[i - 17].walkable
+          (i - this.width - 1) % this.width !== this.width - 1 &&
+          i - this.width - 1 >= 0 &&
+          this.tiles[this.width - 1].walkable
         ) {
-          floydWarshallWeight[i][i - 17] = Math.sqrt(2);
+          floydWarshallWeight[i][i - this.width - 1] = Math.sqrt(2);
         }
         //checks northwest
         if (
-          (i - 15) % this.width !== 0 &&
-          i - 15 >= 0 &&
-          this.tiles[i - 15].walkable
+          (i - this.width + 1) % this.width !== 0 &&
+          i - this.width + 1 >= 0 &&
+          this.tiles[i - this.width + 1].walkable
         ) {
-          floydWarshallWeight[i][i - 15] = Math.sqrt(2);
+          floydWarshallWeight[i][i - this.width + 1] = Math.sqrt(2);
         }
         //checks southeast
         if (
-          (i + 17) % this.width !== this.width - 1 &&
-          i + 17 <= this.width * this.height &&
-          this.tiles[i + 17].walkable
+          (i + this.width + 1) % this.width !== this.width - 1 &&
+          i + this.width + 1 <= this.width * this.height &&
+          this.tiles[i + this.width + 1].walkable
         ) {
-          floydWarshallWeight[i][i + 17] = Math.sqrt(2);
+          floydWarshallWeight[i][i + this.width + 1] = Math.sqrt(2);
         }
         //checks southwest
         if (
-          (i + 15) % this.width !== 0 &&
-          i + 15 <= this.width * this.height &&
-          this.tiles[i + 15].walkable
+          (i + this.width - 1) % this.width !== 0 &&
+          i + this.width - 1 <= this.width * this.height &&
+          this.tiles[i + this.width - 1].walkable
         ) {
-          floydWarshallWeight[i][i + 15] = Math.sqrt(2);
+          floydWarshallWeight[i][i + this.width - 1] = Math.sqrt(2);
         }
       }
     }
@@ -142,6 +148,33 @@ export default class Map {
         }
       }
     }
+  }
+
+  private getInput(current: Vec2, target: Vec2): Vec2 {
+    const currentTile = this.positionToTile(current);
+    const targetTile = this.positionToTile(target);
+
+    const tile = this.floydWarshallMatrix[currentTile][targetTile];
+
+    return this.tileToPosition(tile);
+  }
+
+  private positionToTile(position: Vec2): number {
+    const widthCoord = Math.round(position.x / this.tileset.tileWidth);
+    const heightCoord = Math.round(position.y / this.tileset.tileHeight);
+
+    return this.height * heightCoord + widthCoord;
+  }
+
+  private tileToPosition(position: number): Vec2 {
+    const x =
+      Math.floor(position % this.width) * this.tileset.tileWidth +
+      this.tileset.tileWidth / 2;
+    const y =
+      Math.floor(position / this.height) * this.tileset.tileHeight +
+      this.tileset.tileHeight / 2;
+
+    return new Vec2(x, y);
   }
 
   public at(x: number, y: number): Tile {
