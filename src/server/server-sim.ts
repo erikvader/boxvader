@@ -5,12 +5,13 @@ import Simulation, { updatePlayerBodyFromInput } from '../common/sim';
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
 
-  constructor(map: Level, updateStep: number) {
-    super(map, updateStep);
+  constructor(map: Level, updateStep: number, enemyIdCounter: number) {
+    super(map, updateStep, enemyIdCounter);
     this.difficulty = 0;
   }
 
   public update(inputs: Map<Id, Input>) {
+    this.commonUpdate();
     // update players based on their inputs
     // TODO: handle 'fire' input
 
@@ -20,6 +21,10 @@ export default class ServerSimulation extends Simulation {
       const input = inputs.get(idNum);
 
       updatePlayerBodyFromInput(body, input);
+    }
+
+    for (const enemy of Object.values(this.state.enemies)) {
+      enemy.move();
     }
 
     this.world.step(this.updateStep);

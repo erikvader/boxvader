@@ -11,6 +11,8 @@ export default abstract class Simulation {
   protected _world: World;
   protected _bodies: Map<Id, Body>;
   protected _state: State;
+  protected _stepCounter: number;
+  protected _enemyIdCounter: number;
 
   public get world(): World {
     return this._world;
@@ -24,11 +26,23 @@ export default abstract class Simulation {
     return this._state;
   }
 
-  constructor(map: Level, updateStep: number) {
+  constructor(map: Level, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
     this._world = createWorld(map);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
+    this._stepCounter = 0;
+    this._enemyIdCounter = enemyIdCounter;
+  }
+
+  public commonUpdate(): void {
+    this._stepCounter += 1;
+
+    //spawns a baby yoda per second
+    if (this._stepCounter % Math.floor(1000 / this.updateStep) === 0) {
+      this.spawnEnemies();
+      this.despawnEnemies();
+    }
   }
 
   /**
@@ -55,6 +69,31 @@ export default abstract class Simulation {
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
+  }
+
+  //spawns in a fixed location, should probably have a vec2 array as input for location
+  // Should probably have a type of enemy as well for later
+  private spawnEnemies() {
+    this.state.enemies[this._enemyIdCounter] = new Enemy(
+      this._enemyIdCounter,
+      100,
+      Vec2(this._enemyIdCounter * 4, 0),
+    );
+    this._enemyIdCounter += 1;
+  }
+
+  // despawns with a weird criteria atm, but is easily changed
+  private despawnEnemies() {
+    for (const enemy of Object.values(this.state.enemies)) {
+      if (
+        enemy.position.x < 0 ||
+        enemy.position.x > 250 ||
+        enemy.position.y < 0 ||
+        enemy.position.y > 250
+      ) {
+        delete this.state.enemies[enemy.id];
+      }
+    }
   }
 
   public snapshot(): State {
