@@ -6,8 +6,6 @@ import { Enemy, Entity, Player } from './entity';
 import {
   MOVEMENT_SPEED,
   PLAYER_HEALTH_MAX,
-  PLAYER_HITBOX_X,
-  PLAYER_HITBOX_Y,
   PLAYER_SPAWN_X,
   PLAYER_SPAWN_Y,
 } from './constants';
@@ -52,7 +50,6 @@ export default abstract class Simulation {
 
     const player = new Player(
       id,
-      Vec2(PLAYER_HITBOX_X, PLAYER_HITBOX_Y),
       PLAYER_HEALTH_MAX,
       Vec2(PLAYER_SPAWN_X, PLAYER_SPAWN_Y),
       name,

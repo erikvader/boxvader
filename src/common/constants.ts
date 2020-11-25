@@ -11,12 +11,6 @@ export const PLAYER_SPAWN_X = 200;
 export const PLAYER_SPAWN_Y = 200;
 export const PLAYER_SCALE = 0.5;
 
-/** Width of the players' hitboxes. */
-export const PLAYER_HITBOX_X = 1;
-
-/** Height of the players' hitboxes. */
-export const PLAYER_HITBOX_Y = 1;
-
 /** Maximum and initial health of a player. */
 export const PLAYER_HEALTH_MAX = 100;
 

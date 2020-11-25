@@ -6,7 +6,6 @@ import { Body, Vec2 } from 'planck-js';
  */
 export abstract class Entity {
   public readonly id: Id;
-  public readonly hitbox: Vec2;
   public readonly maxHealth: number;
 
   public position: Vec2;
@@ -14,9 +13,8 @@ export abstract class Entity {
 
   private _health: number;
 
-  public constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
+  public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
-    this.hitbox = hitbox;
     this.maxHealth = health;
 
     this._health = health;
@@ -28,12 +26,11 @@ export abstract class Entity {
 
   public static revive(
     obj: unknown,
-    construct: (id: Id, hitbox: Vec2, health: number, position: Vec2) => Entity,
+    construct: (id: Id, health: number, position: Vec2) => Entity,
   ): Entity {
     if (
       isObjectWithKeys(obj, [
         'id',
-        'hitbox',
         'maxHealth',
         'position',
         '_health',
@@ -42,7 +39,6 @@ export abstract class Entity {
     ) {
       const e = construct(
         obj['id'],
-        reviveVec2(obj['hitbox']),
         obj['maxHealth'],
         reviveVec2(obj['position']),
       );
@@ -84,14 +80,8 @@ export class Player extends Entity {
   private _firing: boolean;
   private _score: number;
 
-  public constructor(
-    id: Id,
-    hitbox: Vec2,
-    health: number,
-    position: Vec2,
-    name: string,
-  ) {
-    super(id, hitbox, health, position);
+  public constructor(id: Id, health: number, position: Vec2, name: string) {
+    super(id, health, position);
     this.name = name;
     this._score = 0;
     this._firing = false;
@@ -123,7 +113,6 @@ export class Player extends Entity {
   public clone(): Player {
     const player = new Player(
       this.id,
-      this.hitbox.clone(),
       this.health,
       this.position.clone(),
       this.name, // name is NOT deep-copied
@@ -135,23 +124,20 @@ export class Player extends Entity {
 
   public static revive(obj: unknown): Player {
     if (isObjectWithKeys(obj, ['name', '_firing', '_score'])) {
-      return Entity.revive(
-        obj,
-        (id: Id, hitbox: Vec2, health: number, position: Vec2) => {
-          const p = new Player(id, hitbox, health, position, obj['name']);
-          p._firing = obj['_firing'];
-          p._score = obj['_score'];
-          return p;
-        },
-      ) as Player;
+      return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
+        const p = new Player(id, health, position, obj['name']);
+        p._firing = obj['_firing'];
+        p._score = obj['_score'];
+        return p;
+      }) as Player;
     }
     throw new Error("coudln't revive Player");
   }
 }
 
 export class Enemy extends Entity {
-  public constructor(id: Id, hitbox: Vec2, health: number, position: Vec2) {
-    super(id, hitbox, health, position);
+  public constructor(id: Id, health: number, position: Vec2) {
+    super(id, health, position);
   }
 
   public draw(pixi): void {
@@ -162,12 +148,7 @@ export class Enemy extends Entity {
    * Returns a deep copy of an `Enemy`.
    */
   public clone(): Enemy {
-    const enemy = new Enemy(
-      this.id,
-      this.hitbox.clone(),
-      this.health,
-      this.position.clone(),
-    );
+    const enemy = new Enemy(this.id, this.health, this.position.clone());
 
     enemy.velocity = this.velocity.clone();
     return enemy;
@@ -177,8 +158,8 @@ export class Enemy extends Entity {
     if (isObjectWithKeys(obj, [])) {
       return Entity.revive(
         obj,
-        (id: Id, hitbox: Vec2, health: number, position: Vec2) =>
-          new Enemy(id, hitbox, health, position),
+        (id: Id, health: number, position: Vec2) =>
+          new Enemy(id, health, position),
       ) as Enemy;
     }
     throw new Error("couldn't revive Enemy");
