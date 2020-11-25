@@ -53,6 +53,7 @@ export default class Map {
     this.floydWarshallMatrix = [[]];
 
     this.floydWarshallAlgorithm();
+    //console.log(this.floydWarshallMatrix);
   }
 
   private floydWarshallAlgorithm() {
@@ -99,17 +100,21 @@ export default class Map {
         }
         //checks northeast
         if (
-          (i - this.width - 1) % this.width !== this.width - 1 &&
-          i - this.width - 1 >= 0 &&
-          this.tiles[this.width - 1].walkable
+          (i - this.width + 1) % this.width !== this.width - 1 &&
+          i - this.width + 1 >= 0 &&
+          this.tiles[i - this.width + 1].walkable &&
+          this.tiles[i - this.width].walkable &&
+          this.tiles[i + 1].walkable
         ) {
           floydWarshallWeight[i][i - this.width - 1] = Math.sqrt(2);
         }
         //checks northwest
         if (
-          (i - this.width + 1) % this.width !== 0 &&
-          i - this.width + 1 >= 0 &&
-          this.tiles[i - this.width + 1].walkable
+          (i - this.width - 1) % this.width !== 0 &&
+          i - this.width - 1 >= 0 &&
+          this.tiles[i - this.width + 1].walkable &&
+          this.tiles[i - this.width].walkable &&
+          this.tiles[i - 1].walkable
         ) {
           floydWarshallWeight[i][i - this.width + 1] = Math.sqrt(2);
         }
@@ -117,7 +122,9 @@ export default class Map {
         if (
           (i + this.width + 1) % this.width !== this.width - 1 &&
           i + this.width + 1 <= this.width * this.height &&
-          this.tiles[i + this.width + 1].walkable
+          this.tiles[i + this.width + 1].walkable &&
+          this.tiles[i + this.width].walkable &&
+          this.tiles[i + 1].walkable
         ) {
           floydWarshallWeight[i][i + this.width + 1] = Math.sqrt(2);
         }
@@ -125,7 +132,9 @@ export default class Map {
         if (
           (i + this.width - 1) % this.width !== 0 &&
           i + this.width - 1 <= this.width * this.height &&
-          this.tiles[i + this.width - 1].walkable
+          this.tiles[i + this.width - 1].walkable &&
+          this.tiles[i + this.width].walkable &&
+          this.tiles[i - 1].walkable
         ) {
           floydWarshallWeight[i][i + this.width - 1] = Math.sqrt(2);
         }

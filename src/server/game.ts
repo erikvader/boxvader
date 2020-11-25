@@ -51,7 +51,7 @@ export default class ServerGame extends GameLoop {
       this.playerInputs[p] = new Deque();
     }
     this.enemyIdCounter = players.length;
-    this.spawnEnemies();
+    //this.spawnEnemies();
   }
 
   private moveEnemies() {
@@ -148,7 +148,7 @@ export default class ServerGame extends GameLoop {
   afterUpdate(): void {
     //spawns a baby yoda per second
     if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
-      //this.spawnEnemies();
+      this.spawnEnemies();
       this.despawnEnemies();
     }
 
