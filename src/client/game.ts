@@ -9,7 +9,6 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
-import { Player } from '../common/entity';
 import {
   PLAYER_SPRITE,
   PLAYER_SPAWN_X,
@@ -18,7 +17,6 @@ import {
   ENEMY_SCALE,
   ENEMY_SPRITE,
 } from '../common/constants';
-import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -73,8 +71,7 @@ export default class ClientGame extends GameLoop {
     return super.start();
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  protected timer(prevStep?: number): void {
+  protected timer(_prevStep?: number): void {
     window.requestAnimationFrame(() => {
       this.update();
       if (this.running) this.timer();

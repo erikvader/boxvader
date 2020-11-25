@@ -53,8 +53,7 @@ function setup(): void {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    channel.onDisconnect(reason => {
+    channel.onDisconnect(_reason => {
       game.stop();
       // TODO: how to make gecko reconnect?
     });

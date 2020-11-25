@@ -79,8 +79,7 @@ export default abstract class GameLoop {
    * stopped.
    */
   public start(): Promise<void> {
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    return new Promise((accept, reject) => {
+    return new Promise((accept, _reject) => {
       this.running = true;
       this.timeacc = 0;
       this.prevNow = performance.now();
