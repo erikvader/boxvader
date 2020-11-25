@@ -118,10 +118,6 @@ export default class ClientGame extends GameLoop {
     this.update_players(message.state);
     this.update_enemies(message.state);
 
-    if (message.stateNum <= this.states.first) {
-      console.debug('got an old state');
-    }
-
     this.states.reset(message.state, message.stateNum);
   }
 

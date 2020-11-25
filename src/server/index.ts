@@ -43,13 +43,13 @@ function startGame(maxMessageSize?: number): void {
   }
 
   game.start().then(() => {
-    console.log('game done');
+    console.info('game done');
     game = undefined;
   });
 }
 
 io.onConnection(channel => {
-  console.log(`${channel.id} connected`);
+  console.info(`${channel.id} connected`);
   channel.onDrop(drop => {
     console.warn('We are dropping packets: ', drop);
   });
@@ -63,7 +63,7 @@ io.onConnection(channel => {
   });
 
   channel.onDisconnect(() => {
-    console.log(`${channel.id} disconnected`);
+    console.info(`${channel.id} disconnected`);
     const i = player_list.findIndex(x => x.player_id === my_id);
     if (i >= 0) {
       player_list.splice(i, 1);
@@ -82,6 +82,6 @@ io.onConnection(channel => {
 
 if ((process.env.NODE_SERVER_TEST ?? '') === '') {
   server.listen(port, () => {
-    console.log(`spela spel gratis på http://localhost:${port}`);
+    console.info(`spela spel gratis på http://localhost:${port}`);
   });
 }

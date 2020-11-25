@@ -48,7 +48,7 @@ function setup(): void {
     channel.on('start', data => {
       game.my_id = data['id'];
       game.start().then(() => {
-        console.log('game finished');
+        console.info('game finished');
         // TODO: what to do now?
       });
     });
