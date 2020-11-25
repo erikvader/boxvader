@@ -122,7 +122,7 @@ export default class ClientGame extends GameLoop {
     for (const player of Object.values(message.state.players)) {
       if (this.sprite_list[player.id] === undefined) {
         // the positions of the players do not matter since they will be corrected by the server
-        // we should probably think of a better solution in the future
+        // TODO: we should probably think of a better solution in the future
         this.add_character(
           PLAYER_SPAWN_X_MIN,
           PLAYER_SPAWN_Y_MIN,
