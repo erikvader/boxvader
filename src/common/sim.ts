@@ -43,12 +43,16 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const player = new Player(
-      id,
-      constants.PLAYER_HEALTH_MAX,
-      Vec2(constants.PLAYER_SPAWN_X, constants.PLAYER_SPAWN_Y),
-      name,
+    const position = Vec2(
+      Math.random() *
+        (constants.PLAYER_SPAWN_X_MAX - constants.PLAYER_SPAWN_X_MIN) +
+        constants.PLAYER_SPAWN_X_MIN,
+      Math.random() *
+        (constants.PLAYER_SPAWN_Y_MAX - constants.PLAYER_SPAWN_Y_MIN) +
+        constants.PLAYER_SPAWN_Y_MIN,
     );
+
+    const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
   }
