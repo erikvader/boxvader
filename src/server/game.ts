@@ -8,7 +8,6 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 
 import { Vec2 } from 'planck-js';
-import { decideDirection, directionToVelocity } from '../common/directions';
 
 import * as constants from '../common/constants';
 import ServerSimulation from './server-sim';
