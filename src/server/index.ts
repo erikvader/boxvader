@@ -27,7 +27,7 @@ let client_id = 0;
 const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
-function startGame(maxMessageSize?: number) {
+function startGame(maxMessageSize?: number): void {
   game = new ServerGame(x => {
     if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
       console.warn(

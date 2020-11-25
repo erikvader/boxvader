@@ -11,7 +11,7 @@ import {
   CLIENT_FPS,
 } from '../common/constants';
 
-function setup() {
+function setup(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer({
     width: MAP_SIZE_X,

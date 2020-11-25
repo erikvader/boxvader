@@ -51,7 +51,7 @@ export default class ServerGame extends GameLoop {
     this.enemyIdCounter = players.length;
   }
 
-  private moveEnemies() {
+  private moveEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
       enemy.move();
     }
@@ -59,7 +59,7 @@ export default class ServerGame extends GameLoop {
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
   // Should probably have a type of enemy as well for later
-  private spawnEnemies() {
+  private spawnEnemies(): void {
     this.state.enemies[this.enemyIdCounter] = new Enemy(
       this.enemyIdCounter,
       new Vec2(0, 0),
@@ -69,7 +69,7 @@ export default class ServerGame extends GameLoop {
     this.enemyIdCounter += 1;
   }
   // despawns with a weird criteria atm, but is easily changed
-  private despawnEnemies() {
+  private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||

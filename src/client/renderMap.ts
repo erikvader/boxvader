@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import Map from '../common/map';
 import Tileset from '../common/tileset';
 
-export default function display_map(stage: PIXI.stage) {
+export default function display_map(stage: PIXI.stage): void {
   const map = new Map('scifi-1', 'scifi');
 
   for (let i = 0; i < map.tileIds.length; i++) {
@@ -15,7 +15,7 @@ function display_tile(
   tile_type: number,
   texture: PIXI.Texture,
   map: Map,
-) {
+): void {
   let pos_counter = 0;
   let x_pos = 0;
   let y_pos = 0;
@@ -48,7 +48,11 @@ function display_tile(
   return tile;
 }
 
-function get_tile(tile_type: number, texture: PIXI.Texture, tileset: Tileset) {
+function get_tile(
+  tile_type: number,
+  texture: PIXI.Texture,
+  tileset: Tileset,
+): { row: number; column: number } {
   let type_counter = 0;
   for (let row = 0; row < texture.height / tileset.tileHeight; row++) {
     for (let column = 0; column < texture.width / tileset.tileWidth; column++) {

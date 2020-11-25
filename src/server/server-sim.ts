@@ -12,7 +12,7 @@ export default class ServerSimulation extends Simulation {
     this.difficulty = 0;
   }
 
-  public update(inputs: Map<Id, Input>) {
+  public update(inputs: Map<Id, Input>): void {
     // update players based on their inputs
     // TODO: handle 'fire' input
     inputs.forEach((input, id) => {

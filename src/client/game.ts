@@ -128,7 +128,7 @@ export default class ClientGame extends GameLoop {
     this.states.reset(message.state, message.stateNum);
   }
 
-  update_players(state: State) {
+  update_players(state: State): void {
     // spawn new players
     for (const player of Object.values(state.players)) {
       if (this.player_list[player.id] === undefined) {
@@ -152,7 +152,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  update_enemies(state: State) {
+  update_enemies(state: State): void {
     this.remove_enemies();
 
     for (const enemy of Object.values(state.enemies)) {
@@ -169,7 +169,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  remove_enemies() {
+  remove_enemies(): void {
     for (const enemy_id in this.enemy_list) {
       if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
@@ -272,7 +272,7 @@ export default class ClientGame extends GameLoop {
   }
 }
 
-function load_zombie(img_filepath) {
+function load_zombie(img_filepath): any {
   const frames = su.filmstrip(img_filepath, 128, 128);
   const animation = su.sprite(frames);
   const stripSize = 36;
