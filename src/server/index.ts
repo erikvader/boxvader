@@ -11,6 +11,7 @@ import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
 
 import ServerGame from './game';
+import Map from '../common/map';
 
 io.addServer(server);
 
@@ -28,14 +29,18 @@ const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
 function startGame(maxMessageSize?: number) {
-  game = new ServerGame(x => {
-    if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
-      console.warn(
-        `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
-      );
-    }
-    io.raw.room().emit(x);
-  }, Array.from(player_list.map(p => p.player_id)));
+  game = new ServerGame(
+    new Map('scifi-1', 'scifi'),
+    x => {
+      if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
+        console.warn(
+          `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
+        );
+      }
+      io.raw.room().emit(x);
+    },
+    Array.from(player_list.map(p => p.player_id)),
+  );
 
   for (const p of player_list) {
     p.channel.emit('start', { id: p.player_id }, { reliable: true });

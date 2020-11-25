@@ -7,9 +7,32 @@ export const PLAYER_LIMIT = 2;
 export const PORT = 3000;
 
 export const PLAYER_SPRITE = 'imgs/zombie_0.png';
-export const PLAYER_SPAWN_X = 200;
-export const PLAYER_SPAWN_Y = 200;
+
+/** Minimum x-coordinate of players' spawn. */
+export const PLAYER_SPAWN_X_MIN = 208;
+/** Maximum x-coordinate of players' spawn. */
+export const PLAYER_SPAWN_X_MAX = 304;
+
+/** Minimum y-coordinate of players' spawn. */
+export const PLAYER_SPAWN_Y_MIN = 208;
+/** Maximum y-coordinate of players' spawn. */
+export const PLAYER_SPAWN_Y_MAX = 304;
+
 export const PLAYER_SCALE = 0.5;
+
+/** Radius of the players. */
+export const PLAYER_RADIUS = 16;
+
+/** Maximum and initial health of a player. */
+export const PLAYER_HEALTH_MAX = 100;
+
+/** Width of tiles. */
+export const TILE_WIDTH = 32;
+
+/** Height of tiles. */
+export const TILE_HEIGHT = 32;
+
+export const TILE_TARGET_SIZE = 64;
 
 export const ENEMY_SPRITE = 'imgs/b_yoda.png';
 export const ENEMY_SCALE = 0.05;
