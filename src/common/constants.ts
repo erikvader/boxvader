@@ -34,6 +34,9 @@ export const TILE_HEIGHT = 32;
 
 export const TILE_TARGET_SIZE = 64;
 
+export const ENEMY_SPRITE = 'imgs/b_yoda.png';
+export const ENEMY_SCALE = 0.05;
+
 export const MAP_SIZE_X = 512;
 export const MAP_SIZE_Y = 512;
 

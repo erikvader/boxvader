@@ -143,7 +143,10 @@ export class Enemy extends Entity {
   public draw(pixi): void {
     throw new Error('Method not implemented.');
   }
-
+  //should be fixed in the future
+  public move(): void {
+    this.position.add(Vec2(0, 1));
+  }
   /**
    * Returns a deep copy of an `Enemy`.
    */

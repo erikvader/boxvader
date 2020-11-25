@@ -22,10 +22,7 @@ export default class Map {
   public readonly height: number; // height in number of tiles
   public readonly tileset: Tileset;
   public readonly tileIds: number[];
-
-  public get tiles(): Tile[] {
-    return this.tileIds.map(id => this.tileset.tiles[id]);
-  }
+  public readonly tiles: Tile[];
 
   constructor(name: string, tilesetName: string) {
     const jsonMap = getJson(name);
@@ -50,6 +47,7 @@ export default class Map {
     this.height = jsonMap.height;
     this.tileset = tileset;
     this.tileIds = jsonMap.layers[0].data.map(id => id - 1);
+    this.tiles = this.tileIds.map(id => this.tileset.tiles[id]);
   }
 
   public at(x: number, y: number): Tile {
