@@ -11,6 +11,7 @@ import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
 
 import ServerGame from './game';
+import GameMap from '../common/gameMap';
 
 io.addServer(server);
 
@@ -27,15 +28,19 @@ let client_id = 0;
 const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
-function startGame(maxMessageSize?: number) {
-  game = new ServerGame(x => {
-    if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
-      console.warn(
-        `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
-      );
-    }
-    io.raw.room().emit(x);
-  }, Array.from(player_list.map(p => p.player_id)));
+function startGame(maxMessageSize?: number): void {
+  game = new ServerGame(
+    new GameMap('scifi-1', 'scifi'),
+    x => {
+      if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
+        console.warn(
+          `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
+        );
+      }
+      io.raw.room().emit(x);
+    },
+    Array.from(player_list.map(p => p.player_id)),
+  );
 
   for (const p of player_list) {
     p.channel.emit('start', { id: p.player_id }, { reliable: true });
@@ -43,13 +48,13 @@ function startGame(maxMessageSize?: number) {
   }
 
   game.start().then(() => {
-    console.log('game done');
+    console.info('game done');
     game = undefined;
   });
 }
 
 io.onConnection(channel => {
-  console.log(`${channel.id} connected`);
+  console.info(`${channel.id} connected`);
   channel.onDrop(drop => {
     console.warn('We are dropping packets: ', drop);
   });
@@ -63,7 +68,7 @@ io.onConnection(channel => {
   });
 
   channel.onDisconnect(() => {
-    console.log(`${channel.id} disconnected`);
+    console.info(`${channel.id} disconnected`);
     const i = player_list.findIndex(x => x.player_id === my_id);
     if (i >= 0) {
       player_list.splice(i, 1);
@@ -82,6 +87,6 @@ io.onConnection(channel => {
 
 if ((process.env.NODE_SERVER_TEST ?? '') === '') {
   server.listen(port, () => {
-    console.log(`spela spel gratis på http://localhost:${port}`);
+    console.info(`spela spel gratis på http://localhost:${port}`);
   });
 }

@@ -9,16 +9,14 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
-import { Player } from '../common/entity';
 import {
   PLAYER_SPRITE,
-  PLAYER_SPAWN_X,
-  PLAYER_SPAWN_Y,
+  PLAYER_SPAWN_X_MIN,
+  PLAYER_SPAWN_Y_MIN,
   PLAYER_SCALE,
   ENEMY_SCALE,
   ENEMY_SPRITE,
 } from '../common/constants';
-import Tileset from '../common/tileset';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -54,9 +52,6 @@ export default class ClientGame extends GameLoop {
 
   private sendInputFun;
 
-  // TODO: planned instance variables
-  // private simulation: ClientSimulation;
-
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
@@ -73,8 +68,7 @@ export default class ClientGame extends GameLoop {
     return super.start();
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  protected timer(prevStep?: number): void {
+  protected timer(_prevStep?: number): void {
     window.requestAnimationFrame(() => {
       this.update();
       if (this.running) this.timer();
@@ -108,7 +102,7 @@ export default class ClientGame extends GameLoop {
     this.down.unsubscribe();
     this.up.unsubscribe();
   }
-  // TODO: split this function into smaller sub-functions
+
   serverMsg(data: any): void {
     if (!this.running || this.my_id === undefined) return;
 
@@ -121,20 +115,18 @@ export default class ClientGame extends GameLoop {
     this.update_players(message.state);
     this.update_enemies(message.state);
 
-    if (message.stateNum <= this.states.first) {
-      console.debug('got an old state');
-    }
-
     this.states.reset(message.state, message.stateNum);
   }
 
-  update_players(state: State) {
+  update_players(state: State): void {
     // spawn new players
     for (const player of Object.values(state.players)) {
       if (this.player_list[player.id] === undefined) {
+        // the positions of the players do not matter since they will be corrected by the server
+        // TODO: we should probably think of a better solution in the future
         this.add_character(
-          PLAYER_SPAWN_X,
-          PLAYER_SPAWN_Y,
+          PLAYER_SPAWN_X_MIN,
+          PLAYER_SPAWN_Y_MIN,
           PLAYER_SCALE,
           PLAYER_SPRITE,
           player.id,
@@ -152,7 +144,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  update_enemies(state: State) {
+  update_enemies(state: State): void {
     this.remove_enemies();
 
     for (const enemy of Object.values(state.enemies)) {
@@ -169,7 +161,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  remove_enemies() {
+  remove_enemies(): void {
     for (const enemy_id in this.enemy_list) {
       if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
@@ -272,7 +264,7 @@ export default class ClientGame extends GameLoop {
   }
 }
 
-function load_zombie(img_filepath) {
+function load_zombie(img_filepath): any {
   const frames = su.filmstrip(img_filepath, 128, 128);
   const animation = su.sprite(frames);
   const stripSize = 36;

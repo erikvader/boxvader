@@ -1,18 +1,19 @@
-import Level from '../common/map';
+import GameMap from '../common/gameMap';
 import { Input } from '../common/misc';
 import Simulation, {
   createBody,
   updatePlayerBodyFromInput,
-} from '../common/sim';
+} from '../common/simulation';
 import State from '../common/state';
 import { Body } from 'planck-js';
 
 export default class ClientSimulation extends Simulation {
-  constructor(map: Level, updateStep: number) {
-    super(map, updateStep);
+  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
+    super(map, updateStep, enemyIdCounter);
   }
 
   public update(body: Body, input: Input): void {
+    this.commonUpdate();
     updatePlayerBodyFromInput(body, input);
   }
 

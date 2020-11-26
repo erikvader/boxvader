@@ -16,17 +16,14 @@ function getJson(name: string): MapJson {
   }
 }
 
-export default class Map {
+export default class GameMap {
   public readonly name: string;
   public readonly width: number; // width in number of tiles
   public readonly height: number; // height in number of tiles
   public readonly tileset: Tileset;
   public readonly tileIds: number[];
+  public readonly tiles: Tile[];
   public floydWarshallMatrix: number[][];
-
-  public get tiles(): Tile[] {
-    return this.tileIds.map(id => this.tileset.tiles[id]);
-  }
 
   constructor(name: string, tilesetName: string) {
     const jsonMap = getJson(name);
@@ -50,10 +47,10 @@ export default class Map {
     this.height = jsonMap.height;
     this.tileset = tileset;
     this.tileIds = jsonMap.layers[0].data.map(id => id - 1);
+    this.tiles = this.tileIds.map(id => this.tileset.tiles[id]);
     this.floydWarshallMatrix = [[]];
 
     this.floydWarshallAlgorithm();
-    //console.log(this.floydWarshallMatrix);
   }
 
   private floydWarshallAlgorithm() {
