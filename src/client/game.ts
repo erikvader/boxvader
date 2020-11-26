@@ -12,10 +12,9 @@ import display_map from './renderMap';
 import Map from '../common/map';
 import {
   PLAYER_SPRITE,
-  PLAYER_SPAWN_X_MIN,
-  PLAYER_SPAWN_Y_MIN,
-  PLAYER_SCALE,
-  ENEMY_SCALE,
+  LOGICAL_TO_PIXELS,
+  PLAYER_SIZE,
+  ENEMY_SIZE,
   ENEMY_SPRITE,
 } from '../common/constants';
 const su = new SpriteUtilities(PIXI);
@@ -226,11 +225,13 @@ export default class ClientGame extends GameLoop {
   add_character(
     x: number,
     y: number,
-    scale: number,
+    target_width: number,
     img_filepath: string,
     id: number,
   ): void {
     const character = load_zombie(img_filepath);
+
+    const scale = target_width / character.width;
 
     character.position.set(x, y);
     character.id = id;
@@ -244,11 +245,13 @@ export default class ClientGame extends GameLoop {
   add_enemy(
     x: number,
     y: number,
-    scale: number,
+    target_width: number,
     img_filepath: string,
     id: number,
   ): void {
     const enemy = su.sprite(img_filepath);
+
+    const scale = target_width / enemy.width;
 
     enemy.position.set(x, y);
     enemy.vx = 0;

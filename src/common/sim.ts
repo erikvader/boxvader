@@ -13,6 +13,7 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
+  protected _map: Level;
 
   public get world(): World {
     return this._world;
@@ -26,6 +27,11 @@ export default abstract class Simulation {
     return this._state;
   }
 
+  /**
+   * @param map The map to use
+   * @param updateStep How big an update step is in seconds.
+   * @param enemyIdCounter The starting value for the enemy ids.
+   */
   constructor(map: Level, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
     this._world = createWorld(map);
@@ -33,13 +39,14 @@ export default abstract class Simulation {
     this._state = new State();
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
+    this._map = map;
   }
 
   public commonUpdate(): void {
     this._stepCounter += 1;
 
     //spawns a baby yoda per second
-    if (this._stepCounter % Math.floor(1000 / this.updateStep) === 0) {
+    if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
       this.spawnEnemies();
       this.despawnEnemies();
     }
@@ -76,8 +83,8 @@ export default abstract class Simulation {
   private spawnEnemies(): void {
     this.state.enemies[this._enemyIdCounter] = new Enemy(
       this._enemyIdCounter,
-      100,
-      Vec2(this._enemyIdCounter * 4, 0),
+      100, // TODO: vad är detta?
+      Vec2(this._enemyIdCounter, 0),
     );
     this._enemyIdCounter += 1;
   }
@@ -127,20 +134,17 @@ function createWorld(map: Level): World {
     restitution: 0.0,
   };
 
-  const tileWidth = constants.TILE_WIDTH;
-  const tileHeight = constants.TILE_HEIGHT;
-  const halfWidth = tileWidth / 2;
-  const halfHeight = tileHeight / 2;
+  const halfWidth = 0.5 * constants.TILE_LOGICAL_SIZE;
 
   for (let y = 0; y < map.height; ++y) {
     for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
         // TODO: ändra tillbaka till 1x1-rutor typ
         const center = Vec2(
-          x * tileWidth + halfWidth,
-          y * tileHeight + halfHeight,
+          x * constants.TILE_LOGICAL_SIZE + halfWidth,
+          y * constants.TILE_LOGICAL_SIZE + halfWidth,
         );
-        const shape: any = new Box(halfWidth, halfHeight, Vec2.zero(), 0.0);
+        const shape: any = new Box(halfWidth, halfWidth, Vec2.zero(), 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,
@@ -178,7 +182,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_RADIUS,
+      constants.PLAYER_HITBOX_RADIUS,
     );
   } else if (entity instanceof Enemy) {
     // enemies are identical to players for now
@@ -186,7 +190,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_RADIUS,
+      constants.ENEMY_HITBOX_RADIUS,
     );
   }
 
@@ -219,12 +223,15 @@ export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
   } else {
     const velocity = body.getLinearVelocity();
 
-    if (input.up && !input.down) velocity.y = -constants.MOVEMENT_SPEED;
-    else if (input.down && !input.up) velocity.y = constants.MOVEMENT_SPEED;
+    if (input.up && !input.down) velocity.y = -constants.PLAYER_MOVEMENT_SPEED;
+    else if (input.down && !input.up)
+      velocity.y = constants.PLAYER_MOVEMENT_SPEED;
     else velocity.y = 0;
 
-    if (input.left && !input.right) velocity.x = -constants.MOVEMENT_SPEED;
-    else if (input.right && !input.left) velocity.x = constants.MOVEMENT_SPEED;
+    if (input.left && !input.right)
+      velocity.x = -constants.PLAYER_MOVEMENT_SPEED;
+    else if (input.right && !input.left)
+      velocity.x = constants.PLAYER_MOVEMENT_SPEED;
     else velocity.x = 0;
 
     body.setLinearVelocity(velocity);

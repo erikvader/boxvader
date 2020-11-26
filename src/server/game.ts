@@ -34,7 +34,11 @@ export default class ServerGame extends GameLoop {
     this.stateNum = 0;
     this.playerInputs = {};
     this.inputAcks = {};
-    this.simulation = new ServerSimulation(map, this.ups, players.length);
+    this.simulation = new ServerSimulation(
+      map,
+      this.ups / 1000,
+      players.length,
+    );
 
     for (const p of players) {
       this.simulation.addPlayer(p, 'TODO');

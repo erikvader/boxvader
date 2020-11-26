@@ -145,7 +145,7 @@ export class Enemy extends Entity {
   }
   //should be fixed in the future
   public move(): void {
-    this.position.add(Vec2(0, 1));
+    this.position.add(Vec2(0, 1 / 60));
   }
   /**
    * Returns a deep copy of an `Enemy`.
