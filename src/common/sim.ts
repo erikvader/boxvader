@@ -293,5 +293,7 @@ function rayCastCallback(
   normal: Vec2,
   fraction: number,
 ): number {
+  // TODO: Fix hit functionality
+  // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
   return fraction;
 }
