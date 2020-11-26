@@ -1,5 +1,6 @@
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
+import * as constants from './constants';
 
 interface MapJson {
   width: number;
@@ -53,5 +54,11 @@ export default class Map {
   public at(x: number, y: number): Tile {
     const index = y * this.width + x;
     return this.tiles[index];
+  }
+
+  public total_pixel_size(): [number, number] {
+    const w = this.width * constants.TILE_TARGET_SIZE_PIXELS;
+    const h = this.height * constants.TILE_TARGET_SIZE_PIXELS;
+    return [w, h];
   }
 }

@@ -1,33 +1,22 @@
 import * as PIXI from 'pixi.js';
 import Map from '../common/map';
-import Tileset from '../common/tileset';
 
 export default function display_map(stage: PIXI.stage, map: Map): void {
-  for (let i = 0; i < map.tileIds.length; i++) {
-    const texture = PIXI.utils.TextureCache[map.tileset.imageName].clone();
-    stage.addChild(display_tile(i, map.tileIds[i], texture, map));
+  for (let r = 0; r < map.height; r++) {
+    for (let c = 0; c < map.width; c++) {
+      const texture = PIXI.utils.TextureCache[map.tileset.imageName].clone();
+      stage.addChild(display_tile(c, r, texture, map));
+    }
   }
 }
+
 function display_tile(
-  pos: number,
-  tile_type: number,
+  x_pos: number,
+  y_pos: number,
   texture: PIXI.Texture,
   map: Map,
 ): void {
-  let pos_counter = 0;
-  let x_pos = 0;
-  let y_pos = 0;
-  const tile_pos = get_tile(tile_type, texture, map.tileset);
-
-  for (let row = 0; row < map.height; row++) {
-    for (let column = 0; column < map.width; column++) {
-      if (pos_counter === pos) {
-        x_pos = column;
-        y_pos = row;
-      }
-      pos_counter += 1;
-    }
-  }
+  const tile_pos = map.tileset.tilePos(map.at(x_pos, y_pos).id);
 
   const x_img = map.tileset.tileWidth * tile_pos.column;
   const y_img = map.tileset.tileHeight * tile_pos.row;
@@ -39,33 +28,11 @@ function display_tile(
   );
   texture.frame = rectangle;
 
+  const scale = map.tileset.scaleFactor();
   const tile = new PIXI.Sprite(texture);
-  tile.x = map.tileset.tileWidth * x_pos;
-  tile.y = map.tileset.tileHeight * y_pos;
+  tile.x = map.tileset.tileWidth * x_pos * scale;
+  tile.y = map.tileset.tileHeight * y_pos * scale;
+  tile.scale.set(scale, scale);
 
   return tile;
-}
-
-function get_tile(
-  tile_type: number,
-  texture: PIXI.Texture,
-  tileset: Tileset,
-): { row: number; column: number } {
-  let type_counter = 0;
-  for (let row = 0; row < texture.height / tileset.tileHeight; row++) {
-    for (let column = 0; column < texture.width / tileset.tileWidth; column++) {
-      if (tile_type === type_counter) {
-        return {
-          row: row,
-          column: column,
-        };
-      }
-
-      type_counter += 1;
-    }
-  }
-  return {
-    row: 0,
-    column: 0,
-  };
 }

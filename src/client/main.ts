@@ -5,8 +5,6 @@ import {
   PLAYER_SPRITE,
   ENEMY_SPRITE,
   PORT,
-  MAP_SIZE_X,
-  MAP_SIZE_Y,
   CLIENT_UPS,
   CLIENT_FPS,
 } from '../common/constants';
@@ -14,10 +12,7 @@ import Map from '../common/map';
 
 function setup(): void {
   const channel = geckos({ port: PORT });
-  const renderer = PIXI.autoDetectRenderer({
-    width: MAP_SIZE_X,
-    height: MAP_SIZE_Y,
-  });
+  const renderer = PIXI.autoDetectRenderer();
   renderer.backgroundColor = 0xffd700;
   document.body.appendChild(renderer.view);
   const stage = new PIXI.Container();
@@ -34,6 +29,10 @@ function setup(): void {
     channel.onRaw(data => game?.serverMsg(data));
 
     channel.on('start', data => {
+      const map = new Map(data['map'], data['tileset']);
+      const [w, h] = map.total_pixel_size();
+      renderer.resize(w, h);
+
       game = new ClientGame({
         sendInputFun: x => {
           if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
@@ -47,7 +46,7 @@ function setup(): void {
         ups: CLIENT_UPS,
         fps: CLIENT_FPS,
         stage,
-        map: new Map(data['map'], data['tileset']),
+        map,
         my_id: data['id'],
       });
 
@@ -61,8 +60,9 @@ function setup(): void {
     });
   });
 }
+
 PIXI.loader
   .add(PLAYER_SPRITE)
   .add(ENEMY_SPRITE)
-  .add('imgs/tilesheets/scifitiles-sheet.png')
+  .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
   .load(setup);

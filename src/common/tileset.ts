@@ -1,4 +1,5 @@
 import scifi from '../../levels/vov-scifi-tileset.json';
+import * as constants from './constants';
 
 interface TilesetJson {
   image: string;
@@ -6,6 +7,7 @@ interface TilesetJson {
   imageheight: number;
   tilewidth: number;
   tileheight: number;
+  columns: number;
   tiles: {
     id: number;
     objectgroup: {
@@ -40,6 +42,7 @@ export default class Tileset {
   public readonly tileWidth: number;
   public readonly tileHeight: number;
   public readonly tiles: Tile[];
+  public readonly columns: number;
 
   constructor(name: string) {
     const jsonTileset = getJson(name);
@@ -76,5 +79,16 @@ export default class Tileset {
     this.tileWidth = dx;
     this.tileHeight = dy;
     this.tiles = tiles;
+    this.columns = jsonTileset.columns;
+  }
+
+  public scaleFactor(): number {
+    return constants.TILE_TARGET_SIZE_PIXELS / this.tileWidth;
+  }
+
+  public tilePos(tile_type: number): { row: number; column: number } {
+    const row = Math.trunc(tile_type / this.columns);
+    const column = tile_type % this.columns;
+    return { row, column };
   }
 }
