@@ -53,8 +53,7 @@ export default class GameMap {
     this.floydWarshallAlgorithm();
   }
 
-  private floydWarshallAlgorithm() {
-    const tiles = this.tiles;
+  private floydWarshallAlgorithm(): void {
     const floydWarshallWeight: number[][] = [[]];
 
     for (let i = 0; i < this.width * this.height; i++) {

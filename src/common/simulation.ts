@@ -137,7 +137,7 @@ export default abstract class Simulation {
     });
   }
   //uses manhattan distance atm
-  private moveEnemies() {
+  private moveEnemies(): void {
     let targetPlayerPosition = new Vec2();
 
     for (const enemy of Object.values(this.state.enemies)) {
@@ -154,7 +154,7 @@ export default abstract class Simulation {
           targetPlayerPosition = player.position;
         }
       }
-      let newMove = this.nextMove(enemy.position, targetPlayerPosition);
+      const newMove = this.nextMove(enemy.position, targetPlayerPosition);
       enemy.move(newMove);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
@@ -163,7 +163,7 @@ export default abstract class Simulation {
 
   private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
     const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
-    let nextMove: Vec2 = new Vec2(0, 0);
+    const nextMove: Vec2 = new Vec2(0, 0);
 
     if (nextPosition.x > currentPosition.x) {
       if (nextPosition.y > currentPosition.y) {

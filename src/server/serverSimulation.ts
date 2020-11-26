@@ -1,9 +1,7 @@
 //import Level from '../common/gameMap'; // alias to not conflict with a map collection
 import { Id, Input } from '../common/misc';
 import Simulation, { updatePlayerBodyFromInput } from '../common/simulation';
-import { SERVER_FPS } from '../common/constants';
 import GameMap from '../common/gameMap';
-import { Vec2 } from 'planck-js';
 
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
