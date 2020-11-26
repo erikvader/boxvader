@@ -133,14 +133,14 @@ export default abstract class Simulation {
     let multiplier = Infinity;
 
     if (direction.x > 0) {
-      multiplier = 512 - body.getPosition().x;
+      multiplier = constants.MAP_SIZE_X - body.getPosition().x;
     } else if (direction.x < 0) {
       multiplier = body.getPosition().x;
     }
     if (direction.y > 0) {
       multiplier =
-        512 - body.getPosition().y < multiplier
-          ? 512 - body.getPosition().y
+        constants.MAP_SIZE_Y - body.getPosition().y < multiplier
+          ? constants.MAP_SIZE_Y - body.getPosition().y
           : multiplier;
     } else if (direction.y < 0) {
       multiplier =
