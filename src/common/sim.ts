@@ -73,7 +73,7 @@ export default abstract class Simulation {
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
   // Should probably have a type of enemy as well for later
-  private spawnEnemies() {
+  private spawnEnemies(): void {
     this.state.enemies[this._enemyIdCounter] = new Enemy(
       this._enemyIdCounter,
       100,
@@ -83,7 +83,7 @@ export default abstract class Simulation {
   }
 
   // despawns with a weird criteria atm, but is easily changed
-  private despawnEnemies() {
+  private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||

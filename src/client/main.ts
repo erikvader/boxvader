@@ -11,7 +11,7 @@ import {
   CLIENT_FPS,
 } from '../common/constants';
 
-function setup() {
+function setup(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer({
     width: MAP_SIZE_X,
@@ -48,13 +48,12 @@ function setup() {
     channel.on('start', data => {
       game.my_id = data['id'];
       game.start().then(() => {
-        console.log('game finished');
+        console.info('game finished');
         // TODO: what to do now?
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    channel.onDisconnect(reason => {
+    channel.onDisconnect(_reason => {
       game.stop();
       // TODO: how to make gecko reconnect?
     });

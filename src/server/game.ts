@@ -1,13 +1,9 @@
 import GameLoop from '../common/game-loop';
 
 import { Id, NumMap, Input } from '../common/misc';
-import State from '../common/state';
-import { Player, Enemy } from '../common/entity';
 import { serialize, deserializeCTS } from '../common/msg';
 import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
-
-import { Vec2 } from 'planck-js';
 
 import * as constants from '../common/constants';
 import ServerSimulation from './server-sim';
