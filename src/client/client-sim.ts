@@ -1,8 +1,6 @@
 import Level from '../common/map';
 import { Input } from '../common/misc';
-import Simulation, {
-  createBody,
-} from '../common/sim';
+import Simulation, { createBody } from '../common/sim';
 import State from '../common/state';
 import { Body } from 'planck-js';
 
