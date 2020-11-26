@@ -5,7 +5,7 @@ import * as constants from './constants';
 interface MapJson {
   width: number;
   height: number;
-  layers: (TileLayer | ObjectGroup)[];
+  layers: Layer[];
 }
 
 interface Layer {
