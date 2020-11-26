@@ -8,11 +8,12 @@ import State from '../common/state';
 import { Body } from 'planck-js';
 
 export default class ClientSimulation extends Simulation {
-  constructor(map: Level, updateStep: number) {
-    super(map, updateStep);
+  constructor(map: Level, updateStep: number, enemyIdCounter: number) {
+    super(map, updateStep, enemyIdCounter);
   }
 
   public update(body: Body, input: Input): void {
+    this.commonUpdate();
     updatePlayerBodyFromInput(body, input);
   }
 

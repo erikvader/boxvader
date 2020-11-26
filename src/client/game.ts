@@ -11,8 +11,8 @@ import State from '../common/state';
 import display_map from './renderMap';
 import {
   PLAYER_SPRITE,
-  PLAYER_SPAWN_X,
-  PLAYER_SPAWN_Y,
+  PLAYER_SPAWN_X_MIN,
+  PLAYER_SPAWN_Y_MIN,
   PLAYER_SCALE,
   ENEMY_SCALE,
   ENEMY_SPRITE,
@@ -122,9 +122,11 @@ export default class ClientGame extends GameLoop {
     // spawn new players
     for (const player of Object.values(state.players)) {
       if (this.player_list[player.id] === undefined) {
+        // the positions of the players do not matter since they will be corrected by the server
+        // TODO: we should probably think of a better solution in the future
         this.add_character(
-          PLAYER_SPAWN_X,
-          PLAYER_SPAWN_Y,
+          PLAYER_SPAWN_X_MIN,
+          PLAYER_SPAWN_Y_MIN,
           PLAYER_SCALE,
           PLAYER_SPRITE,
           player.id,
