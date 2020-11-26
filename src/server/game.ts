@@ -71,8 +71,41 @@ export default class ServerGame extends GameLoop {
           targetPlayerPosition = player.position;
         }
       }
-      enemy.move(this.map, targetPlayerPosition);
+      let newMove = this.nextMove(enemy.position, targetPlayerPosition);
+      enemy.move(newMove);
     }
+  }
+
+  private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
+    const nextPosition = this.map.getInput(currentPosition, targetPosition);
+    let nextMove: Vec2 = new Vec2(0, 0);
+
+    if (nextPosition.x > currentPosition.x) {
+      if (nextPosition.y > currentPosition.y) {
+        nextMove.add(Vec2(1, 1));
+      } else if (nextPosition.y < currentPosition.y) {
+        nextMove.add(Vec2(1, -1));
+      } else {
+        nextMove.add(Vec2(1, 0));
+      }
+    } else if (nextPosition.x < currentPosition.x) {
+      if (nextPosition.y > currentPosition.y) {
+        nextMove.add(Vec2(-1, 1));
+      } else if (nextPosition.y < currentPosition.y) {
+        nextMove.add(Vec2(-1, -1));
+      } else {
+        nextMove.add(Vec2(-1, 0));
+      }
+    } else {
+      if (nextPosition.y > currentPosition.y) {
+        nextMove.add(Vec2(0, 1));
+      } else if (nextPosition.y < currentPosition.y) {
+        nextMove.add(Vec2(0, -1));
+      } else {
+        nextMove.add(Vec2(0, 0));
+      }
+    }
+    return nextMove;
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location

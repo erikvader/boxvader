@@ -159,34 +159,8 @@ export class Enemy extends Entity {
     throw new Error('Method not implemented.');
   }
   //should be fixed in the future
-  public move(map: Map, target: Vec2): void {
-    const targetPosition = map.getInput(this.position, target);
-
-    if (targetPosition.x > this.position.x) {
-      if (targetPosition.y > this.position.y) {
-        this.position.add(Vec2(1, 1));
-      } else if (targetPosition.y < this.position.y) {
-        this.position.add(Vec2(1, -1));
-      } else {
-        this.position.add(Vec2(1, 0));
-      }
-    } else if (targetPosition.x < this.position.x) {
-      if (targetPosition.y > this.position.y) {
-        this.position.add(Vec2(-1, 1));
-      } else if (targetPosition.y < this.position.y) {
-        this.position.add(Vec2(-1, -1));
-      } else {
-        this.position.add(Vec2(-1, 0));
-      }
-    } else {
-      if (targetPosition.y > this.position.y) {
-        this.position.add(Vec2(0, 1));
-      } else if (targetPosition.y < this.position.y) {
-        this.position.add(Vec2(0, -1));
-      } else {
-        this.position.add(Vec2(0, 0));
-      }
-    }
+  public move(nextMove: Vec2): void {
+    this.position.add(nextMove);
   }
   /**
    * Returns a deep copy of an `Enemy`.
