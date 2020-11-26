@@ -9,6 +9,7 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
+import Map from '../common/map';
 import {
   PLAYER_SPRITE,
   PLAYER_SPAWN_X_MIN,
@@ -21,13 +22,16 @@ const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
-  renderer: any; // TODO: figure out type
+  renderer: PIXI.Renderer;
   stage: PIXI.Stage;
+  map: Map;
+  my_id: number;
 }
 
 export default class ClientGame extends GameLoop {
   private renderer;
   private stage;
+  private map;
 
   // predicted states where the first one always is a `true` state from the
   // server.
@@ -38,7 +42,7 @@ export default class ClientGame extends GameLoop {
   // inputs not confirmed by server
   private inputHistory: Deque<Input>;
 
-  public my_id?: number;
+  private my_id: number;
   private my_sprite?;
   private player_list = {};
   private enemy_list = {};
@@ -59,11 +63,12 @@ export default class ClientGame extends GameLoop {
     this.stage = args.stage;
     this.states = new Deque();
     this.inputHistory = new Deque();
+    this.my_id = args.my_id;
+    this.map = args.map;
   }
 
   public start(): Promise<void> {
-    if (this.my_id === undefined) throw new Error('my_id is not set');
-    display_map(this.stage);
+    display_map(this.stage, this.map);
     this.key_presses();
     return super.start();
   }
@@ -104,7 +109,7 @@ export default class ClientGame extends GameLoop {
   }
 
   serverMsg(data: any): void {
-    if (!this.running || this.my_id === undefined) return;
+    if (!this.running) return;
 
     const message = deserializeSTC(data);
 
@@ -132,7 +137,7 @@ export default class ClientGame extends GameLoop {
           player.id,
         );
 
-        if (player.id === this.my_id && this.my_id !== undefined) {
+        if (player.id === this.my_id) {
           this.my_sprite = this.player_list[this.my_id];
         }
       } else {

@@ -10,6 +10,7 @@ import {
   CLIENT_UPS,
   CLIENT_FPS,
 } from '../common/constants';
+import Map from '../common/map';
 
 function setup(): void {
   const channel = geckos({ port: PORT });
@@ -22,20 +23,7 @@ function setup(): void {
   const stage = new PIXI.Container();
 
   const { maxMessageSize } = channel;
-  const game = new ClientGame({
-    sendInputFun: x => {
-      if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
-        console.warn(
-          `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
-        );
-      }
-      channel.raw.emit(x);
-    },
-    renderer,
-    ups: CLIENT_UPS,
-    fps: CLIENT_FPS,
-    stage,
-  });
+  let game;
 
   channel.onConnect(error => {
     if (error) {
@@ -43,19 +31,33 @@ function setup(): void {
       return;
     }
 
-    channel.onRaw(data => game.serverMsg(data));
+    channel.onRaw(data => game?.serverMsg(data));
 
     channel.on('start', data => {
-      game.my_id = data['id'];
+      game = new ClientGame({
+        sendInputFun: x => {
+          if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
+            console.warn(
+              `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
+            );
+          }
+          channel.raw.emit(x);
+        },
+        renderer,
+        ups: CLIENT_UPS,
+        fps: CLIENT_FPS,
+        stage,
+        map: new Map(data['map'], data['tileset']),
+        my_id: data['id'],
+      });
+
       game.start().then(() => {
         console.info('game finished');
-        // TODO: what to do now?
       });
     });
 
     channel.onDisconnect(_reason => {
-      game.stop();
-      // TODO: how to make gecko reconnect?
+      game?.stop();
     });
   });
 }
