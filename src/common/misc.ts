@@ -1,4 +1,3 @@
-import { Region } from './map';
 import { Vec2 } from 'planck-js';
 
 export type Id = number;
@@ -58,12 +57,4 @@ export function randomChoice<T>(ts: T[]): T | undefined {
     const index = Math.floor(Math.random() * (ts.length + 1));
     return ts[index];
   }
-}
-
-/** Generate a random point inside a map region. */
-export function randomPoint(region: Region): Vec2 {
-  return new Vec2(
-    region.x + Math.random() * region.width,
-    region.y + Math.random() * region.height,
-  );
 }

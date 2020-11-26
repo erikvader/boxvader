@@ -1,6 +1,8 @@
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
 import * as constants from './constants';
+import * as misc from './misc';
+import { Vec2 } from 'planck-js';
 
 interface MapJson {
   width: number;
@@ -23,15 +25,33 @@ interface TileLayer extends Layer {
 }
 
 interface ObjectGroup extends Layer {
-  objects: Region[];
+  objects: ObjectGroupObject[];
 }
 
-/** A region on the map. */
-export interface Region {
+interface ObjectGroupObject {
   x: number;
   y: number;
   width: number;
   height: number;
+}
+
+/** A region of a map. */
+export class Region {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+
+  constructor(x: number, y: number, width: number, height: number) {
+    (this.x = x), (this.y = y), (this.width = width), (this.height = height);
+  }
+
+  public randomPoint(): Vec2 {
+    return new Vec2(
+      this.x + Math.random() * this.width,
+      this.y + Math.random() * this.height,
+    );
+  }
 }
 
 export default class Map {
@@ -75,13 +95,21 @@ export default class Map {
     this.tileset = tileset;
     this.tileIds = tileIds;
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
-    this.playerSpawns = playerLayer.objects;
-    this.enemySpawns = enemyLayer.objects;
+    this.playerSpawns = playerLayer.objects.map(
+      obj => new Region(obj.x, obj.y, obj.width, obj.height),
+    );
+    this.enemySpawns = enemyLayer.objects.map(
+      obj => new Region(obj.x, obj.y, obj.width, obj.height),
+    );
   }
 
   public at(x: number, y: number): Tile {
     const index = y * this.width + x;
     return this.tiles[index];
+  }
+
+  public randomPlayerSpawn(): Vec2 {
+    return misc.randomChoice(this.playerSpawns)!.randomPoint();
   }
 }
 

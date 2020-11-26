@@ -1,4 +1,4 @@
-import { Id, Input, randomChoice, randomPoint } from './misc';
+import { Id, Input, randomChoice } from './misc';
 import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
@@ -63,8 +63,7 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const region = randomChoice(this._map.playerSpawns)!;
-    const position = randomPoint(region);
+    const position = this._map.randomPlayerSpawn();
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
