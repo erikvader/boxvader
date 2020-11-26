@@ -2,7 +2,6 @@ import Level from '../common/map';
 import { Input } from '../common/misc';
 import Simulation, {
   createBody,
-  updatePlayerBodyFromInput,
 } from '../common/sim';
 import State from '../common/state';
 import { Body } from 'planck-js';
@@ -14,7 +13,7 @@ export default class ClientSimulation extends Simulation {
 
   public update(body: Body, input: Input): void {
     this.commonUpdate();
-    updatePlayerBodyFromInput(body, input);
+    this.handlePlayerInput(body, input);
   }
 
   public reset(state: State): void {

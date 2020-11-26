@@ -10,7 +10,7 @@ export abstract class Entity {
 
   public position: Vec2;
   public velocity: Vec2;
-
+  public direction: Vec2;
   private _health: number;
 
   public constructor(id: Id, health: number, position: Vec2) {
@@ -20,6 +20,7 @@ export abstract class Entity {
     this._health = health;
     this.position = position;
     this.velocity = Vec2.zero();
+    this.direction = Vec2.zero();
   }
 
   public abstract draw(pixi): void;

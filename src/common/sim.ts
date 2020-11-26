@@ -1,7 +1,7 @@
 import { Id, Input } from './misc';
 import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
-import { Body, Box, Circle, Vec2, World } from 'planck-js';
+import { Body, Box, Circle, Vec2, World} from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
 
@@ -117,6 +117,85 @@ export default abstract class Simulation {
       }
     });
   }
+  handlePlayerInput(body: Body, input?: Input): void {
+    if(input?.fire){
+      this.handleShot(body, input);
+    }
+    
+    this.updatePlayerBodyFromInput(body, input);
+  }
+
+  handleShot(body: Body, input?: Input): void {
+    const direction = this.state.players[(body.getUserData() as {id: number}).id].direction;
+    //console.log(body.getPosition().add(Vec2.mul(direction, 100)))
+    //console.log(new Vec2(body.getPosition().x, 0))
+    //let shot = Vec2.add(body.getPosition(),Vec2.mul(direction, 1000));
+    let x = Infinity;
+    if(direction.x >0){
+      x = 512 - body.getPosition().x
+    }
+    else if(direction.x <0){
+      x = body.getPosition().x
+    }
+
+    let y =Infinity;
+    if(direction.y >0){
+      y = 512 - body.getPosition().y
+    }
+    else if(direction.y <0){
+      y = body.getPosition().y
+    }
+
+    const endPoint = Vec2.add(body.getPosition(), Vec2.mul(direction, x > y ? y : x));
+    
+
+    x = body.getPosition().x
+    console.log("Body: ", body.getPosition())
+    console.log("Endpoint", endPoint)
+    this.world.rayCast(body.getPosition(), endPoint, rayCastCallback);
+    //console.log("baaaang")
+  }
+
+  updatePlayerBodyFromInput(body: Body, input?: Input): void {
+    // we move a player by simply increasing or decreasing its velocity in the cardinal directions
+  
+    if (input === undefined) {
+      // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
+    } else {
+      const velocity = body.getLinearVelocity();
+      const player = this.state.players[(body.getUserData() as {id: number}).id];
+      let newDirection = new Vec2(0, 0);
+      if (input.up && !input.down) {
+        velocity.y = -constants.MOVEMENT_SPEED;
+        newDirection.add(new Vec2(0, -1));
+      }
+      else if (input.down && !input.up) {
+        velocity.y = constants.MOVEMENT_SPEED;
+        newDirection.add(new Vec2(0, 1));
+      }
+      else {
+        velocity.y = 0;
+      }
+  
+      if (input.left && !input.right){
+        velocity.x = -constants.MOVEMENT_SPEED;
+        newDirection.add(new Vec2(-1, 0));
+
+      }
+      else if (input.right && !input.left) {
+        velocity.x = constants.MOVEMENT_SPEED;
+        newDirection.add(new Vec2(1, 0));
+      }
+      else velocity.x = 0;
+      body.setLinearVelocity(velocity);
+      if(!Vec2.areEqual(newDirection, new Vec2(0, 0))){
+        player.direction = newDirection;
+      }
+    }
+
+  
+    body.setAwake(true);
+  }
 }
 
 function createWorld(map: Level): World {
@@ -179,6 +258,7 @@ export function createBody(world: World, entity: Entity): Body {
       entity.position,
       entity.velocity,
       constants.PLAYER_RADIUS,
+      entity.id
     );
   } else if (entity instanceof Enemy) {
     // enemies are identical to players for now
@@ -187,6 +267,7 @@ export function createBody(world: World, entity: Entity): Body {
       entity.position,
       entity.velocity,
       constants.PLAYER_RADIUS,
+      entity.id
     );
   }
 
@@ -198,6 +279,7 @@ function circleBody(
   position: Vec2,
   velocity: Vec2,
   radius: number,
+  id: number
 ): Body {
   // shape must have type any to silence this error:
   // 'CircleShape' is not assignable to parameter of type 'Shape'
@@ -208,27 +290,18 @@ function circleBody(
     linearVelocity: velocity,
   });
   body.createFixture(shape);
+  body.setUserData({id})
   return body;
 }
 
-export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
-  // we move a player by simply increasing or decreasing its velocity in the cardinal directions
 
-  if (input === undefined) {
-    // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
-  } else {
-    const velocity = body.getLinearVelocity();
-
-    if (input.up && !input.down) velocity.y = -constants.MOVEMENT_SPEED;
-    else if (input.down && !input.up) velocity.y = constants.MOVEMENT_SPEED;
-    else velocity.y = 0;
-
-    if (input.left && !input.right) velocity.x = -constants.MOVEMENT_SPEED;
-    else if (input.right && !input.left) velocity.x = constants.MOVEMENT_SPEED;
-    else velocity.x = 0;
-
-    body.setLinearVelocity(velocity);
-  }
-
-  body.setAwake(true);
+function rayCastCallback(fixture:any, point:any, normal:any, fraction:any):number {
+  //console.log(fixture)
+  console.log("point ",point)
+  console.log(fixture.getBody().getUserData());
+  //console.log(normal)
+  //console.log(fraction)
+  //console.log("________________________________________________________")
+  return fraction
 }
+
