@@ -53,11 +53,12 @@ export default class ServerGame extends GameLoop {
     this.enemyIdCounter = players.length;
     //this.spawnEnemies();
   }
-
+  //uses manhattan distance atm
   private moveEnemies() {
-    let maxDistance = Infinity;
     let targetPlayerPosition = new Vec2();
+
     for (const enemy of Object.values(this.state.enemies)) {
+      let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
         if (
           Math.abs(enemy.position.x - player.position.x) +
@@ -112,8 +113,6 @@ export default class ServerGame extends GameLoop {
     });
     pi.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
     this.inputAcks[player_id] = pi.last;
-
-    this.moveEnemies();
   }
 
   doUpdate(): void {
@@ -147,6 +146,7 @@ export default class ServerGame extends GameLoop {
 
   afterUpdate(): void {
     //spawns a baby yoda per second
+    this.moveEnemies();
     if (this.stepCount % Math.floor(1000 / this.fps) === 0) {
       this.spawnEnemies();
       this.despawnEnemies();

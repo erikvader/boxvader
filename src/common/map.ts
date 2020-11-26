@@ -106,7 +106,7 @@ export default class Map {
           this.tiles[i - this.width].walkable &&
           this.tiles[i + 1].walkable
         ) {
-          floydWarshallWeight[i][i - this.width - 1] = Math.sqrt(2);
+          floydWarshallWeight[i][i - this.width + 1] = Math.sqrt(2);
         }
         //checks northwest
         if (
@@ -116,7 +116,7 @@ export default class Map {
           this.tiles[i - this.width].walkable &&
           this.tiles[i - 1].walkable
         ) {
-          floydWarshallWeight[i][i - this.width + 1] = Math.sqrt(2);
+          floydWarshallWeight[i][i - this.width - 1] = Math.sqrt(2);
         }
         //checks southeast
         if (
