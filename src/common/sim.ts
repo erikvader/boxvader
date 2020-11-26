@@ -1,4 +1,4 @@
-import { Id, Input, randomChoice } from './misc';
+import { Id, Input } from './misc';
 import Level from './map'; // alias to not conflict with a map collection
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
@@ -75,7 +75,7 @@ export default abstract class Simulation {
     this.state.enemies[this._enemyIdCounter] = new Enemy(
       this._enemyIdCounter,
       100,
-      Vec2(this._enemyIdCounter * 4, 0),
+      this._map.randomEnemySpawn(),
     );
     this._enemyIdCounter += 1;
   }
@@ -85,9 +85,9 @@ export default abstract class Simulation {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
-        enemy.position.x > 250 ||
+        enemy.position.x > 512 ||
         enemy.position.y < 0 ||
-        enemy.position.y > 250
+        enemy.position.y > 512
       ) {
         delete this.state.enemies[enemy.id];
       }

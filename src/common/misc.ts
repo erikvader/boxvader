@@ -54,7 +54,7 @@ export function randomChoice<T>(ts: T[]): T | undefined {
   if (ts.length === 0) return undefined;
   else if (ts.length === 1) return ts[0];
   else {
-    const index = Math.floor(Math.random() * (ts.length + 1));
+    const index = Math.floor(Math.random() * ts.length);
     return ts[index];
   }
 }

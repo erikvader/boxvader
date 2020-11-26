@@ -46,6 +46,7 @@ export class Region {
     (this.x = x), (this.y = y), (this.width = width), (this.height = height);
   }
 
+  /** Return a random point within the region. */
   public randomPoint(): Vec2 {
     return new Vec2(
       this.x + Math.random() * this.width,
@@ -108,8 +109,14 @@ export default class Map {
     return this.tiles[index];
   }
 
+  /** Return a random point where a player can spawn. */
   public randomPlayerSpawn(): Vec2 {
     return misc.randomChoice(this.playerSpawns)!.randomPoint();
+  }
+
+  /** Return a random point where an enemy can spawn. */
+  public randomEnemySpawn(): Vec2 {
+    return misc.randomChoice(this.enemySpawns)!.randomPoint();
   }
 }
 
