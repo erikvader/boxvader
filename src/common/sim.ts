@@ -127,9 +127,7 @@ export default abstract class Simulation {
 
   handleShot(body: Body, input?: Input): void {
     const direction = this.state.players[(body.getUserData() as {id: number}).id].direction;
-    //console.log(body.getPosition().add(Vec2.mul(direction, 100)))
-    //console.log(new Vec2(body.getPosition().x, 0))
-    //let shot = Vec2.add(body.getPosition(),Vec2.mul(direction, 1000));
+
     let x = Infinity;
     if(direction.x >0){
       x = 512 - body.getPosition().x
@@ -150,10 +148,7 @@ export default abstract class Simulation {
     
 
     x = body.getPosition().x
-    console.log("Body: ", body.getPosition())
-    console.log("Endpoint", endPoint)
     this.world.rayCast(body.getPosition(), endPoint, rayCastCallback);
-    //console.log("baaaang")
   }
 
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
@@ -296,12 +291,6 @@ function circleBody(
 
 
 function rayCastCallback(fixture:any, point:any, normal:any, fraction:any):number {
-  //console.log(fixture)
-  console.log("point ",point)
-  console.log(fixture.getBody().getUserData());
-  //console.log(normal)
-  //console.log(fraction)
-  //console.log("________________________________________________________")
   return fraction
 }
 
