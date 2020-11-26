@@ -116,71 +116,66 @@ export default class ClientGame extends GameLoop {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
-    this.update_players(message.state);
-    this.update_enemies(message.state);
+    const prevState = this.states.last_elem();
+    const newState = message.state;
 
-    this.states.reset(message.state, message.stateNum);
+    this.update_player_sprites(prevState, newState);
+    this.update_enemy_sprites(prevState, newState);
+
+    this.states.reset(newState, message.stateNum);
   }
 
-  update_players(state: State): void {
+  update_player_sprites(prevState: State | undefined, newState: State): void {
     // spawn new players
-    for (const player of Object.values(state.players)) {
+    for (const player of Object.values(newState.players)) {
       if (this.player_list[player.id] === undefined) {
-        // the positions of the players do not matter since they will be corrected by the server
-        // TODO: we should probably think of a better solution in the future
-        this.add_character(
-          PLAYER_SPAWN_X_MIN,
-          PLAYER_SPAWN_Y_MIN,
-          PLAYER_SCALE,
-          PLAYER_SPRITE,
-          player.id,
-        );
+        this.add_character(0, 0, PLAYER_SIZE, PLAYER_SPRITE, player.id);
 
         if (player.id === this.my_id) {
           this.my_sprite = this.player_list[this.my_id];
         }
-      } else {
-        this.decide_direction(player.id);
-        const p = this.states.last_elem()!.players[player.id];
-        this.player_list[player.id].x = p.position.x;
-        this.player_list[player.id].y = p.position.y;
       }
+
+      this.decide_direction(prevState, newState, player.id);
+      this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
+      this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
     }
   }
 
-  update_enemies(state: State): void {
-    this.remove_enemies();
+  update_enemy_sprites(prevState: State | undefined, newState: State): void {
+    this.remove_enemy_sprites(newState);
 
-    for (const enemy of Object.values(state.enemies)) {
+    for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
-        this.add_enemy(enemy.x, enemy.y, ENEMY_SCALE, ENEMY_SPRITE, enemy.id);
-      } else {
-        this.enemy_list[enemy.id].x = this.states.last_elem()!.enemies[
-          enemy.id
-        ].position.x;
-        this.enemy_list[enemy.id].y = this.states.last_elem()!.enemies[
-          enemy.id
-        ].position.y;
+        this.add_enemy(0, 0, ENEMY_SIZE, ENEMY_SPRITE, enemy.id);
       }
+
+      this.enemy_list[enemy.id].x = LOGICAL_TO_PIXELS(enemy.position.x);
+      this.enemy_list[enemy.id].y = LOGICAL_TO_PIXELS(enemy.position.y);
     }
   }
 
-  remove_enemies(): void {
+  remove_enemy_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
-      if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
+      if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
       }
     }
   }
 
-  decide_direction(player_id: number): void {
-    const state = this.states.last_elem();
-    if (state === undefined) return;
+  decide_direction(
+    prevState: State | undefined,
+    newState: State,
+    player_id: number,
+  ): void {
+    if (!prevState) return;
     const dx =
-      state.players[player_id].position.x - this.player_list[player_id].x;
+      newState.players[player_id].position.x -
+      prevState.players[player_id].position.x;
     const dy =
-      state.players[player_id].position.y - this.player_list[player_id].y;
+      newState.players[player_id].position.y -
+      prevState.players[player_id].position.y;
     const pi = Math.PI;
     //Right
     if (dy === 0 && dx > 0) {
