@@ -8,11 +8,16 @@ import * as constants from './constants';
 export default abstract class Simulation {
   public readonly updateStep: number;
 
+  protected _map: Level;
   protected _world: World;
   protected _bodies: Map<Id, Body>;
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
+
+  public get map(): Level {
+    return this._map;
+  }
 
   public get world(): World {
     return this._world;
@@ -28,6 +33,7 @@ export default abstract class Simulation {
 
   constructor(map: Level, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
+    this._map = map;
     this._world = createWorld(map);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
@@ -57,15 +63,7 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const position = Vec2(
-      Math.random() *
-        (constants.PLAYER_SPAWN_X_MAX - constants.PLAYER_SPAWN_X_MIN) +
-        constants.PLAYER_SPAWN_X_MIN,
-      Math.random() *
-        (constants.PLAYER_SPAWN_Y_MAX - constants.PLAYER_SPAWN_Y_MIN) +
-        constants.PLAYER_SPAWN_Y_MIN,
-    );
-
+    const position = this._map.randomPlayerSpawn();
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
@@ -77,7 +75,7 @@ export default abstract class Simulation {
     this.state.enemies[this._enemyIdCounter] = new Enemy(
       this._enemyIdCounter,
       100,
-      Vec2(this._enemyIdCounter * 4, 0),
+      this._map.randomEnemySpawn(),
     );
     this._enemyIdCounter += 1;
   }
@@ -87,9 +85,9 @@ export default abstract class Simulation {
     for (const enemy of Object.values(this.state.enemies)) {
       if (
         enemy.position.x < 0 ||
-        enemy.position.x > 250 ||
+        enemy.position.x > 512 ||
         enemy.position.y < 0 ||
-        enemy.position.y > 250
+        enemy.position.y > 512
       ) {
         delete this.state.enemies[enemy.id];
       }
