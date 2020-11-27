@@ -20,7 +20,7 @@ export abstract class Entity {
     this._health = health;
     this.position = position;
     this.velocity = Vec2.zero();
-    this.direction = Vec2.zero();
+    this.direction = new Vec2(0, -1);
   }
 
   public abstract draw(pixi): void;
