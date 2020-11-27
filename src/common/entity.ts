@@ -36,6 +36,7 @@ export abstract class Entity {
         'position',
         '_health',
         'velocity',
+        'direction',
       ])
     ) {
       const e = construct(
@@ -45,6 +46,7 @@ export abstract class Entity {
       );
       e._health = obj['_health'];
       e.velocity = reviveVec2(obj['velocity']);
+      e.direction = reviveVec2(obj['direction']);
       return e;
     }
     throw new Error("couldn't revive Entity");
