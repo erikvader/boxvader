@@ -164,27 +164,31 @@ export default abstract class Simulation {
       const player = this.state.players[
         (body.getUserData() as { id: number }).id
       ];
-      const newDirection = new Vec2(0, 0);
+
       if (input.up && !input.down) {
         velocity.y = -constants.MOVEMENT_SPEED;
-        newDirection.add(new Vec2(0, -1));
+        player.direction.x = 0;
+        player.direction.y = -1;
       } else if (input.down && !input.up) {
         velocity.y = constants.MOVEMENT_SPEED;
-        newDirection.add(new Vec2(0, 1));
+        player.direction.x = 0;
+        player.direction.y = 1;
       } else {
         velocity.y = 0;
       }
       if (input.left && !input.right) {
         velocity.x = -constants.MOVEMENT_SPEED;
-        newDirection.add(new Vec2(-1, 0));
+        player.direction.x = -1;
+        player.direction.y = 0;
       } else if (input.right && !input.left) {
         velocity.x = constants.MOVEMENT_SPEED;
-        newDirection.add(new Vec2(1, 0));
-      } else velocity.x = 0;
-      body.setLinearVelocity(velocity);
-      if (!Vec2.areEqual(newDirection, new Vec2(0, 0))) {
-        player.direction = newDirection;
+        player.direction.x = 1;
+        player.direction.y = 0;
+      } else {
+        velocity.x = 0;
       }
+
+      body.setLinearVelocity(velocity);
     }
 
     body.setAwake(true);
