@@ -1,6 +1,6 @@
 import Level from '../common/map'; // alias to not conflict with a map collection
 import { Id, Input } from '../common/misc';
-import Simulation, { updatePlayerBodyFromInput } from '../common/sim';
+import Simulation from '../common/sim';
 
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
@@ -19,8 +19,7 @@ export default class ServerSimulation extends Simulation {
       const idNum = parseInt(id);
       const body = this.bodies.get(idNum)!;
       const input = inputs.get(idNum);
-
-      updatePlayerBodyFromInput(body, input);
+      this.handlePlayerInput(body, input);
     }
 
     for (const enemy of Object.values(this.state.enemies)) {
