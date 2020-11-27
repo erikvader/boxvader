@@ -136,7 +136,6 @@ export default abstract class Simulation {
       }
     });
   }
-  //uses manhattan distance atm
   private moveEnemies(): void {
     let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
