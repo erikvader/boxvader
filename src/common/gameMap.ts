@@ -157,17 +157,14 @@ export default class GameMap {
   public getInput(current: Vec2, target: Vec2): Vec2 {
     const currentTile = this.positionToTile(current);
     const targetTile = this.positionToTile(target);
-
     const tile = this.floydWarshallMatrix[currentTile][targetTile];
-
     return this.tileToPosition(tile);
   }
 
   public positionToTile(position: Vec2): number {
-    const widthCoord =
-      Math.round((position.x + 0.1) / this.tileset.tileWidth) - 1;
-    const heightCoord =
-      Math.round((position.y + 0.1) / this.tileset.tileHeight) - 1;
+    console.log(position);
+    const widthCoord = Math.round(position.x / this.tileset.tileWidth) - 1;
+    const heightCoord = Math.round(position.y / this.tileset.tileHeight) - 1;
 
     return this.height * heightCoord + widthCoord;
   }

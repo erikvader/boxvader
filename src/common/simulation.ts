@@ -140,6 +140,7 @@ export default abstract class Simulation {
     let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
       const enemyTile = this._gameMap.positionToTile(enemy.position);
+
       let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
         const playerTile = this._gameMap.positionToTile(player.position);
@@ -154,6 +155,7 @@ export default abstract class Simulation {
         }
       }
       const newMove = this.nextMove(enemy.position, targetPlayerPosition);
+      //console.log(newMove);
       enemy.move(newMove);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
@@ -161,6 +163,17 @@ export default abstract class Simulation {
   }
 
   private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
+    const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
+    if (isNaN(nextPosition.x) || isNaN(nextPosition.y)) {
+      return currentPosition;
+    }
+
+    let x = Math.sign(nextPosition.x - currentPosition.x);
+    let y = Math.sign(nextPosition.y - currentPosition.y);
+    return new Vec2(x, y);
+  }
+}
+/*private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
     const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
     const nextMove: Vec2 = new Vec2(0, 0);
 
@@ -191,7 +204,7 @@ export default abstract class Simulation {
     }
     return nextMove;
   }
-}
+}*/
 
 function createWorld(map: GameMap): World {
   const world = new World();
