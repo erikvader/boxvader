@@ -139,18 +139,18 @@ export default abstract class Simulation {
   //uses manhattan distance atm
   private moveEnemies(): void {
     let targetPlayerPosition = new Vec2();
-
     for (const enemy of Object.values(this.state.enemies)) {
+      const enemyTile = this._gameMap.positionToTile(enemy.position);
       let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
+        let playerTile = this._gameMap.positionToTile(player.position);
         if (
-          Math.abs(enemy.position.x - player.position.x) +
-            Math.abs(enemy.position.y - player.position.y) <
+          this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
           maxDistance
         ) {
-          maxDistance =
-            Math.abs(enemy.position.x - player.position.x) +
-            Math.abs(enemy.position.y - player.position.y);
+          maxDistance = this._gameMap.floydWarshallWeightMatrix[enemyTile][
+            playerTile
+          ];
           targetPlayerPosition = player.position;
         }
       }

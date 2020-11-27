@@ -24,6 +24,7 @@ export default class GameMap {
   public readonly tileIds: number[];
   public readonly tiles: Tile[];
   public floydWarshallMatrix: number[][];
+  public floydWarshallWeightMatrix: number[][];
 
   constructor(name: string, tilesetName: string) {
     const jsonMap = getJson(name);
@@ -49,18 +50,17 @@ export default class GameMap {
     this.tileIds = jsonMap.layers[0].data.map(id => id - 1);
     this.tiles = this.tileIds.map(id => this.tileset.tiles[id]);
     this.floydWarshallMatrix = [[]];
+    this.floydWarshallWeightMatrix = [[]];
 
     this.floydWarshallAlgorithm();
   }
 
   private floydWarshallAlgorithm(): void {
-    const floydWarshallWeight: number[][] = [[]];
-
     for (let i = 0; i < this.width * this.height; i++) {
-      floydWarshallWeight[i] = [];
+      this.floydWarshallWeightMatrix[i] = [];
       this.floydWarshallMatrix[i] = [];
       for (let j = 0; j < this.height * this.width; j++) {
-        floydWarshallWeight[i][j] = Infinity;
+        this.floydWarshallWeightMatrix[i][j] = Infinity;
         if (this.tiles[j].walkable) {
           this.floydWarshallMatrix[i][j] = j;
         } else {
@@ -69,30 +69,30 @@ export default class GameMap {
       }
     }
     for (let i = 0; i < this.width * this.height; i++) {
-      floydWarshallWeight[i][i] = 0;
+      this.floydWarshallWeightMatrix[i][i] = 0;
       this.floydWarshallMatrix[i][i] = i;
       if (this.tiles[i].walkable) {
         //checks north
         if (i - this.width >= 0 && this.tiles[i - this.width].walkable) {
-          floydWarshallWeight[i][i - this.width] = 1;
+          this.floydWarshallWeightMatrix[i][i - this.width] = 1;
         }
         //checks south
         if (
           i + this.width <= this.width * this.height &&
           this.tiles[i + this.width].walkable
         ) {
-          floydWarshallWeight[i][i + this.width] = 1;
+          this.floydWarshallWeightMatrix[i][i + this.width] = 1;
         }
         //checks west
         if (
           (i - 1) % this.width !== this.width - 1 &&
           this.tiles[i - 1].walkable
         ) {
-          floydWarshallWeight[i][i - 1] = 1;
+          this.floydWarshallWeightMatrix[i][i - 1] = 1;
         }
         //checks east
         if ((i + 1) % this.width !== 0 && this.tiles[i + 1].walkable) {
-          floydWarshallWeight[i][i + 1] = 1;
+          this.floydWarshallWeightMatrix[i][i + 1] = 1;
         }
         //checks northeast
         if (
@@ -102,7 +102,7 @@ export default class GameMap {
           this.tiles[i - this.width].walkable &&
           this.tiles[i + 1].walkable
         ) {
-          floydWarshallWeight[i][i - this.width + 1] = Math.sqrt(2);
+          this.floydWarshallWeightMatrix[i][i - this.width + 1] = Math.sqrt(2);
         }
         //checks northwest
         if (
@@ -112,7 +112,7 @@ export default class GameMap {
           this.tiles[i - this.width].walkable &&
           this.tiles[i - 1].walkable
         ) {
-          floydWarshallWeight[i][i - this.width - 1] = Math.sqrt(2);
+          this.floydWarshallWeightMatrix[i][i - this.width - 1] = Math.sqrt(2);
         }
         //checks southeast
         if (
@@ -122,7 +122,7 @@ export default class GameMap {
           this.tiles[i + this.width].walkable &&
           this.tiles[i + 1].walkable
         ) {
-          floydWarshallWeight[i][i + this.width + 1] = Math.sqrt(2);
+          this.floydWarshallWeightMatrix[i][i + this.width + 1] = Math.sqrt(2);
         }
         //checks southwest
         if (
@@ -132,7 +132,7 @@ export default class GameMap {
           this.tiles[i + this.width].walkable &&
           this.tiles[i - 1].walkable
         ) {
-          floydWarshallWeight[i][i + this.width - 1] = Math.sqrt(2);
+          this.floydWarshallWeightMatrix[i][i + this.width - 1] = Math.sqrt(2);
         }
       }
     }
@@ -140,11 +140,13 @@ export default class GameMap {
       for (let j = 0; j < this.width * this.height; j++) {
         for (let i = 0; i < this.width * this.height; i++) {
           if (
-            floydWarshallWeight[i][j] >
-            floydWarshallWeight[i][k] + floydWarshallWeight[k][j]
+            this.floydWarshallWeightMatrix[i][j] >
+            this.floydWarshallWeightMatrix[i][k] +
+              this.floydWarshallWeightMatrix[k][j]
           ) {
-            floydWarshallWeight[i][j] =
-              floydWarshallWeight[i][k] + floydWarshallWeight[k][j];
+            this.floydWarshallWeightMatrix[i][j] =
+              this.floydWarshallWeightMatrix[i][k] +
+              this.floydWarshallWeightMatrix[k][j];
             this.floydWarshallMatrix[i][j] = this.floydWarshallMatrix[i][k];
           }
         }
@@ -161,7 +163,7 @@ export default class GameMap {
     return this.tileToPosition(tile);
   }
 
-  private positionToTile(position: Vec2): number {
+  public positionToTile(position: Vec2): number {
     const widthCoord =
       Math.round((position.x + 0.1) / this.tileset.tileWidth) - 1;
     const heightCoord =
@@ -170,7 +172,7 @@ export default class GameMap {
     return this.height * heightCoord + widthCoord;
   }
 
-  private tileToPosition(tilePosition: number): Vec2 {
+  public tileToPosition(tilePosition: number): Vec2 {
     const x =
       Math.floor(tilePosition % this.width) * this.tileset.tileWidth +
       this.tileset.tileWidth / 2;
