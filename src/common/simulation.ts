@@ -143,7 +143,7 @@ export default abstract class Simulation {
       const enemyTile = this._gameMap.positionToTile(enemy.position);
       let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
-        let playerTile = this._gameMap.positionToTile(player.position);
+        const playerTile = this._gameMap.positionToTile(player.position);
         if (
           this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
           maxDistance
