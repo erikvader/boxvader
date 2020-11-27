@@ -1,4 +1,3 @@
-//import Level from '../common/gameMap'; // alias to not conflict with a map collection
 import { Id, Input } from '../common/misc';
 import Simulation, { updatePlayerBodyFromInput } from '../common/simulation';
 import GameMap from '../common/gameMap';
