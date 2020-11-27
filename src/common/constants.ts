@@ -40,6 +40,15 @@ export const ENEMY_SCALE = 0.01;
 export const MAP_WIDTH = 512;
 export const MAP_HEIGHT = 512;
 
+/** Name of the tile layer that holds the tile data of a map. */
+export const MAP_TILE_LAYER_LAYER_NAME = 'Map';
+
+/** Name of the object group layer that holds spawn positions of players. */
+export const MAP_PLAYER_SPAWN_LAYER_NAME = 'Player spawn';
+
+/** Name of the object group layer that holds spawn positions of enemies. */
+export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
+
 /**
  * How seldom the server broadcasts it's state to all clients. Can be an integer
  * in the range [1,∞). 1 means send every update, 2 means send every other

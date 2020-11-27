@@ -1,19 +1,24 @@
 import { Id, Input } from './misc';
 import GameMap from './gameMap'; // alias to not conflict with a map collection
 import State from './state';
-import { Body, Box, Circle, Vec2, World } from 'planck-js';
+import { Body, Box, Circle, Vec2, World, Fixture } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
 
+  protected _map: GameMap;
   protected _world: World;
   protected _bodies: Map<Id, Body>;
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
   protected _gameMap: GameMap;
+
+  public get map(): GameMap {
+    return this._map;
+  }
 
   public get world(): World {
     return this._world;
@@ -33,6 +38,7 @@ export default abstract class Simulation {
 
   constructor(gameMap: GameMap, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
+    this._map = gameMap;
     this._world = createWorld(gameMap);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
@@ -64,15 +70,7 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const position = Vec2(
-      Math.random() *
-        (constants.PLAYER_SPAWN_X_MAX - constants.PLAYER_SPAWN_X_MIN) +
-        constants.PLAYER_SPAWN_X_MIN,
-      Math.random() *
-        (constants.PLAYER_SPAWN_Y_MAX - constants.PLAYER_SPAWN_Y_MIN) +
-        constants.PLAYER_SPAWN_Y_MIN,
-    );
-
+    const position = this._map.randomPlayerSpawn();
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
@@ -109,7 +107,9 @@ export default abstract class Simulation {
         enemy.position.y < 0 ||
         enemy.position.y > 400
       ) {
+        this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
+
         delete this.state.enemies[enemy.id];
       }
     }
@@ -164,47 +164,88 @@ export default abstract class Simulation {
 
   private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
     const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
-    if (isNaN(nextPosition.x) || isNaN(nextPosition.y)) {
-      return currentPosition;
-    }
 
     let x = Math.sign(nextPosition.x - currentPosition.x);
     let y = Math.sign(nextPosition.y - currentPosition.y);
     return new Vec2(x, y);
   }
-}
-/*private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
-    const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
-    const nextMove: Vec2 = new Vec2(0, 0);
-
-    if (nextPosition.x > currentPosition.x) {
-      if (nextPosition.y > currentPosition.y) {
-        nextMove.add(Vec2(1, 1));
-      } else if (nextPosition.y < currentPosition.y) {
-        nextMove.add(Vec2(1, -1));
-      } else {
-        nextMove.add(Vec2(1, 0));
-      }
-    } else if (nextPosition.x < currentPosition.x) {
-      if (nextPosition.y > currentPosition.y) {
-        nextMove.add(Vec2(-1, 1));
-      } else if (nextPosition.y < currentPosition.y) {
-        nextMove.add(Vec2(-1, -1));
-      } else {
-        nextMove.add(Vec2(-1, 0));
-      }
-    } else {
-      if (nextPosition.y > currentPosition.y) {
-        nextMove.add(Vec2(0, 1));
-      } else if (nextPosition.y < currentPosition.y) {
-        nextMove.add(Vec2(0, -1));
-      } else {
-        nextMove.add(Vec2(0, 0));
-      }
+  handlePlayerInput(body: Body, input?: Input): void {
+    if (input?.fire) {
+      this.handleShot(body, input);
     }
-    return nextMove;
+
+    this.updatePlayerBodyFromInput(body, input);
   }
-}*/
+
+  handleShot(body: Body, input?: Input): void {
+    const direction = this.state.players[
+      (body.getUserData() as { id: number }).id
+    ].direction;
+
+    let multiplier = Infinity;
+
+    if (direction.x > 0) {
+      multiplier = constants.MAP_WIDTH - body.getPosition().x;
+    } else if (direction.x < 0) {
+      multiplier = body.getPosition().x;
+    }
+    if (direction.y > 0) {
+      multiplier =
+        constants.MAP_HEIGHT - body.getPosition().y < multiplier
+          ? constants.MAP_HEIGHT - body.getPosition().y
+          : multiplier;
+    } else if (direction.y < 0) {
+      multiplier =
+        body.getPosition().y < multiplier ? body.getPosition().y : multiplier;
+    }
+
+    const endPoint = Vec2.add(
+      body.getPosition(),
+      Vec2.mul(direction, multiplier),
+    );
+
+    this.world.rayCast(body.getPosition(), endPoint, rayCastCallback);
+  }
+
+  updatePlayerBodyFromInput(body: Body, input?: Input): void {
+    // we move a player by simply increasing or decreasing its velocity in the cardinal directions
+    if (input === undefined) {
+      // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
+    } else {
+      const velocity = body.getLinearVelocity();
+      const player = this.state.players[
+        (body.getUserData() as { id: number }).id
+      ];
+
+      if (input.up && !input.down) {
+        velocity.y = -constants.MOVEMENT_SPEED;
+        player.direction.x = 0;
+        player.direction.y = -1;
+      } else if (input.down && !input.up) {
+        velocity.y = constants.MOVEMENT_SPEED;
+        player.direction.x = 0;
+        player.direction.y = 1;
+      } else {
+        velocity.y = 0;
+      }
+      if (input.left && !input.right) {
+        velocity.x = -constants.MOVEMENT_SPEED;
+        player.direction.x = -1;
+        player.direction.y = 0;
+      } else if (input.right && !input.left) {
+        velocity.x = constants.MOVEMENT_SPEED;
+        player.direction.x = 1;
+        player.direction.y = 0;
+      } else {
+        velocity.x = 0;
+      }
+
+      body.setLinearVelocity(velocity);
+    }
+
+    body.setAwake(true);
+  }
+}
 
 function createWorld(map: GameMap): World {
   const world = new World();
@@ -266,6 +307,7 @@ export function createBody(world: World, entity: Entity): Body {
       entity.position,
       entity.velocity,
       constants.PLAYER_RADIUS,
+      entity.id,
     );
   } else if (entity instanceof Enemy) {
     // enemies are identical to players for now
@@ -274,6 +316,7 @@ export function createBody(world: World, entity: Entity): Body {
       entity.position,
       entity.velocity,
       constants.PLAYER_RADIUS,
+      entity.id,
     );
   }
 
@@ -285,6 +328,7 @@ function circleBody(
   position: Vec2,
   velocity: Vec2,
   radius: number,
+  id: number,
 ): Body {
   // shape must have type any to silence this error:
   // 'CircleShape' is not assignable to parameter of type 'Shape'
@@ -295,27 +339,18 @@ function circleBody(
     linearVelocity: velocity,
   });
   body.createFixture(shape);
+  body.setUserData({ id });
   return body;
 }
 
-export function updatePlayerBodyFromInput(body: Body, input?: Input): void {
-  // we move a player by simply increasing or decreasing its velocity in the cardinal directions
-
-  if (input === undefined) {
-    // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
-  } else {
-    const velocity = body.getLinearVelocity();
-
-    if (input.up && !input.down) velocity.y = -constants.MOVEMENT_SPEED;
-    else if (input.down && !input.up) velocity.y = constants.MOVEMENT_SPEED;
-    else velocity.y = 0;
-
-    if (input.left && !input.right) velocity.x = -constants.MOVEMENT_SPEED;
-    else if (input.right && !input.left) velocity.x = constants.MOVEMENT_SPEED;
-    else velocity.x = 0;
-
-    body.setLinearVelocity(velocity);
-  }
-
-  body.setAwake(true);
+function rayCastCallback(
+  fixture: Fixture,
+  point: Vec2,
+  normal: Vec2,
+  fraction: number,
+): number {
+  // TODO: Fix hit functionality
+  // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
+  console.log(fixture.getBody().getUserData());
+  return fraction;
 }

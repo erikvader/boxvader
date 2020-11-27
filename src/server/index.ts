@@ -86,7 +86,7 @@ io.onConnection(channel => {
 });
 
 if ((process.env.NODE_SERVER_TEST ?? '') === '') {
-  server.listen(port, () => {
+  server.listen(port, '0.0.0.0', () => {
     console.info(`spela spel gratis på http://localhost:${port}`);
   });
 }
