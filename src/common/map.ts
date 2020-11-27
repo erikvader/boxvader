@@ -37,20 +37,21 @@ interface ObjectGroupObject {
 
 /** A region of a map. */
 export class Region {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  /** Upper left corner of the region. */
+  position: Vec2;
+  /** Size of the region. */
+  size: Vec2;
 
-  constructor(x: number, y: number, width: number, height: number) {
-    (this.x = x), (this.y = y), (this.width = width), (this.height = height);
+  constructor(position: Vec2, size: Vec2) {
+    this.position = position;
+    this.size = size;
   }
 
   /** Return a random point within the region. */
   public randomPoint(): Vec2 {
-    return new Vec2(
-      this.x + Math.random() * this.width,
-      this.y + Math.random() * this.height,
+    return Vec2.add(
+      this.position,
+      Vec2(Math.random() * this.size.x, Math.random() * this.size.y),
     );
   }
 }
@@ -97,10 +98,10 @@ export default class Map {
     this.tileIds = tileIds;
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
     this.playerSpawns = playerLayer.objects.map(
-      obj => new Region(obj.x, obj.y, obj.width, obj.height),
+      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
     );
     this.enemySpawns = enemyLayer.objects.map(
-      obj => new Region(obj.x, obj.y, obj.width, obj.height),
+      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
     );
   }
 
