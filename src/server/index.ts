@@ -7,8 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const port = PORT;
 
-import { default as geckos, ServerChannel } from '@geckos.io/server';
-const io = geckos();
+import geckos, { ServerChannel, iceServers } from '@geckos.io/server';
+const io = geckos({
+  iceServers: process.env.NODE_ENV === 'production' ? iceServers : [],
+});
 
 import ServerGame from './game';
 import Map from '../common/map';
@@ -86,7 +88,7 @@ io.onConnection(channel => {
 });
 
 if ((process.env.NODE_SERVER_TEST ?? '') === '') {
-  server.listen(port, () => {
+  server.listen(port, '0.0.0.0', () => {
     console.info(`spela spel gratis på http://localhost:${port}`);
   });
 }
