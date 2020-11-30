@@ -101,11 +101,22 @@ export default class GameMap {
     this.tileIds = tileIds;
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
 
+    const to_logical = (pix: number): number =>
+      (pix * constants.TILE_LOGICAL_SIZE) / this.tileset.tileWidth;
+
     this.playerSpawns = playerLayer.objects.map(
-      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
+      obj =>
+        new Region(
+          Vec2(to_logical(obj.x), to_logical(obj.y)),
+          Vec2(to_logical(obj.width), to_logical(obj.height)),
+        ),
     );
     this.enemySpawns = enemyLayer.objects.map(
-      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
+      obj =>
+        new Region(
+          Vec2(to_logical(obj.x), to_logical(obj.y)),
+          Vec2(to_logical(obj.width), to_logical(obj.height)),
+        ),
     );
 
     this.floydWarshallMatrix = [[]];
@@ -248,14 +259,19 @@ export default class GameMap {
     const h = this.height * constants.TILE_TARGET_SIZE_PIXELS;
     return [w, h];
   }
+
   /** Return a random point where a player can spawn. */
   public randomPlayerSpawn(): Vec2 {
-    return misc.randomChoice(this.playerSpawns)!.randomPoint();
+    const tmp = misc.randomChoice(this.playerSpawns);
+    if (tmp === undefined) throw new Error("there aren't any spawn locations");
+    return tmp.randomPoint();
   }
 
   /** Return a random point where an enemy can spawn. */
   public randomEnemySpawn(): Vec2 {
-    return misc.randomChoice(this.enemySpawns)!.randomPoint();
+    const tmp = misc.randomChoice(this.enemySpawns);
+    if (tmp === undefined) throw new Error("there aren't any spawn locations");
+    return tmp.randomPoint();
   }
 }
 
