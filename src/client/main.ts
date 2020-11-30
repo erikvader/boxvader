@@ -5,8 +5,8 @@ import {
   PLAYER_SPRITE,
   ENEMY_SPRITE,
   PORT,
-  MAP_SIZE_X,
-  MAP_SIZE_Y,
+  MAP_WIDTH,
+  MAP_HEIGHT,
   CLIENT_UPS,
   CLIENT_FPS,
 } from '../common/constants';
@@ -14,8 +14,8 @@ import {
 function setup(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer({
-    width: MAP_SIZE_X,
-    height: MAP_SIZE_Y,
+    width: MAP_WIDTH,
+    height: MAP_HEIGHT,
   });
   renderer.backgroundColor = 0xffd700;
   document.body.appendChild(renderer.view);

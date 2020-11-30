@@ -6,8 +6,8 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 
 import * as constants from '../common/constants';
-import ServerSimulation from './server-sim';
-import Level from '../common/map';
+import ServerSimulation from './serverSimulation';
+import GameMap from '../common/gameMap';
 
 /**
  * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
@@ -25,7 +25,7 @@ export default class ServerGame extends GameLoop {
   private inputAcks: NumMap<number>;
 
   constructor(
-    map: Level,
+    gameMap: GameMap,
     broadcast: (buf: ByteBuffer) => void,
     players: Array<Id>,
   ) {
@@ -34,7 +34,7 @@ export default class ServerGame extends GameLoop {
     this.stateNum = 0;
     this.playerInputs = {};
     this.inputAcks = {};
-    this.simulation = new ServerSimulation(map, this.ups, players.length);
+    this.simulation = new ServerSimulation(gameMap, this.ups, players.length);
 
     for (const p of players) {
       this.simulation.addPlayer(p, 'TODO');
@@ -87,19 +87,19 @@ export default class ServerGame extends GameLoop {
   }
 
   private getNextInput(p: string): TimedInput {
-    const pi = this.playerInputs[p];
-    let inp;
-    while (pi.length > 0) {
-      inp = pi.pop_front()[0];
+    const playerInput = this.playerInputs[p];
+    let input;
+    while (playerInput.length > 0) {
+      input = playerInput.pop_front()[0];
       if (
-        pi.length === 0 ||
-        !this.isOld(inp.stateNum) ||
-        this.isOld(pi.last_elem()!.stateNum)
+        playerInput.length === 0 ||
+        !this.isOld(input.stateNum) ||
+        this.isOld(playerInput.last_elem()!.stateNum)
       ) {
         break;
       }
     }
-    return inp;
+    return input;
   }
 
   private isOld(stateNum): boolean {

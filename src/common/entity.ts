@@ -147,8 +147,8 @@ export class Enemy extends Entity {
     throw new Error('Method not implemented.');
   }
   //should be fixed in the future
-  public move(): void {
-    this.position.add(Vec2(0, 1));
+  public move(nextMove: Vec2): void {
+    this.position.add(nextMove);
   }
   /**
    * Returns a deep copy of an `Enemy`.
