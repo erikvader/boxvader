@@ -1,11 +1,11 @@
-import Level from '../common/map'; // alias to not conflict with a map collection
+import GameMap from '../common/gameMap';
 import { Id, Input } from '../common/misc';
-import Simulation, { updatePlayerBodyFromInput } from '../common/sim';
+import Simulation, { updatePlayerBodyFromInput } from '../common/simulation';
 
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
 
-  constructor(map: Level, updateStep: number, enemyIdCounter: number) {
+  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
     super(map, updateStep, enemyIdCounter);
     this.difficulty = 0;
   }

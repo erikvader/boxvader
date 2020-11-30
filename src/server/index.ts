@@ -11,7 +11,7 @@ import { default as geckos, ServerChannel } from '@geckos.io/server';
 const io = geckos();
 
 import ServerGame from './game';
-import Map from '../common/map';
+import GameMap from '../common/gameMap';
 
 io.addServer(server);
 
@@ -30,7 +30,7 @@ let game: ServerGame | undefined;
 
 function startGame(maxMessageSize?: number): void {
   game = new ServerGame(
-    new Map('scifi-1', 'scifi'),
+    new GameMap('scifi-1', 'scifi'),
     x => {
       if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
         console.warn(

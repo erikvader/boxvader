@@ -1,5 +1,5 @@
 import { Id, Input } from './misc';
-import Level from './map'; // alias to not conflict with a map collection
+import GameMap from './gameMap';
 import State from './state';
 import { Body, Box, Circle, Vec2, World } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
@@ -13,7 +13,7 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
-  protected _map: Level;
+  protected _map: GameMap;
 
   public get world(): World {
     return this._world;
@@ -32,7 +32,7 @@ export default abstract class Simulation {
    * @param updateStep How big an update step is in seconds.
    * @param enemyIdCounter The starting value for the enemy ids.
    */
-  constructor(map: Level, updateStep: number, enemyIdCounter: number) {
+  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
     this._world = createWorld(map);
     this._bodies = new Map<Id, Body>();
@@ -126,7 +126,7 @@ export default abstract class Simulation {
   }
 }
 
-function createWorld(map: Level): World {
+function createWorld(map: GameMap): World {
   const world = new World();
 
   const fixDef: any = {

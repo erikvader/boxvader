@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
-import Map from '../common/map';
+import GameMap from '../common/gameMap';
 
-export default function display_map(stage: PIXI.stage, map: Map): void {
+export default function display_map(stage: PIXI.stage, map: GameMap): void {
   for (let r = 0; r < map.height; r++) {
     for (let c = 0; c < map.width; c++) {
       const texture = PIXI.utils.TextureCache[map.tileset.imageName].clone();
@@ -14,7 +14,7 @@ function display_tile(
   x_pos: number,
   y_pos: number,
   texture: PIXI.Texture,
-  map: Map,
+  map: GameMap,
 ): void {
   const tile_pos = map.tileset.tilePos(map.at(x_pos, y_pos).id);
 

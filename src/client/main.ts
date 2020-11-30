@@ -8,7 +8,7 @@ import {
   CLIENT_UPS,
   CLIENT_FPS,
 } from '../common/constants';
-import Map from '../common/map';
+import GameMap from '../common/gameMap';
 
 function setup(): void {
   const channel = geckos({ port: PORT });
@@ -29,7 +29,7 @@ function setup(): void {
     channel.onRaw(data => game?.serverMsg(data));
 
     channel.on('start', data => {
-      const map = new Map(data['map'], data['tileset']);
+      const map = new GameMap(data['map'], data['tileset']);
       const [w, h] = map.total_pixel_size();
       renderer.resize(w, h);
 

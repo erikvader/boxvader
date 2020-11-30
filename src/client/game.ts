@@ -9,7 +9,7 @@ import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
-import Map from '../common/map';
+import GameMap from '../common/gameMap';
 import {
   PLAYER_SPRITE,
   LOGICAL_TO_PIXELS,
@@ -23,7 +23,7 @@ export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
   stage: PIXI.Stage;
-  map: Map;
+  map: GameMap;
   my_id: number;
 }
 

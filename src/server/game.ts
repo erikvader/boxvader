@@ -6,8 +6,8 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 
 import * as constants from '../common/constants';
-import ServerSimulation from './server-sim';
-import Level from '../common/map';
+import ServerSimulation from './serverSimulation';
+import GameMap from '../common/gameMap';
 
 /**
  * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
@@ -25,7 +25,7 @@ export default class ServerGame extends GameLoop {
   private inputAcks: NumMap<number>;
 
   constructor(
-    map: Level,
+    map: GameMap,
     broadcast: (buf: ByteBuffer) => void,
     players: Array<Id>,
   ) {
