@@ -165,8 +165,8 @@ export default abstract class Simulation {
   private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
     const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
 
-    let x = Math.sign(nextPosition.x - currentPosition.x);
-    let y = Math.sign(nextPosition.y - currentPosition.y);
+    const x = Math.sign(nextPosition.x - currentPosition.x);
+    const y = Math.sign(nextPosition.y - currentPosition.y);
     return new Vec2(x, y);
   }
   handlePlayerInput(body: Body, input?: Input): void {
@@ -351,6 +351,6 @@ function rayCastCallback(
 ): number {
   // TODO: Fix hit functionality
   // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
-  console.log(fixture.getBody().getUserData());
+  //console.log(fixture.getBody().getUserData());
   return fraction;
 }
