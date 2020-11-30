@@ -221,19 +221,19 @@ export default class GameMap {
   }
 
   public positionToTile(position: Vec2): number {
-    const widthCoord = Math.floor(position.x / this.tileset.tileWidth);
-    const heightCoord = Math.floor(position.y / this.tileset.tileHeight);
+    const widthCoord = Math.floor(position.x / constants.TILE_LOGICAL_SIZE);
+    const heightCoord = Math.floor(position.y / constants.TILE_LOGICAL_SIZE);
 
     return this.height * heightCoord + widthCoord;
   }
 
   public tileToPosition(tilePosition: number): Vec2 {
     const x =
-      Math.floor(tilePosition % this.width) * this.tileset.tileWidth +
-      this.tileset.tileWidth / 2;
+      Math.floor(tilePosition % this.width) * constants.TILE_LOGICAL_SIZE +
+      constants.TILE_LOGICAL_SIZE / 2;
     const y =
-      Math.floor(tilePosition / this.height) * this.tileset.tileHeight +
-      this.tileset.tileHeight / 2;
+      Math.floor(tilePosition / this.height) * constants.TILE_LOGICAL_SIZE +
+      constants.TILE_LOGICAL_SIZE / 2;
 
     return new Vec2(x, y);
   }

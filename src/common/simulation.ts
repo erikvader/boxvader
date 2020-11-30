@@ -89,7 +89,7 @@ export default abstract class Simulation {
         `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
       );
 
-    const position = Vec2(48, 48);
+    const position = Vec2(2, 2);
 
     const enemy = new Enemy(this._enemyIdCounter, 10, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
@@ -135,6 +135,7 @@ export default abstract class Simulation {
       }
     });
   }
+
   private moveEnemies(): void {
     let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
@@ -153,15 +154,14 @@ export default abstract class Simulation {
           targetPlayerPosition = player.position;
         }
       }
-      const newMove = this.nextMove(enemy.position, targetPlayerPosition);
-      //console.log(newMove);
-      enemy.move(newMove);
+      const newMove = this.enemyNextMove(enemy.position, targetPlayerPosition);
+      newMove.mul(constants.ENEMY_MOVEMENT_SPEED);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
     }
   }
 
-  private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
+  private enemyNextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
     const nextPosition = this._gameMap.getInput(
       currentPosition,
       targetPosition,
@@ -171,6 +171,7 @@ export default abstract class Simulation {
     const y = Math.sign(nextPosition.y - currentPosition.y);
     return new Vec2(x, y);
   }
+
   handlePlayerInput(body: Body, input?: Input): void {
     if (input?.fire) {
       this.handleShot(body, input);

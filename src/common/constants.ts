@@ -50,6 +50,11 @@ export const ENEMY_HITBOX_RADIUS = 0.5;
  */
 export const PLAYER_MOVEMENT_SPEED = 2;
 
+/**
+ * Enemy movement speed in meters per second.
+ */
+export const ENEMY_MOVEMENT_SPEED = 1;
+
 /** Name of the tile layer that holds the tile data of a map. */
 export const MAP_TILE_LAYER_LAYER_NAME = 'Map';
 
