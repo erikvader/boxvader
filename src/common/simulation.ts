@@ -92,7 +92,7 @@ export default abstract class Simulation {
 
     const position = Vec2(48, 48);
 
-    const enemy = new Enemy(this._enemyIdCounter, 10, position);
+    const enemy = new Enemy(this._enemyIdCounter, 1, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
     this._enemyIdCounter += 1;
@@ -101,12 +101,7 @@ export default abstract class Simulation {
   // despawns with a weird criteria atm, but is easily changed
   private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
-      if (
-        enemy.position.x < 0 ||
-        enemy.position.x > 400 ||
-        enemy.position.y < 0 ||
-        enemy.position.y > 400
-      ) {
+      if (enemy.health === 0) {
         this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
 
@@ -204,7 +199,11 @@ export default abstract class Simulation {
       Vec2.mul(direction, multiplier),
     );
 
-    this.world.rayCast(body.getPosition(), endPoint, rayCastCallback);
+    this.world.rayCast(
+      body.getPosition(),
+      endPoint,
+      this.rayCastCallback.bind(this),
+    );
   }
 
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
@@ -244,6 +243,20 @@ export default abstract class Simulation {
     }
 
     body.setAwake(true);
+  }
+
+  private rayCastCallback(
+    fixture: Fixture,
+    point: Vec2,
+    normal: Vec2,
+    fraction: number,
+  ): number {
+    const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
+    if (userData == null) {
+      return fraction;
+    }
+    this._state.enemies[userData.id].takeDamage(1);
+    return fraction;
   }
 }
 
@@ -341,16 +354,4 @@ function circleBody(
   body.createFixture(shape);
   body.setUserData({ id });
   return body;
-}
-
-function rayCastCallback(
-  fixture: Fixture,
-  point: Vec2,
-  normal: Vec2,
-  fraction: number,
-): number {
-  // TODO: Fix hit functionality
-  // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
-  //console.log(fixture.getBody().getUserData());
-  return fraction;
 }
