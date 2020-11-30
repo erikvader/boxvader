@@ -14,24 +14,24 @@ function display_tile(
   x_pos: number,
   y_pos: number,
   texture: PIXI.Texture,
-  map: GameMap,
+  gameMap: GameMap,
 ): void {
-  const tile_pos = map.tileset.tilePos(map.at(x_pos, y_pos).id);
+  const tile_pos = gameMap.tileset.tilePos(gameMap.at(x_pos, y_pos).id);
 
-  const x_img = map.tileset.tileWidth * tile_pos.column;
-  const y_img = map.tileset.tileHeight * tile_pos.row;
+  const x_img = gameMap.tileset.tileWidth * tile_pos.column;
+  const y_img = gameMap.tileset.tileHeight * tile_pos.row;
   const rectangle = new PIXI.Rectangle(
     x_img,
     y_img,
-    map.tileset.tileWidth,
-    map.tileset.tileHeight,
+    gameMap.tileset.tileWidth,
+    gameMap.tileset.tileHeight,
   );
   texture.frame = rectangle;
 
-  const scale = map.tileset.scaleFactor();
+  const scale = gameMap.tileset.scaleFactor();
   const tile = new PIXI.Sprite(texture);
-  tile.x = map.tileset.tileWidth * x_pos * scale;
-  tile.y = map.tileset.tileHeight * y_pos * scale;
+  tile.x = gameMap.tileset.tileWidth * x_pos * scale;
+  tile.y = gameMap.tileset.tileHeight * y_pos * scale;
   tile.scale.set(scale, scale);
 
   return tile;

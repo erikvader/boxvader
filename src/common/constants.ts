@@ -8,16 +8,6 @@ export const PORT = 3000;
 export const PLAYER_SPRITE = 'imgs/zombie_0.png';
 export const ENEMY_SPRITE = 'imgs/b_yoda.png';
 
-/** Minimum x-coordinate of players' spawn. */
-export const PLAYER_SPAWN_X_MIN = 7;
-/** Maximum x-coordinate of players' spawn. */
-export const PLAYER_SPAWN_X_MAX = 7;
-
-/** Minimum y-coordinate of players' spawn. */
-export const PLAYER_SPAWN_Y_MIN = 7;
-/** Maximum y-coordinate of players' spawn. */
-export const PLAYER_SPAWN_Y_MAX = 7;
-
 /** Maximum and initial health of a player. */
 export const PLAYER_HEALTH_MAX = 100;
 
@@ -59,6 +49,15 @@ export const ENEMY_HITBOX_RADIUS = 0.5;
  * Player movement speed in meters per second.
  */
 export const PLAYER_MOVEMENT_SPEED = 2;
+
+/** Name of the tile layer that holds the tile data of a map. */
+export const MAP_TILE_LAYER_LAYER_NAME = 'Map';
+
+/** Name of the object group layer that holds spawn positions of players. */
+export const MAP_PLAYER_SPAWN_LAYER_NAME = 'Player spawn';
+
+/** Name of the object group layer that holds spawn positions of enemies. */
+export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
 
 /**
  * How seldom the server broadcasts it's state to all clients. Can be an integer

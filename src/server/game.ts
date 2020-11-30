@@ -91,19 +91,19 @@ export default class ServerGame extends GameLoop {
   }
 
   private getNextInput(p: string): TimedInput {
-    const pi = this.playerInputs[p];
-    let inp;
-    while (pi.length > 0) {
-      inp = pi.pop_front()[0];
+    const playerInput = this.playerInputs[p];
+    let input;
+    while (playerInput.length > 0) {
+      input = playerInput.pop_front()[0];
       if (
-        pi.length === 0 ||
-        !this.isOld(inp.stateNum) ||
-        this.isOld(pi.last_elem()!.stateNum)
+        playerInput.length === 0 ||
+        !this.isOld(input.stateNum) ||
+        this.isOld(playerInput.last_elem()!.stateNum)
       ) {
         break;
       }
     }
-    return inp;
+    return input;
   }
 
   private isOld(stateNum): boolean {

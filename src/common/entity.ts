@@ -10,7 +10,7 @@ export abstract class Entity {
 
   public position: Vec2;
   public velocity: Vec2;
-
+  public direction: Vec2;
   private _health: number;
 
   public constructor(id: Id, health: number, position: Vec2) {
@@ -20,6 +20,7 @@ export abstract class Entity {
     this._health = health;
     this.position = position;
     this.velocity = Vec2.zero();
+    this.direction = new Vec2(0, -1);
   }
 
   public abstract draw(pixi): void;
@@ -35,6 +36,7 @@ export abstract class Entity {
         'position',
         '_health',
         'velocity',
+        'direction',
       ])
     ) {
       const e = construct(
@@ -44,6 +46,7 @@ export abstract class Entity {
       );
       e._health = obj['_health'];
       e.velocity = reviveVec2(obj['velocity']);
+      e.direction = reviveVec2(obj['direction']);
       return e;
     }
     throw new Error("couldn't revive Entity");
@@ -144,8 +147,8 @@ export class Enemy extends Entity {
     throw new Error('Method not implemented.');
   }
   //should be fixed in the future
-  public move(): void {
-    this.position.add(Vec2(0, 1 / 60));
+  public move(nextMove: Vec2): void {
+    this.position.add(nextMove);
   }
   /**
    * Returns a deep copy of an `Enemy`.

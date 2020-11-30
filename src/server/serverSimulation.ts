@@ -1,6 +1,6 @@
-import GameMap from '../common/gameMap';
 import { Id, Input } from '../common/misc';
-import Simulation, { updatePlayerBodyFromInput } from '../common/simulation';
+import Simulation from '../common/simulation';
+import GameMap from '../common/gameMap';
 
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
@@ -19,19 +19,11 @@ export default class ServerSimulation extends Simulation {
       const idNum = parseInt(id);
       const body = this.bodies.get(idNum)!;
       const input = inputs.get(idNum);
-
-      updatePlayerBodyFromInput(body, input);
-    }
-
-    for (const enemy of Object.values(this.state.enemies)) {
-      enemy.move();
+      this.handlePlayerInput(body, input);
     }
 
     this.world.step(this.updateStep);
 
-    // TODO: update enemies with AI?
-
-    // update our state
     super.updateState();
   }
 }
