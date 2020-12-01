@@ -145,6 +145,23 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(prevState, newState, player.id);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
+      if (player.firing == true) {
+        this.player_list[player.id].shot_line.visible = false;
+        this.stage.removeChild(this.player_list[player.id].shot_line);
+        this.player_list[player.id].shot_line = this.add_shot_line(
+          {
+            x: LOGICAL_TO_PIXELS(player.position.x),
+            y: LOGICAL_TO_PIXELS(player.position.y),
+          },
+          {
+            x: LOGICAL_TO_PIXELS(player.target.x),
+            y: LOGICAL_TO_PIXELS(player.target.y),
+          },
+        );
+        this.player_list[player.id].shot_line.visible = true;
+      } else {
+        this.player_list[player.id].shot_line.visible = false;
+      }
     }
   }
 
@@ -247,6 +264,7 @@ export default class ClientGame extends GameLoop {
     this.player_list[id] = character;
     this.stage.addChild(character);
     character.show(character.animationStates.down);
+    character.shot_line = this.add_shot_line({ x: x, y: y }, { x: 0, y: 0 });
   }
 
   add_enemy(
@@ -268,6 +286,20 @@ export default class ClientGame extends GameLoop {
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
+  }
+  add_shot_line(
+    start: { x: number; y: number },
+    stop: { x: number; y: number },
+  ): PIXI.Graphics {
+    const line = new PIXI.Graphics();
+    line.lineStyle(4, 0xffffff, 1);
+    line.moveTo(stop.x, stop.y);
+    line.lineTo(start.x, start.y);
+    line.x = 0;
+    line.y = 0;
+    line.visible = true;
+    this.stage.addChild(line);
+    return line;
   }
 
   key_presses(): void {

@@ -81,6 +81,7 @@ export class Player extends Entity {
   public readonly name: string;
 
   private _firing: boolean;
+  public target: Vec2;
   private _score: number;
 
   public constructor(id: Id, health: number, position: Vec2, name: string) {
@@ -88,6 +89,7 @@ export class Player extends Entity {
     this.name = name;
     this._score = 0;
     this._firing = false;
+    this.target = new Vec2(0, 0);
   }
 
   public get firing(): boolean {
@@ -126,11 +128,12 @@ export class Player extends Entity {
   }
 
   public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_firing', '_score'])) {
+    if (isObjectWithKeys(obj, ['name', '_firing', '_score', 'target'])) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
         const p = new Player(id, health, position, obj['name']);
         p._firing = obj['_firing'];
         p._score = obj['_score'];
+        p.target = obj['target'];
         return p;
       }) as Player;
     }

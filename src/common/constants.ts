@@ -15,7 +15,7 @@ export const PLAYER_HEALTH_MAX = 100;
  * How big a tile should be drawn as. This determines the final scale of the
  * game and is the only constant expressed in pixels.
  */
-export const TILE_TARGET_SIZE_PIXELS = 48;
+export const TILE_TARGET_SIZE_PIXELS = 32;
 
 /**
  * How big a tile or square is logically. Everything else will be dependent on
