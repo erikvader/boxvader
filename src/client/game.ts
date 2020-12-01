@@ -268,8 +268,8 @@ export default class ClientGame extends GameLoop {
   add_shot_line(
     start: { x: number; y: number },
     stop: { x: number; y: number },
-  ) {
-    let line = new PIXI.Graphics();
+  ):PIXI.Graphics {
+    const line = new PIXI.Graphics();
     line.lineStyle(4, 0xffffff, 1);
     line.moveTo(stop.x, stop.y);
     line.lineTo(start.x, start.y);
