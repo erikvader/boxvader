@@ -187,18 +187,18 @@ export default abstract class Simulation {
 
     let multiplier = Infinity;
 
-    const mw = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
-    const mh = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
+    const mapw = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
+    const maph = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
 
     if (direction.x > 0) {
-      multiplier = mw - body.getPosition().x;
+      multiplier = mapw - body.getPosition().x;
     } else if (direction.x < 0) {
       multiplier = body.getPosition().x;
     }
     if (direction.y > 0) {
       multiplier =
-        mh - body.getPosition().y < multiplier
-          ? mh - body.getPosition().y
+        maph - body.getPosition().y < multiplier
+          ? maph - body.getPosition().y
           : multiplier;
     } else if (direction.y < 0) {
       multiplier =
@@ -263,17 +263,16 @@ function createWorld(map: GameMap): World {
     restitution: 0.0,
   };
 
-  const halfWidth = 0.5 * constants.TILE_LOGICAL_SIZE;
+  const halfSize = 0.5 * constants.TILE_LOGICAL_SIZE;
 
   for (let y = 0; y < map.height; ++y) {
     for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
-        // TODO: ändra tillbaka till 1x1-rutor typ
-        const center = Vec2(
-          x * constants.TILE_LOGICAL_SIZE + halfWidth,
-          y * constants.TILE_LOGICAL_SIZE + halfWidth,
+        const center = new Vec2(
+          x * constants.TILE_LOGICAL_SIZE + halfSize,
+          y * constants.TILE_LOGICAL_SIZE + halfSize,
         );
-        const shape: any = new Box(halfWidth, halfWidth, Vec2.zero(), 0.0);
+        const shape: any = new Box(halfSize, halfSize, Vec2.zero(), 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,

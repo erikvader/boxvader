@@ -40,7 +40,7 @@ export const ENEMY_SIZE = LOGICAL_TO_PIXELS(1);
 export const PLAYER_SIZE = LOGICAL_TO_PIXELS(1);
 
 /**
- * How many meters an enitie's hitbox is.
+ * How many meters an entities' hitbox is.
  */
 export const PLAYER_HITBOX_RADIUS = 0.5;
 export const ENEMY_HITBOX_RADIUS = 0.5;

@@ -30,8 +30,11 @@ function setup(): void {
 
     channel.on('start', data => {
       const map = new GameMap(data['map'], data['tileset']);
-      const [w, h] = map.total_pixel_size();
-      renderer.resize(w, h);
+      const [
+        maps_total_pixel_width,
+        maps_total_pixel_height,
+      ] = map.total_pixel_size();
+      renderer.resize(maps_total_pixel_width, maps_total_pixel_height);
 
       game = new ClientGame({
         sendInputFun: x => {
