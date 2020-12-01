@@ -45,7 +45,11 @@ function startGame(maxMessageSize?: number): void {
   );
 
   for (const p of player_list) {
-    p.channel.emit('start', { id: p.player_id }, { reliable: true });
+    p.channel.emit(
+      'start',
+      { id: p.player_id, map: 'scifi-1', tileset: 'scifi' },
+      { reliable: true },
+    );
     p.channel.onRaw(data => game?.clientMsg(p.player_id, data));
   }
 

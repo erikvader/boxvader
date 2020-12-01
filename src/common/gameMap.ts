@@ -101,11 +101,22 @@ export default class GameMap {
     this.tileIds = tileIds;
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
 
+    const to_logical = (pix: number): number =>
+      (pix * constants.TILE_LOGICAL_SIZE) / this.tileset.tileSize;
+
     this.playerSpawns = playerLayer.objects.map(
-      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
+      obj =>
+        new Region(
+          Vec2(to_logical(obj.x), to_logical(obj.y)),
+          Vec2(to_logical(obj.width), to_logical(obj.height)),
+        ),
     );
     this.enemySpawns = enemyLayer.objects.map(
-      obj => new Region(Vec2(obj.x, obj.y), Vec2(obj.width, obj.height)),
+      obj =>
+        new Region(
+          Vec2(to_logical(obj.x), to_logical(obj.y)),
+          Vec2(to_logical(obj.width), to_logical(obj.height)),
+        ),
     );
 
     this.floydWarshallMatrix = [[]];
@@ -221,19 +232,19 @@ export default class GameMap {
   }
 
   public positionToTile(position: Vec2): number {
-    const widthCoord = Math.floor(position.x / this.tileset.tileWidth);
-    const heightCoord = Math.floor(position.y / this.tileset.tileHeight);
+    const widthCoord = Math.floor(position.x / constants.TILE_LOGICAL_SIZE);
+    const heightCoord = Math.floor(position.y / constants.TILE_LOGICAL_SIZE);
 
     return this.height * heightCoord + widthCoord;
   }
 
   public tileToPosition(tilePosition: number): Vec2 {
     const x =
-      Math.floor(tilePosition % this.width) * this.tileset.tileWidth +
-      this.tileset.tileWidth / 2;
+      Math.floor(tilePosition % this.width) * constants.TILE_LOGICAL_SIZE +
+      constants.TILE_LOGICAL_SIZE / 2;
     const y =
-      Math.floor(tilePosition / this.height) * this.tileset.tileHeight +
-      this.tileset.tileHeight / 2;
+      Math.floor(tilePosition / this.height) * constants.TILE_LOGICAL_SIZE +
+      constants.TILE_LOGICAL_SIZE / 2;
 
     return new Vec2(x, y);
   }
@@ -242,18 +253,29 @@ export default class GameMap {
     const index = y * this.width + x;
     return this.tiles[index];
   }
+
+  public total_pixel_size(): [number, number] {
+    const w = this.width * constants.TILE_TARGET_SIZE_PIXELS;
+    const h = this.height * constants.TILE_TARGET_SIZE_PIXELS;
+    return [w, h];
+  }
+
   /** Return a random point where a player can spawn. */
   public randomPlayerSpawn(): Vec2 {
-    return misc.randomChoice(this.playerSpawns)!.randomPoint();
+    const tmp = misc.randomChoice(this.playerSpawns);
+    if (tmp === undefined) throw new Error("there aren't any spawn locations");
+    return tmp.randomPoint();
   }
 
   /** Return a random point where an enemy can spawn. */
   public randomEnemySpawn(): Vec2 {
-    return misc.randomChoice(this.enemySpawns)!.randomPoint();
+    const tmp = misc.randomChoice(this.enemySpawns);
+    if (tmp === undefined) throw new Error("there aren't any spawn locations");
+    return tmp.randomPoint();
   }
 }
 
-function getJson(name: string): NonNullable<MapJson> {
+function getJson(name: string): MapJson {
   // should we do a case-insensitive comparison?
   if (name === 'scifi-1') {
     return scifi_1;
@@ -262,10 +284,7 @@ function getJson(name: string): NonNullable<MapJson> {
   }
 }
 
-function getNamedTileLayer(
-  layers: Layer[],
-  name: string,
-): NonNullable<TileLayer> {
+function getNamedTileLayer(layers: Layer[], name: string): TileLayer {
   const tileLayers = layers.filter(
     layer => layer.type === 'tilelayer' && layer.name === name,
   ) as TileLayer[];
@@ -280,10 +299,7 @@ function getNamedTileLayer(
   return tileLayers[0];
 }
 
-function getNamedObjectGroup(
-  layers: Layer[],
-  name: string,
-): NonNullable<ObjectGroup> {
+function getNamedObjectGroup(layers: Layer[], name: string): ObjectGroup {
   const objectGroups = layers.filter(
     layer => layer.type === 'objectgroup' && layer.name === name,
   ) as ObjectGroup[];

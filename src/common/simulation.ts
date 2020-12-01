@@ -1,5 +1,5 @@
 import { Id, Input } from './misc';
-import GameMap from './gameMap'; // alias to not conflict with a map collection
+import GameMap from './gameMap';
 import State from './state';
 import { Body, Box, Circle, Vec2, World, Fixture } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
@@ -8,16 +8,15 @@ import * as constants from './constants';
 export default abstract class Simulation {
   public readonly updateStep: number;
 
-  protected _map: GameMap;
+  protected _gameMap: GameMap;
   protected _world: World;
   protected _bodies: Map<Id, Body>;
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
-  protected _gameMap: GameMap;
 
   public get map(): GameMap {
-    return this._map;
+    return this._gameMap;
   }
 
   public get world(): World {
@@ -32,26 +31,26 @@ export default abstract class Simulation {
     return this._state;
   }
 
-  public get gameMap(): GameMap {
-    return this._gameMap;
-  }
-
-  constructor(gameMap: GameMap, updateStep: number, enemyIdCounter: number) {
+  /**
+   * @param map The map to use
+   * @param updateStep How big an update step is in seconds.
+   * @param enemyIdCounter The starting value for the enemy ids.
+   */
+  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
-    this._map = gameMap;
-    this._world = createWorld(gameMap);
+    this._world = createWorld(map);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
-    this._gameMap = gameMap;
+    this._gameMap = map;
   }
 
   public commonUpdate(): void {
     this._stepCounter += 1;
 
     //spawns a baby yoda per second
-    if (this._stepCounter % Math.floor(1000 / this.updateStep) === 0) {
+    if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
       this.addEnemy();
       this.despawnEnemies();
     }
@@ -70,7 +69,7 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const position = this._map.randomPlayerSpawn();
+    const position = this._gameMap.randomPlayerSpawn();
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
@@ -90,7 +89,7 @@ export default abstract class Simulation {
         `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
       );
 
-    const position = Vec2(48, 48);
+    const position = Vec2(2, 2);
 
     const enemy = new Enemy(this._enemyIdCounter, 10, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
@@ -136,6 +135,7 @@ export default abstract class Simulation {
       }
     });
   }
+
   private moveEnemies(): void {
     let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
@@ -154,20 +154,24 @@ export default abstract class Simulation {
           targetPlayerPosition = player.position;
         }
       }
-      const newMove = this.nextMove(enemy.position, targetPlayerPosition);
-      enemy.move(newMove);
+      const newMove = this.enemyNextMove(enemy.position, targetPlayerPosition);
+      newMove.mul(constants.ENEMY_MOVEMENT_SPEED);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
     }
   }
 
-  private nextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
-    const nextPosition = this.gameMap.getInput(currentPosition, targetPosition);
+  private enemyNextMove(currentPosition: Vec2, targetPosition: Vec2): Vec2 {
+    const nextPosition = this._gameMap.getInput(
+      currentPosition,
+      targetPosition,
+    );
 
     const x = Math.sign(nextPosition.x - currentPosition.x);
     const y = Math.sign(nextPosition.y - currentPosition.y);
     return new Vec2(x, y);
   }
+
   handlePlayerInput(body: Body, input?: Input): void {
     if (input?.fire) {
       this.state.players[
@@ -191,20 +195,25 @@ export default abstract class Simulation {
 
     let multiplier = Infinity;
 
+    const mapw = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
+    const maph = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
+
     if (direction.x > 0) {
-      multiplier = constants.MAP_WIDTH - body.getPosition().x;
+      multiplier = mapw - body.getPosition().x;
     } else if (direction.x < 0) {
       multiplier = body.getPosition().x;
     }
     if (direction.y > 0) {
       multiplier =
-        constants.MAP_HEIGHT - body.getPosition().y < multiplier
-          ? constants.MAP_HEIGHT - body.getPosition().y
+        maph - body.getPosition().y < multiplier
+          ? maph - body.getPosition().y
           : multiplier;
     } else if (direction.y < 0) {
       multiplier =
         body.getPosition().y < multiplier ? body.getPosition().y : multiplier;
     }
+
+    if (multiplier === Infinity) return;
 
     const endPoint = Vec2.add(
       body.getPosition(),
@@ -241,19 +250,19 @@ export default abstract class Simulation {
       ];
       const newDirection = new Vec2(0, 0);
       if (input.up && !input.down) {
-        velocity.y = -constants.MOVEMENT_SPEED;
+        velocity.y = -constants.PLAYER_MOVEMENT_SPEED;
         newDirection.y = -1;
       } else if (input.down && !input.up) {
-        velocity.y = constants.MOVEMENT_SPEED;
+        velocity.y = constants.PLAYER_MOVEMENT_SPEED;
         newDirection.y = 1;
       } else {
         velocity.y = 0;
       }
       if (input.left && !input.right) {
-        velocity.x = -constants.MOVEMENT_SPEED;
+        velocity.x = -constants.PLAYER_MOVEMENT_SPEED;
         newDirection.x = -1;
       } else if (input.right && !input.left) {
-        velocity.x = constants.MOVEMENT_SPEED;
+        velocity.x = constants.PLAYER_MOVEMENT_SPEED;
         newDirection.x = 1;
       } else {
         velocity.x = 0;
@@ -277,20 +286,16 @@ function createWorld(map: GameMap): World {
     restitution: 0.0,
   };
 
-  const tileWidth = constants.TILE_WIDTH;
-  const tileHeight = constants.TILE_HEIGHT;
-  const halfWidth = tileWidth / 2;
-  const halfHeight = tileHeight / 2;
+  const halfSize = 0.5 * constants.TILE_LOGICAL_SIZE;
 
   for (let y = 0; y < map.height; ++y) {
     for (let x = 0; x < map.width; ++x) {
       if (!map.at(x, y).walkable) {
-        // TODO: ändra tillbaka till 1x1-rutor typ
-        const center = Vec2(
-          x * tileWidth + halfWidth,
-          y * tileHeight + halfHeight,
+        const center = new Vec2(
+          x * constants.TILE_LOGICAL_SIZE + halfSize,
+          y * constants.TILE_LOGICAL_SIZE + halfSize,
         );
-        const shape: any = new Box(halfWidth, halfHeight, Vec2.zero(), 0.0);
+        const shape: any = new Box(halfSize, halfSize, Vec2.zero(), 0.0);
 
         const body = world.createBody({
           type: Body.STATIC,
@@ -328,7 +333,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_RADIUS,
+      constants.PLAYER_HITBOX_RADIUS,
       entity.id,
     );
   } else if (entity instanceof Enemy) {
@@ -337,7 +342,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_RADIUS,
+      constants.ENEMY_HITBOX_RADIUS,
       entity.id,
     );
   }
