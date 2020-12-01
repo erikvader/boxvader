@@ -237,10 +237,12 @@ export default abstract class Simulation {
   }
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
     // we move a player by simply increasing or decreasing its velocity in the cardinal directions
+    const velocity = body.getLinearVelocity();
+
     if (input === undefined) {
-      // TODO we should probably update the velocities if the player wants to stand still (i.e. if no inputs are availble)
+      // if no inputs are sent, set the player to stand still
+      velocity.x = velocity.y = 0;
     } else {
-      const velocity = body.getLinearVelocity();
       const player = this.state.players[
         (body.getUserData() as { id: number }).id
       ];
@@ -266,10 +268,9 @@ export default abstract class Simulation {
       if (!Vec2.areEqual(newDirection, Vec2.zero())) {
         player.direction = newDirection;
       }
-
-      body.setLinearVelocity(velocity);
     }
 
+    body.setLinearVelocity(velocity);
     body.setAwake(true);
   }
 }
