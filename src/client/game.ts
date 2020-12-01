@@ -129,7 +129,13 @@ export default class ClientGame extends GameLoop {
     // spawn new players
     for (const player of Object.values(newState.players)) {
       if (this.player_list[player.id] === undefined) {
-        this.add_character(0, 0, PLAYER_SIZE, PLAYER_SPRITE, player.id);
+        this.add_character(
+          LOGICAL_TO_PIXELS(player.position.x),
+          LOGICAL_TO_PIXELS(player.position.y),
+          PLAYER_SIZE,
+          PLAYER_SPRITE,
+          player.id,
+        );
 
         if (player.id === this.my_id) {
           this.my_sprite = this.player_list[this.my_id];
@@ -147,7 +153,13 @@ export default class ClientGame extends GameLoop {
 
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
-        this.add_enemy(0, 0, ENEMY_SIZE, ENEMY_SPRITE, enemy.id);
+        this.add_enemy(
+          LOGICAL_TO_PIXELS(enemy.position.x),
+          LOGICAL_TO_PIXELS(enemy.position.y),
+          ENEMY_SIZE,
+          ENEMY_SPRITE,
+          enemy.id,
+        );
       }
 
       this.enemy_list[enemy.id].x = LOGICAL_TO_PIXELS(enemy.position.x);
