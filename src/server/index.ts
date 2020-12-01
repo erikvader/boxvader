@@ -7,8 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const port = PORT;
 
-import { default as geckos, ServerChannel } from '@geckos.io/server';
-const io = geckos();
+import geckos, { ServerChannel, iceServers } from '@geckos.io/server';
+const io = geckos({
+  iceServers: process.env.NODE_ENV === 'production' ? iceServers : [],
+});
 
 import ServerGame from './game';
 import GameMap from '../common/gameMap';
@@ -43,7 +45,11 @@ function startGame(maxMessageSize?: number): void {
   );
 
   for (const p of player_list) {
-    p.channel.emit('start', { id: p.player_id }, { reliable: true });
+    p.channel.emit(
+      'start',
+      { id: p.player_id, map: 'scifi-1', tileset: 'scifi' },
+      { reliable: true },
+    );
     p.channel.onRaw(data => game?.clientMsg(p.player_id, data));
   }
 
