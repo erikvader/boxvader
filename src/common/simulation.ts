@@ -4,6 +4,7 @@ import State from './state';
 import { Body, Box, Circle, Vec2, World, Fixture } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
+import Wave from './wave';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -14,6 +15,8 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
+  protected _wave: Wave;
+  protected _waveClearStep: number;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -44,16 +47,58 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
     this._gameMap = map;
+    this._wave = new Wave(
+      1,
+      constants.WAVE_ENEMY_COUNT_INCREMENT,
+      constants.WAVE_ENEMY_HEALTH_INCREMENT,
+    );
+    this._waveClearStep = 0;
   }
 
   public commonUpdate(): void {
     this._stepCounter += 1;
 
-    //spawns a baby yoda per second
-    if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
-      this.addEnemy();
+    const killed = this.despawnEnemies();
+    this._wave.kill(killed);
+
+    if (this._wave.finished) {
+      // mark this instant as when the wave was finished
+      if (this._waveClearStep === 0) {
+        this._waveClearStep = this._stepCounter - 1;
+        // TODO: remove this when we display the wave information on screen
+        console.info(`Finished wave ${this._wave.waveNumber}`);
+      }
+
+      // create a new wave
+      if (
+        (this._stepCounter - this._waveClearStep) %
+          (constants.WAVE_COOLDOWN * constants.SERVER_UPS) ===
+        0
+      ) {
+        const number = this._wave.waveNumber + 1;
+        const enemies = number * constants.WAVE_ENEMY_COUNT_INCREMENT;
+        const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
+        this._wave = new Wave(number, enemies, health);
+        this._waveClearStep = 0;
+        // TODO: remove this when we display the wave information on screen
+        console.info(`Creating wave ${this._wave.waveNumber}`);
+      }
+    } else {
+      if (
+        this._wave.unspawned > 0 &&
+        this._stepCounter %
+          (constants.WAVE_SPAWN_DELAY * constants.SERVER_UPS) ===
+          0
+      ) {
+        this.addEnemy(this._wave.enemyHealth);
+        this._wave.spawnSingle();
+      }
     }
-    this.despawnEnemies();
+
+    // if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
+    //   this.addEnemy();
+    // }
+
     this.moveEnemies();
   }
 
@@ -78,7 +123,7 @@ export default abstract class Simulation {
   //spawns in a fixed location, should probably have a vec2 array as input for location
   // Should probably have a type of enemy as well for later
 
-  public addEnemy(): void {
+  public addEnemy(health: number): void {
     if (this._enemyIdCounter in this.state.players)
       throw new Error(
         `ID ${this._enemyIdCounter} is already taken (by a player).`,
@@ -91,21 +136,26 @@ export default abstract class Simulation {
 
     const position = this._gameMap.randomEnemySpawn();
 
-    const enemy = new Enemy(this._enemyIdCounter, 1, position);
+    const enemy = new Enemy(this._enemyIdCounter, health, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
     this._enemyIdCounter += 1;
   }
 
-  private despawnEnemies(): void {
+  private despawnEnemies(): number {
+    let despawned = 0;
+
     for (const enemy of Object.values(this.state.enemies)) {
       if (!enemy.alive) {
         this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
 
         delete this.state.enemies[enemy.id];
+        despawned += 1;
       }
     }
+
+    return despawned;
   }
 
   public snapshot(): State {
