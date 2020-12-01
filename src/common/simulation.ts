@@ -52,8 +52,8 @@ export default abstract class Simulation {
     //spawns a baby yoda per second
     if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
       this.addEnemy();
-      this.despawnEnemies();
     }
+    this.despawnEnemies();
     this.moveEnemies();
   }
 
@@ -89,23 +89,17 @@ export default abstract class Simulation {
         `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
       );
 
-    const position = Vec2(2, 2);
+    const position = this._gameMap.randomEnemySpawn();
 
-    const enemy = new Enemy(this._enemyIdCounter, 10, position);
+    const enemy = new Enemy(this._enemyIdCounter, 1, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
     this._enemyIdCounter += 1;
   }
 
-  // despawns with a weird criteria atm, but is easily changed
   private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
-      if (
-        enemy.position.x < 0 ||
-        enemy.position.x > 400 ||
-        enemy.position.y < 0 ||
-        enemy.position.y > 400
-      ) {
+      if (!enemy.alive) {
         this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
 
@@ -233,10 +227,12 @@ export default abstract class Simulation {
   ): number {
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
+    const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
+    if (userData == null || this._state.players[userData.id] !== undefined) {
+      return fraction;
+    }
 
-    // TODO: Fix hit functionality
-    // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
-    //console.log(fixture.getBody().getUserData());
+    this._state.enemies[userData.id].takeDamage(1);
     return fraction;
   }
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
