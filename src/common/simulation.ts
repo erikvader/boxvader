@@ -53,8 +53,8 @@ export default abstract class Simulation {
     //spawns a baby yoda per second
     if (this._stepCounter % Math.floor(1000 / this.updateStep) === 0) {
       this.addEnemy();
-      this.despawnEnemies();
     }
+    this.despawnEnemies();
     this.moveEnemies();
   }
 
@@ -98,7 +98,6 @@ export default abstract class Simulation {
     this._enemyIdCounter += 1;
   }
 
-  // despawns with a weird criteria atm, but is easily changed
   private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
       if (!enemy.alive) {
@@ -255,7 +254,7 @@ export default abstract class Simulation {
     if (userData == null || this._state.players[userData.id] !== undefined) {
       return fraction;
     }
-    console.log(userData.id);
+
     this._state.enemies[userData.id].takeDamage(1);
     return fraction;
   }

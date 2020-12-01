@@ -164,6 +164,7 @@ export default class ClientGame extends GameLoop {
   remove_enemies(): void {
     for (const enemy_id in this.enemy_list) {
       if (this.states.last_elem()!.enemies[enemy_id] === undefined) {
+        this.enemy_list[enemy_id].visible = false;
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
       }
