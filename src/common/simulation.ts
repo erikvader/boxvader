@@ -155,7 +155,6 @@ export default abstract class Simulation {
         }
       }
       const newMove = this.nextMove(enemy.position, targetPlayerPosition);
-      //console.log(newMove);
       enemy.move(newMove);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
@@ -171,16 +170,24 @@ export default abstract class Simulation {
   }
   handlePlayerInput(body: Body, input?: Input): void {
     if (input?.fire) {
+      this.state.players[
+        (body.getUserData() as { id: number }).id
+      ].firing = true;
       this.handleShot(body, input);
+    } else {
+      this.state.players[
+        (body.getUserData() as { id: number }).id
+      ].firing = false;
     }
 
     this.updatePlayerBodyFromInput(body, input);
   }
 
   handleShot(body: Body, input?: Input): void {
-    const direction = this.state.players[
+    const player = this.state.players[
       (body.getUserData() as { id: number }).id
-    ].direction;
+    ];
+    const direction = player.direction;
 
     let multiplier = Infinity;
 
@@ -204,9 +211,25 @@ export default abstract class Simulation {
       Vec2.mul(direction, multiplier),
     );
 
-    this.world.rayCast(body.getPosition(), endPoint, rayCastCallback);
+    this.world.rayCast(body.getPosition(), endPoint, (...args) =>
+      this.rayCastCallback(...args, player),
+    );
   }
+  rayCastCallback(
+    fixture: Fixture,
+    point: Vec2,
+    normal: Vec2,
+    fraction: number,
+    player: Player,
+  ): number {
+    this.state.players[player.id].target.x = point.x;
+    this.state.players[player.id].target.y = point.y;
 
+    // TODO: Fix hit functionality
+    // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
+    //console.log(fixture.getBody().getUserData());
+    return fraction;
+  }
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
     // we move a player by simply increasing or decreasing its velocity in the cardinal directions
     if (input === undefined) {
@@ -216,28 +239,27 @@ export default abstract class Simulation {
       const player = this.state.players[
         (body.getUserData() as { id: number }).id
       ];
-
+      const newDirection = new Vec2(0, 0);
       if (input.up && !input.down) {
         velocity.y = -constants.MOVEMENT_SPEED;
-        player.direction.x = 0;
-        player.direction.y = -1;
+        newDirection.y = -1;
       } else if (input.down && !input.up) {
         velocity.y = constants.MOVEMENT_SPEED;
-        player.direction.x = 0;
-        player.direction.y = 1;
+        newDirection.y = 1;
       } else {
         velocity.y = 0;
       }
       if (input.left && !input.right) {
         velocity.x = -constants.MOVEMENT_SPEED;
-        player.direction.x = -1;
-        player.direction.y = 0;
+        newDirection.x = -1;
       } else if (input.right && !input.left) {
         velocity.x = constants.MOVEMENT_SPEED;
-        player.direction.x = 1;
-        player.direction.y = 0;
+        newDirection.x = 1;
       } else {
         velocity.x = 0;
+      }
+      if (!Vec2.areEqual(newDirection, Vec2.zero())) {
+        player.direction = newDirection;
       }
 
       body.setLinearVelocity(velocity);
@@ -341,16 +363,4 @@ function circleBody(
   body.createFixture(shape);
   body.setUserData({ id });
   return body;
-}
-
-function rayCastCallback(
-  fixture: Fixture,
-  point: Vec2,
-  normal: Vec2,
-  fraction: number,
-): number {
-  // TODO: Fix hit functionality
-  // (fixture.getBody().getUserData() as {id : number}).id to get id of the target
-  //console.log(fixture.getBody().getUserData());
-  return fraction;
 }
