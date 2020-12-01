@@ -90,7 +90,7 @@ export default abstract class Simulation {
         `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
       );
 
-    const position = Vec2(48, 48);
+    const position = this._map.randomEnemySpawn();
 
     const enemy = new Enemy(this._enemyIdCounter, 1, position);
     this.state.enemies[this._enemyIdCounter] = enemy;
@@ -101,7 +101,7 @@ export default abstract class Simulation {
   // despawns with a weird criteria atm, but is easily changed
   private despawnEnemies(): void {
     for (const enemy of Object.values(this.state.enemies)) {
-      if (enemy.health === 0) {
+      if (!enemy.alive) {
         this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
 
@@ -252,9 +252,10 @@ export default abstract class Simulation {
     fraction: number,
   ): number {
     const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    if (userData == null) {
+    if (userData == null || this._state.players[userData.id] !== undefined) {
       return fraction;
     }
+    console.log(userData.id);
     this._state.enemies[userData.id].takeDamage(1);
     return fraction;
   }
