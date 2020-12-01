@@ -213,28 +213,48 @@ export default abstract class Simulation {
       body.getPosition(),
       Vec2.mul(direction, multiplier),
     );
+    let closestTarget: {
+      fixture?: Fixture;
+      fraction: number;
+      point?: Vec2;
+    } = {
+      fraction: Infinity,
+    };
 
-    this.world.rayCast(body.getPosition(), endPoint, (...args) =>
-      this.rayCastCallback(...args, player),
+    this.world.rayCast(
+      body.getPosition(),
+      endPoint,
+      (fixture, point, normal, fraction) => {
+        if (fraction < closestTarget.fraction) {
+          closestTarget = { fixture, fraction, point };
+        }
+        return fraction;
+      },
+    );
+
+    this.handleHit(
+      closestTarget.fixture!,
+      closestTarget.point!,
+      closestTarget.fraction,
+      player,
     );
   }
-  rayCastCallback(
+
+  handleHit(
     fixture: Fixture,
     point: Vec2,
-    normal: Vec2,
     fraction: number,
     player: Player,
-  ): number {
+  ): void {
+    if (!fixture) {
+      return;
+    }
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
     const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    if (userData == null || this._state.players[userData.id] !== undefined) {
-      return fraction;
-    }
-
-    this._state.enemies[userData.id].takeDamage(1);
-    return fraction;
+    this._state.enemies[userData?.id]?.takeDamage(1);
   }
+
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
     // we move a player by simply increasing or decreasing its velocity in the cardinal directions
     if (input === undefined) {
