@@ -10,6 +10,7 @@ import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
+import Weapon, { E11_blaster_rifle } from '../common/weapon';
 import {
   PLAYER_SPRITE,
   LOGICAL_TO_PIXELS,
@@ -127,7 +128,9 @@ export default class ClientGame extends GameLoop {
 
   update_player_sprites(prevState: State | undefined, newState: State): void {
     // spawn new players
+
     for (const player of Object.values(newState.players)) {
+      const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
           LOGICAL_TO_PIXELS(player.position.x),
@@ -135,6 +138,7 @@ export default class ClientGame extends GameLoop {
           PLAYER_SIZE,
           PLAYER_SPRITE,
           player.id,
+          weapon,
         );
 
         if (player.id === this.my_id) {
@@ -149,6 +153,7 @@ export default class ClientGame extends GameLoop {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
+          weapon,
           {
             x: LOGICAL_TO_PIXELS(player.position.x),
             y: LOGICAL_TO_PIXELS(player.position.y),
@@ -252,6 +257,7 @@ export default class ClientGame extends GameLoop {
     target_width: number,
     img_filepath: string,
     id: number,
+    weapon: Weapon,
   ): void {
     const character = load_zombie(img_filepath);
 
@@ -264,7 +270,11 @@ export default class ClientGame extends GameLoop {
     this.player_list[id] = character;
     this.stage.addChild(character);
     character.show(character.animationStates.down);
-    character.shot_line = this.add_shot_line({ x: x, y: y }, { x: 0, y: 0 });
+    character.shot_line = this.add_shot_line(
+      weapon,
+      { x: x, y: y },
+      { x: 0, y: 0 },
+    );
   }
 
   add_enemy(
@@ -288,11 +298,13 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(enemy);
   }
   add_shot_line(
+    weapon: Weapon,
     start: { x: number; y: number },
     stop: { x: number; y: number },
   ): PIXI.Graphics {
+    console.log(weapon);
     const line = new PIXI.Graphics();
-    line.lineStyle(4, 0xffffff, 1);
+    line.lineStyle(weapon.projectile_width, weapon.projectile_color, 1);
     line.moveTo(stop.x, stop.y);
     line.lineTo(start.x, start.y);
     line.x = 0;

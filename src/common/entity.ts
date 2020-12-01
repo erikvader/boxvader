@@ -1,6 +1,6 @@
 import { Id, reviveVec2, isObjectWithKeys } from './misc';
 import { Body, Vec2 } from 'planck-js';
-
+import Weapon, { E11_blaster_rifle } from './weapon';
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
@@ -83,13 +83,14 @@ export class Player extends Entity {
   private _firing: boolean;
   public target: Vec2;
   private _score: number;
-
+  public weapons: Weapon[];
   public constructor(id: Id, health: number, position: Vec2, name: string) {
     super(id, health, position);
     this.name = name;
     this._score = 0;
     this._firing = false;
     this.target = new Vec2(0, 0);
+    this.weapons = [new E11_blaster_rifle()];
   }
 
   public get firing(): boolean {
@@ -137,7 +138,7 @@ export class Player extends Entity {
         return p;
       }) as Player;
     }
-    throw new Error("coudln't revive Player");
+    throw new Error("couldn't revive Player");
   }
 }
 

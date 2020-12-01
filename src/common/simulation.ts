@@ -189,18 +189,18 @@ export default abstract class Simulation {
 
     let multiplier = Infinity;
 
-    const mapw = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
-    const maph = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
+    const mapWidth = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
+    const mapHeight = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
 
     if (direction.x > 0) {
-      multiplier = mapw - body.getPosition().x;
+      multiplier = mapWidth - body.getPosition().x;
     } else if (direction.x < 0) {
       multiplier = body.getPosition().x;
     }
     if (direction.y > 0) {
       multiplier =
-        maph - body.getPosition().y < multiplier
-          ? maph - body.getPosition().y
+        mapHeight - body.getPosition().y < multiplier
+          ? mapHeight - body.getPosition().y
           : multiplier;
     } else if (direction.y < 0) {
       multiplier =
