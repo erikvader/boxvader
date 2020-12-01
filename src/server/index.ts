@@ -7,8 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const port = PORT;
 
-import { default as geckos, ServerChannel } from '@geckos.io/server';
-const io = geckos();
+import geckos, { ServerChannel, iceServers } from '@geckos.io/server';
+const io = geckos({
+  iceServers: process.env.NODE_ENV === 'production' ? iceServers : [],
+});
 
 import ServerGame from './game';
 import GameMap from '../common/gameMap';

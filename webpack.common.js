@@ -7,11 +7,6 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
-  mode: 'development',
-  optimization: {
-    minimize: false,
-  },
-  devtool: 'source-map',
   resolve: {
     alias: {
       pson: 'pson/dist/PSON.js',
