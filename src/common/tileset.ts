@@ -39,8 +39,7 @@ export interface Tile {
 export default class Tileset {
   public readonly name: string;
   public readonly imageName: string;
-  public readonly tileWidth: number;
-  public readonly tileHeight: number;
+  public readonly tileSize: number;
   public readonly tiles: Tile[];
   public readonly columns: number;
 
@@ -49,6 +48,8 @@ export default class Tileset {
 
     const dx = jsonTileset.tilewidth;
     const dy = jsonTileset.tileheight;
+    if (dx !== dy)
+      throw new Error('I can only handle tilesets with square tiles');
 
     let texturePath = jsonTileset.image;
     const imgsIndex = texturePath.indexOf('imgs/');
@@ -76,14 +77,13 @@ export default class Tileset {
 
     this.name = name;
     this.imageName = texturePath;
-    this.tileWidth = dx;
-    this.tileHeight = dy;
+    this.tileSize = dx;
     this.tiles = tiles;
     this.columns = jsonTileset.columns;
   }
 
   public scaleFactor(): number {
-    return constants.TILE_TARGET_SIZE_PIXELS / this.tileWidth;
+    return constants.TILE_TARGET_SIZE_PIXELS / this.tileSize;
   }
 
   public tilePos(tile_type: number): { row: number; column: number } {

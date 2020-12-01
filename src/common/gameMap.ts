@@ -102,7 +102,7 @@ export default class GameMap {
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
 
     const to_logical = (pix: number): number =>
-      (pix * constants.TILE_LOGICAL_SIZE) / this.tileset.tileWidth;
+      (pix * constants.TILE_LOGICAL_SIZE) / this.tileset.tileSize;
 
     this.playerSpawns = playerLayer.objects.map(
       obj =>
