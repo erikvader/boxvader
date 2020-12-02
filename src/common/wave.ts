@@ -4,10 +4,13 @@ export default class Wave {
   /** The health of enemies in this wave. */
   public readonly enemyHealth: number;
 
+  /** The value of `stepCounter` when this wave was cleared. `0` if this wave is not cleared. */
+  public clearStep = 0;
+
   /** The number of enemies remaining to be spawned. */
   private _unspawned: number;
   /** The number of enemies currently alive in this wave. */
-  public _alive: number;
+  private _alive: number;
 
   /** Is this wave finished? */
   public get finished(): boolean {

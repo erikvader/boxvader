@@ -16,7 +16,6 @@ export default abstract class Simulation {
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
   protected _wave: Wave;
-  protected _waveClearStep: number;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -52,7 +51,6 @@ export default abstract class Simulation {
       constants.WAVE_ENEMY_COUNT_INCREMENT,
       constants.WAVE_ENEMY_HEALTH_INCREMENT,
     );
-    this._waveClearStep = 0;
   }
 
   public commonUpdate(): void {
@@ -63,23 +61,21 @@ export default abstract class Simulation {
 
     if (this._wave.finished) {
       // mark this instant as when the wave was finished
-      if (this._waveClearStep === 0) {
-        this._waveClearStep = this._stepCounter - 1;
+      if (this._wave.clearStep === 0) {
+        this._wave.clearStep = this._stepCounter;
         // TODO: remove this when we display the wave information on screen
         console.info(`Finished wave ${this._wave.waveNumber}`);
       }
 
       // create a new wave
       if (
-        (this._stepCounter - this._waveClearStep) %
-          (constants.WAVE_COOLDOWN * constants.SERVER_UPS) ===
-        0
+        this._stepCounter - this._wave.clearStep >=
+        constants.WAVE_COOLDOWN * constants.SERVER_UPS
       ) {
         const number = this._wave.waveNumber + 1;
         const enemies = number * constants.WAVE_ENEMY_COUNT_INCREMENT;
         const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
-        this._waveClearStep = 0;
         // TODO: remove this when we display the wave information on screen
         console.info(`Creating wave ${this._wave.waveNumber}`);
       }
@@ -94,10 +90,6 @@ export default abstract class Simulation {
         this._wave.spawnSingle();
       }
     }
-
-    // if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
-    //   this.addEnemy();
-    // }
 
     this.moveEnemies();
   }
