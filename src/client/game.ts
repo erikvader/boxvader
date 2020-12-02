@@ -167,7 +167,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  walking_animation(walking: boolean, player_id: number) {
+  walking_animation(walking: boolean, player_id: number):void {
     if (walking) {
       if (!this.player_list[player_id].walk) {
         this.player_list[player_id].playAnimation(
