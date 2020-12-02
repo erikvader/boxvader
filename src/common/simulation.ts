@@ -233,20 +233,20 @@ export default abstract class Simulation {
     );
 
     this.handleHit(
-      closestTarget.fixture!,
-      closestTarget.point!,
       closestTarget.fraction,
       player,
+      closestTarget.fixture,
+      closestTarget.point,
     );
   }
 
   handleHit(
-    fixture: Fixture,
-    point: Vec2,
     fraction: number,
     player: Player,
+    fixture?: Fixture,
+    point?: Vec2,
   ): void {
-    if (!fixture) {
+    if (!fixture || !point) {
       return;
     }
     this.state.players[player.id].target.x = point.x;
