@@ -10,6 +10,8 @@ import {
 } from '../common/constants';
 import GameMap from '../common/gameMap';
 
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
 function setup(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer();
