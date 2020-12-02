@@ -143,8 +143,7 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      this.decide_direction(player.direction, newState, player.id);
-      this.walking_animation(player.walking, player.id);
+      this.decide_direction(player, newState);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
       if (player.firing == true) {
@@ -167,17 +166,17 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  walking_animation(walking: boolean, player_id: number): void {
+  walking_animation(walking: boolean, player_id: number, walkAnimation, standAnimation): void {
     if (walking) {
-      if (!this.player_list[player_id].walk) {
+      if (!(this.player_list[player_id].walk[0] == walkAnimation[0]) && !(this.player_list[player_id].walk[1] == walkAnimation[1])) {
         this.player_list[player_id].playAnimation(
-          this.player_list[player_id].animationStates.walkUp,
+          walkAnimation,
         );
-        this.player_list[player_id].walk = true;
+        this.player_list[player_id].walk = walkAnimation;
       }
     } else {
       this.player_list[player_id].show(
-        this.player_list[player_id].animationStates.up,
+        standAnimation
       );
       this.player_list[player_id].walk = false;
     }
@@ -210,40 +209,40 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(direction: Vec2, newState: State, player_id: number): void {
+  decide_direction(player , newState: State): void {
     const pi = Math.PI;
     //Right
-    if (direction.x === 1 && direction.y == 0) {
-      this.player_list[player_id].rotation = pi * 0.5;
+    if (player.direction.x === 1 && player.direction.y == 0) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRight, this.player_list[player.id].animationStates.right);
     }
     //Down
-    if (direction.x === 0 && direction.y == 1) {
-      this.player_list[player_id].rotation = pi;
+    if (player.direction.x === 0 && player.direction.y == 1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkDown, this.player_list[player.id].animationStates.down);
     }
     //Up
-    if (direction.x === 0 && direction.y == -1) {
-      this.player_list[player_id].rotation = 0;
+    if (player.direction.x === 0 && player.direction.y == -1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkUp, this.player_list[player.id].animationStates.up);
     }
     //Left
-    if (direction.x === -1 && direction.y == 0) {
-      this.player_list[player_id].rotation = -pi * 0.5;
+    if (player.direction.x === -1 && player.direction.y == 0) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeft, this.player_list[player.id].animationStates.left);
     }
     //Right Up
-    if (direction.x === 1 && direction.y == -1) {
-      this.player_list[player_id].rotation = pi * 0.25;
+    if (player.direction.x === 1 && player.direction.y == -1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRightUp, this.player_list[player.id].animationStates.upRight);
     }
     //Right Down
-    if (direction.x === 1 && direction.y == 1) {
-      this.player_list[player_id].rotation = pi * 0.75;
+    if (player.direction.x === 1 && player.direction.y == 1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRightDown, this.player_list[player.id].animationStates.rightDown);
     }
 
     //Left Up
-    if (direction.x === -1 && direction.y == -1) {
-      this.player_list[player_id].rotation = -pi * 0.25;
+    if (player.direction.x === -1 && player.direction.y == -1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeftUp, this.player_list[player.id].animationStates.leftUp);
     }
     //Left Down
-    if (direction.x === -1 && direction.y == 1) {
-      this.player_list[player_id].rotation = -pi * 0.75;
+    if (player.direction.x === -1 && player.direction.y == 1) {
+      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeftDown, this.player_list[player.id].animationStates.leftDown);
     }
   }
 
@@ -266,6 +265,7 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(character);
     character.show(character.animationStates.down);
     character.shot_line = this.add_shot_line({ x: x, y: y }, { x: 0, y: 0 });
+    this.add_health_bar(character, scale);
   }
 
   add_enemy(
@@ -287,7 +287,36 @@ export default class ClientGame extends GameLoop {
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
+    this.add_health_bar(enemy, scale)
   }
+
+  add_health_bar(sprite, scale) {
+    //Create the health bar
+    let width = 30;
+    let height = 5;
+    let flot_height = 20;
+    let new_scale = 1/scale;
+    let total_hp = new PIXI.Graphics();
+    total_hp.lineStyle(0, 0x000000, 0);
+    total_hp.beginFill(0xff3300);
+    total_hp.drawRect(0, 0, new_scale*width, new_scale*height);
+    total_hp.endFill();
+    total_hp.x = -width*new_scale/2;
+    total_hp.y = -flot_height*new_scale;
+    sprite.addChild(total_hp);
+
+
+    let hp = new PIXI.Graphics();
+    hp.lineStyle(0, 0xff3300, 0);
+    hp.beginFill(0x32CD32);
+    hp.drawRect(0, 0, 10*new_scale, height*new_scale);
+    hp.endFill();
+    hp.x = 0;
+    hp.y = 0;
+    total_hp.addChild(hp);
+    hp.width = 15*new_scale;
+  }
+  
   add_shot_line(
     start: { x: number; y: number },
     stop: { x: number; y: number },
