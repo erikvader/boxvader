@@ -287,6 +287,9 @@ export default abstract class Simulation {
       }
       if (!Vec2.areEqual(newDirection, Vec2.zero())) {
         player.direction = newDirection;
+        player.walking = true;
+      } else {
+        player.walking = false;
       }
     }
 
