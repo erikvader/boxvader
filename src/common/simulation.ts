@@ -14,6 +14,7 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
+  protected _timeOfLastShot: Map<Id, number>;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -31,6 +32,10 @@ export default abstract class Simulation {
     return this._state;
   }
 
+  public get timeOfLastShot(): Map<Id, number> {
+    return this._timeOfLastShot;
+  }
+
   /**
    * @param map The map to use
    * @param updateStep How big an update step is in seconds.
@@ -44,6 +49,7 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
     this._gameMap = map;
+    this._timeOfLastShot = new Map<Id, number>();
   }
 
   public commonUpdate(): void {
@@ -73,6 +79,7 @@ export default abstract class Simulation {
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
+    this.timeOfLastShot.set(id, 0);
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -185,6 +192,21 @@ export default abstract class Simulation {
     const player = this.state.players[
       (body.getUserData() as { id: number }).id
     ];
+
+    const timeOfLastShot = this.timeOfLastShot.get(player.id)!;
+
+    //this._stepCounter % Math.floor(1 / this.updateStep) === 0
+
+    if (
+      !(
+        timeOfLastShot + player.weapons[0].attack_rate * constants.SERVER_UPS <=
+        this._stepCounter
+      )
+    ) {
+      return;
+    }
+    console.log('agge');
+    this.timeOfLastShot.set(player.id, this._stepCounter);
     const direction = player.direction;
 
     let multiplier = Infinity;
