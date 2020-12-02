@@ -12,11 +12,11 @@ export abstract class Entity {
   public velocity: Vec2;
   public direction: Vec2;
   private _health: number;
-
+  public walking: boolean;
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
     this.maxHealth = health;
-
+    this.walking = false;
     this._health = health;
     this.position = position;
     this.velocity = Vec2.zero();
@@ -33,6 +33,7 @@ export abstract class Entity {
       isObjectWithKeys(obj, [
         'id',
         'maxHealth',
+        'walking',
         'position',
         '_health',
         'velocity',
@@ -44,6 +45,7 @@ export abstract class Entity {
         obj['maxHealth'],
         reviveVec2(obj['position']),
       );
+      e.walking = obj['walking'];
       e._health = obj['_health'];
       e.velocity = reviveVec2(obj['velocity']);
       e.direction = reviveVec2(obj['direction']);
