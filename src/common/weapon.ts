@@ -23,15 +23,22 @@ export default abstract class Weapon {
     projectile_color: number,
     projectile_width: number,
   ) {
-    this._attack_rate = attack_rate;
+    this._attack_rate = 1 / attack_rate; // attacks per second
     this._attack_damage = attack_damage;
     this._projectile_color = projectile_color;
     this._projectile_width = projectile_width;
   }
 }
-//standard issue weapon used by imperial stormtroopers
+
+/*
+   Standard issue weapon used by imperial stormtroopers
+   APS: 2
+   Damage: 1
+   Color: Red
+   Projectile width: 2
+*/
 export class E11_blaster_rifle extends Weapon {
   public constructor() {
-    super(1, 1, 0xf72331, 2);
+    super(2, 2, 0xf72331, 2);
   }
 }

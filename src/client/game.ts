@@ -128,7 +128,7 @@ export default class ClientGame extends GameLoop {
 
   update_player_sprites(prevState: State | undefined, newState: State): void {
     // spawn new players
-
+    this.remove_entity_sprites(newState);
     for (const player of Object.values(newState.players)) {
       const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
@@ -149,6 +149,7 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(prevState, newState, player.id);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
+      console.log(player.firing);
       if (player.firing == true) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
@@ -163,15 +164,18 @@ export default class ClientGame extends GameLoop {
             y: LOGICAL_TO_PIXELS(player.target.y),
           },
         );
+
         this.player_list[player.id].shot_line.visible = true;
+      } else if (this.player_list[player.id].shot_line.expires > 0) {
+        this.player_list[player.id].shot_line.expires -= 1;
       } else {
-        this.player_list[player.id].shot_line.visible = false;
+        this.stage.removeChild(this.player_list[player.id].shot_line);
       }
     }
   }
 
   update_enemy_sprites(prevState: State | undefined, newState: State): void {
-    this.remove_enemy_sprites(newState);
+    this.remove_entity_sprites(newState);
 
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
@@ -189,11 +193,25 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  remove_enemy_sprites(newState: State): void {
+  remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
+      }
+    }
+    for (const player_id in this.player_list) {
+      console.log('danne');
+      if (
+        newState.players[player_id].alive === false &&
+        this.player_list[player_id] !== undefined
+      ) {
+        console.log('agge', player_id);
+        if (this.player_list[player_id].shot_line !== undefined) {
+          this.stage.removeChild(this.player_list[player_id].shot_line);
+        }
+        this.stage.removeChild(this.player_list[player_id]);
+        delete this.player_list[player_id];
       }
     }
   }
@@ -302,13 +320,13 @@ export default class ClientGame extends GameLoop {
     start: { x: number; y: number },
     stop: { x: number; y: number },
   ): PIXI.Graphics {
-    console.log(weapon);
     const line = new PIXI.Graphics();
     line.lineStyle(weapon.projectile_width, weapon.projectile_color, 1);
     line.moveTo(stop.x, stop.y);
     line.lineTo(start.x, start.y);
     line.x = 0;
     line.y = 0;
+    line.expires = 1;
     line.visible = true;
     this.stage.addChild(line);
     return line;

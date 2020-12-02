@@ -11,7 +11,7 @@ export abstract class Entity {
   public position: Vec2;
   public velocity: Vec2;
   public direction: Vec2;
-  private _health: number;
+  public _health: number;
 
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
@@ -143,8 +143,10 @@ export class Player extends Entity {
 }
 
 export class Enemy extends Entity {
-  public constructor(id: Id, health: number, position: Vec2) {
+  public damage: number;
+  public constructor(id: Id, health: number, position: Vec2, damage: number) {
     super(id, health, position);
+    this.damage = damage;
   }
 
   public draw(pixi): void {
@@ -155,7 +157,12 @@ export class Enemy extends Entity {
    * Returns a deep copy of an `Enemy`.
    */
   public clone(): Enemy {
-    const enemy = new Enemy(this.id, this.health, this.position.clone());
+    const enemy = new Enemy(
+      this.id,
+      this.health,
+      this.position.clone(),
+      this.damage,
+    );
 
     enemy.velocity = this.velocity.clone();
     return enemy;
@@ -166,7 +173,7 @@ export class Enemy extends Entity {
       return Entity.revive(
         obj,
         (id: Id, health: number, position: Vec2) =>
-          new Enemy(id, health, position),
+          new Enemy(id, health, position, obj['damage']),
       ) as Enemy;
     }
     throw new Error("couldn't revive Enemy");
