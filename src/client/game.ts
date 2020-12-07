@@ -337,11 +337,11 @@ export default class ClientGame extends GameLoop {
   add_health_bar(sprite: PIXI.Graphics, scale: number) {
     console.log(sprite);
     //Create the health bar
-    let width = 30;
-    let height = 5;
-    let flot_height = 20;
-    let new_scale = 1 / scale;
-    let total_hp = new PIXI.Graphics();
+    const width = 30;
+    const height = 5;
+    const flot_height = 20;
+    const new_scale = 1 / scale;
+    const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
     total_hp.drawRect(0, 0, new_scale * width, new_scale * height);
@@ -350,7 +350,7 @@ export default class ClientGame extends GameLoop {
     total_hp.y = -flot_height * new_scale;
     sprite.addChild(total_hp);
 
-    let hp = new PIXI.Graphics();
+    const hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
     hp.beginFill(0x32cd32);
     hp.drawRect(0, 0, 10 * new_scale, height * new_scale);
@@ -359,12 +359,11 @@ export default class ClientGame extends GameLoop {
     hp.y = 0;
     total_hp.addChild(hp);
     hp.width = 15 * new_scale;
-    console.log(total_hp.children[0]);
   }
 
   change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number) {
-    let outerWidth = sprite.children[0].width;
-    let percent = current_hp / max_hp;
+    const outerWidth = sprite.children[0].width;
+    const percent = current_hp / max_hp;
     sprite.children[0].children[0].width = outerWidth * percent;
   }
 
