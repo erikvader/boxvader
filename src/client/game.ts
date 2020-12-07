@@ -166,18 +166,22 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  walking_animation(walking: boolean, player_id: number, walkAnimation, standAnimation): void {
+  walking_animation(
+    walking: boolean,
+    player_id: number,
+    walkAnimation,
+    standAnimation,
+  ): void {
     if (walking) {
-      if (!(this.player_list[player_id].walk[0] == walkAnimation[0]) && !(this.player_list[player_id].walk[1] == walkAnimation[1])) {
-        this.player_list[player_id].playAnimation(
-          walkAnimation,
-        );
+      if (
+        !(this.player_list[player_id].walk[0] == walkAnimation[0]) &&
+        !(this.player_list[player_id].walk[1] == walkAnimation[1])
+      ) {
+        this.player_list[player_id].playAnimation(walkAnimation);
         this.player_list[player_id].walk = walkAnimation;
       }
     } else {
-      this.player_list[player_id].show(
-        standAnimation
-      );
+      this.player_list[player_id].show(standAnimation);
       this.player_list[player_id].walk = false;
     }
   }
@@ -209,40 +213,80 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(player , newState: State): void {
+  decide_direction(player, newState: State): void {
     const pi = Math.PI;
     //Right
     if (player.direction.x === 1 && player.direction.y == 0) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRight, this.player_list[player.id].animationStates.right);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkRight,
+        this.player_list[player.id].animationStates.right,
+      );
     }
     //Down
     if (player.direction.x === 0 && player.direction.y == 1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkDown, this.player_list[player.id].animationStates.down);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkDown,
+        this.player_list[player.id].animationStates.down,
+      );
     }
     //Up
     if (player.direction.x === 0 && player.direction.y == -1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkUp, this.player_list[player.id].animationStates.up);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkUp,
+        this.player_list[player.id].animationStates.up,
+      );
     }
     //Left
     if (player.direction.x === -1 && player.direction.y == 0) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeft, this.player_list[player.id].animationStates.left);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkLeft,
+        this.player_list[player.id].animationStates.left,
+      );
     }
     //Right Up
     if (player.direction.x === 1 && player.direction.y == -1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRightUp, this.player_list[player.id].animationStates.upRight);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkRightUp,
+        this.player_list[player.id].animationStates.upRight,
+      );
     }
     //Right Down
     if (player.direction.x === 1 && player.direction.y == 1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkRightDown, this.player_list[player.id].animationStates.rightDown);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkRightDown,
+        this.player_list[player.id].animationStates.rightDown,
+      );
     }
 
     //Left Up
     if (player.direction.x === -1 && player.direction.y == -1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeftUp, this.player_list[player.id].animationStates.leftUp);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkLeftUp,
+        this.player_list[player.id].animationStates.leftUp,
+      );
     }
     //Left Down
     if (player.direction.x === -1 && player.direction.y == 1) {
-      this.walking_animation(player.walking, player.id, this.player_list[player.id].animationStates.walkLeftDown, this.player_list[player.id].animationStates.leftDown);
+      this.walking_animation(
+        player.walking,
+        player.id,
+        this.player_list[player.id].animationStates.walkLeftDown,
+        this.player_list[player.id].animationStates.leftDown,
+      );
     }
   }
 
@@ -287,42 +331,43 @@ export default class ClientGame extends GameLoop {
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
-    this.add_health_bar(enemy, scale)
+    this.add_health_bar(enemy, scale);
   }
 
-  add_health_bar(sprite, scale) {
+  add_health_bar(sprite: PIXI.Graphics, scale: number) {
+    console.log(sprite);
     //Create the health bar
     let width = 30;
     let height = 5;
     let flot_height = 20;
-    let new_scale = 1/scale;
+    let new_scale = 1 / scale;
     let total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
-    total_hp.drawRect(0, 0, new_scale*width, new_scale*height);
+    total_hp.drawRect(0, 0, new_scale * width, new_scale * height);
     total_hp.endFill();
-    total_hp.x = -width*new_scale/2;
-    total_hp.y = -flot_height*new_scale;
+    total_hp.x = (-width * new_scale) / 2;
+    total_hp.y = -flot_height * new_scale;
     sprite.addChild(total_hp);
 
     let hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
-    hp.beginFill(0x32CD32);
-    hp.drawRect(0, 0, 10*new_scale, height*new_scale);
+    hp.beginFill(0x32cd32);
+    hp.drawRect(0, 0, 10 * new_scale, height * new_scale);
     hp.endFill();
     hp.x = 0;
     hp.y = 0;
     total_hp.addChild(hp);
-    hp.width = 15*new_scale;
+    hp.width = 15 * new_scale;
     console.log(total_hp.children[0]);
   }
 
-  change_hp(sprite, max_hp, current_hp){
-    let outerWidth = sprite.children[0].width
-    let percent = current_hp/max_hp;
+  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number) {
+    let outerWidth = sprite.children[0].width;
+    let percent = current_hp / max_hp;
     sprite.children[0].children[0].width = outerWidth * percent;
   }
-  
+
   add_shot_line(
     start: { x: number; y: number },
     stop: { x: number; y: number },
