@@ -333,9 +333,7 @@ export default class ClientGame extends GameLoop {
     this.add_health_bar(enemy, scale);
   }
 
-  add_health_bar(sprite: PIXI.Graphics, scale: number) {
-    console.log(sprite);
-    //Create the health bar
+  add_health_bar(sprite: PIXI.Graphics, scale: number): void {
     const width = 30;
     const height = 5;
     const flot_height = 20;
@@ -360,7 +358,7 @@ export default class ClientGame extends GameLoop {
     hp.width = 15 * new_scale;
   }
 
-  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number) {
+  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number): void {
     const outerWidth = sprite.children[0].width;
     const percent = current_hp / max_hp;
     sprite.children[0].children[0].width = outerWidth * percent;
