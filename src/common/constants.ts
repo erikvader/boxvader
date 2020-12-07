@@ -40,6 +40,21 @@ export const ENEMY_SIZE = LOGICAL_TO_PIXELS(1);
 export const PLAYER_SIZE = LOGICAL_TO_PIXELS(1);
 
 /**
+ * How many pixels wide a hp bar is.
+ */
+export const HP_BAR_WIDTH = 30;
+
+/**
+ * How many pixels high a hp bar is.
+ */
+export const HP_BAR_HEIGHT = 5;
+
+/**
+ * How many pixels an hp bar is.
+ */
+export const HP_BAR_FLOAT = 20;
+
+/**
  * How many meters an entities' hitbox is.
  */
 export const PLAYER_HITBOX_RADIUS = 0.5;
