@@ -65,7 +65,7 @@ export const MAP_PLAYER_SPAWN_LAYER_NAME = 'Player spawn';
 export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
 
 /**
- * How seldom the server broadcasts it's state to all clients. Can be an integer
+ * How seldom the server broadcasts its state to all clients. Can be an integer
  * in the range [1,∞). 1 means send every update, 2 means send every other
  * update etc.
  */

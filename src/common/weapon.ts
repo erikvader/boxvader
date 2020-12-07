@@ -3,6 +3,7 @@ export default abstract class Weapon {
   protected _attack_damage: number;
   protected _projectile_color: number;
   protected _projectile_width: number;
+  protected _timeOfLastShot: number = 0;
 
   public get attack_rate(): number {
     return this._attack_rate;
@@ -15,6 +16,12 @@ export default abstract class Weapon {
   }
   public get projectile_width(): number {
     return this._projectile_width;
+  }
+  public get timeOfLastShot(): number {
+    return this._timeOfLastShot;
+  }
+  public set timeOfLastShot(time: number) {
+    this._timeOfLastShot = time;
   }
 
   constructor(

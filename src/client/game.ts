@@ -149,7 +149,6 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(prevState, newState, player.id);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
-      console.log(player.firing);
       if (player.firing == true) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
@@ -201,12 +200,10 @@ export default class ClientGame extends GameLoop {
       }
     }
     for (const player_id in this.player_list) {
-      console.log('danne');
       if (
         newState.players[player_id].alive === false &&
         this.player_list[player_id] !== undefined
       ) {
-        console.log('agge', player_id);
         if (this.player_list[player_id].shot_line !== undefined) {
           this.stage.removeChild(this.player_list[player_id].shot_line);
         }

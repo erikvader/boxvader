@@ -14,7 +14,6 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
-  protected _timeOfLastShot: Map<Id, number>;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -32,10 +31,6 @@ export default abstract class Simulation {
     return this._state;
   }
 
-  public get timeOfLastShot(): Map<Id, number> {
-    return this._timeOfLastShot;
-  }
-
   /**
    * @param map The map to use
    * @param updateStep How big an update step is in seconds.
@@ -49,7 +44,6 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
     this._gameMap = map;
-    this._timeOfLastShot = new Map<Id, number>();
   }
 
   public commonUpdate(): void {
@@ -79,7 +73,6 @@ export default abstract class Simulation {
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
-    this.timeOfLastShot.set(id, 0);
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -144,12 +137,14 @@ export default abstract class Simulation {
   }
 
   private moveEnemies(): void {
-    let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
+      let targetPlayerPosition = new Vec2(enemy.position);
       const enemyTile = this._gameMap.positionToTile(enemy.position);
-
       let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
+        if (player.alive === false) {
+          continue;
+        }
         const playerTile = this._gameMap.positionToTile(player.position);
         if (
           this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
@@ -198,21 +193,20 @@ export default abstract class Simulation {
       (body.getUserData() as { id: number }).id
     ];
 
-    const timeOfLastShot = this.timeOfLastShot.get(player.id)!;
-
     //this._stepCounter % Math.floor(1 / this.updateStep) === 0
 
     if (
       !(
-        timeOfLastShot + player.weapons[0].attack_rate * constants.SERVER_UPS <=
+        player.weapons[0].timeOfLastShot +
+          player.weapons[0].attack_rate * constants.SERVER_UPS <=
         this._stepCounter
       )
     ) {
       player.firing = false;
       return;
     }
-    console.log(timeOfLastShot);
-    this.timeOfLastShot.set(player.id, this._stepCounter);
+    player.weapons[0].timeOfLastShot = this._stepCounter;
+
     const direction = player.direction;
 
     let multiplier = Infinity;
@@ -379,13 +373,9 @@ export default abstract class Simulation {
         player_id !== undefined &&
         this._state.enemies[enemy_id] !== undefined
       ) {
-        console.log('player_id: ', player_id);
-        console.log('enemy_id: ', enemy_id);
-
         const damage = this._state.enemies[enemy_id].damage;
-        console.log(damage);
+
         this._state.players[player_id].takeDamage(damage);
-        console.log(this._state.players[player_id].health);
       }
 
       //console.log(id_a);
