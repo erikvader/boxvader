@@ -17,7 +17,6 @@ import {
   ENEMY_SIZE,
   ENEMY_SPRITE,
 } from '../common/constants';
-import { Vec2 } from 'planck-js';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
