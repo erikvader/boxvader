@@ -215,77 +215,58 @@ export default class ClientGame extends GameLoop {
 
   decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
+    let walkingAnimation;
+    let standingAnimation;
     //Right
-    if (player.direction.x === 1 && player.direction.y == 0) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkRight,
-        this.player_list[player.id].animationStates.right,
-      );
+    if (player.direction.x === 1 && player.direction.y === 0) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkRight;
+      standingAnimation = this.player_list[player.id].animationStates.right;
     }
     //Down
-    if (player.direction.x === 0 && player.direction.y == 1) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkDown,
-        this.player_list[player.id].animationStates.down,
-      );
+    if (player.direction.x === 0 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkDown;
+      standingAnimation = this.player_list[player.id].animationStates.down;
     }
     //Up
-    if (player.direction.x === 0 && player.direction.y == -1) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkUp,
-        this.player_list[player.id].animationStates.up,
-      );
+    if (player.direction.x === 0 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkUp;
+      standingAnimation = this.player_list[player.id].animationStates.up;
     }
     //Left
-    if (player.direction.x === -1 && player.direction.y == 0) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkLeft,
-        this.player_list[player.id].animationStates.left,
-      );
+    if (player.direction.x === -1 && player.direction.y === 0) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkLeft;
+      standingAnimation = this.player_list[player.id].animationStates.left;
     }
     //Right Up
-    if (player.direction.x === 1 && player.direction.y == -1) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkRightUp,
-        this.player_list[player.id].animationStates.upRight,
-      );
+    if (player.direction.x === 1 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkRightUp;
+      standingAnimation = this.player_list[player.id].animationStates.upRight;
     }
     //Right Down
-    if (player.direction.x === 1 && player.direction.y == 1) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkRightDown,
-        this.player_list[player.id].animationStates.rightDown,
-      );
+    if (player.direction.x === 1 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkRightDown;
+      standingAnimation = this.player_list[player.id].animationStates.rightDown;
     }
 
     //Left Up
-    if (player.direction.x === -1 && player.direction.y == -1) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        this.player_list[player.id].animationStates.walkLeftUp,
-        this.player_list[player.id].animationStates.leftUp,
-      );
+    if (player.direction.x === -1 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkLeftUp;
+      standingAnimation = this.player_list[player.id].animationStates.leftUp;
     }
     //Left Down
-    if (player.direction.x === -1 && player.direction.y == 1) {
+    if (player.direction.x === -1 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkLeftDown;
+      standingAnimation = this.player_list[player.id].animationStates.leftDown;
+    }
+    if (!(player.direction.x === 0 && player.direction.y === 0)) {
       this.walking_animation(
         player.walking,
         player.id,
-        this.player_list[player.id].animationStates.walkLeftDown,
-        this.player_list[player.id].animationStates.leftDown,
+        walkingAnimation,
+        standingAnimation,
       );
     }
   }
