@@ -4,6 +4,7 @@ import GameLoop, { GameLoopOpt } from '../common/game-loop';
 import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 import { Input } from '../common/misc';
+import { Player } from '../common/entity';
 
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
@@ -212,7 +213,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(player, newState: State): void {
+  decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
     //Right
     if (player.direction.x === 1 && player.direction.y == 0) {
