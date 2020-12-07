@@ -4,6 +4,7 @@ import GameLoop, { GameLoopOpt } from '../common/game-loop';
 import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 import { Input } from '../common/misc';
+import { Player } from '../common/entity';
 
 import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
@@ -16,8 +17,10 @@ import {
   PLAYER_SIZE,
   ENEMY_SIZE,
   ENEMY_SPRITE,
+  HP_BAR_WIDTH,
+  HP_BAR_HEIGHT,
+  HP_BAR_FLOAT,
 } from '../common/constants';
-import { Vec2 } from 'planck-js';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -143,8 +146,7 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      this.decide_direction(player.direction, newState, player.id);
-      this.walking_animation(player.walking, player.id);
+      this.decide_direction(player, newState);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
       if (player.firing == true) {
@@ -167,18 +169,22 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  walking_animation(walking: boolean, player_id: number): void {
+  walking_animation(
+    walking: boolean,
+    player_id: number,
+    walkAnimation,
+    standAnimation,
+  ): void {
     if (walking) {
-      if (!this.player_list[player_id].walk) {
-        this.player_list[player_id].playAnimation(
-          this.player_list[player_id].animationStates.walkUp,
-        );
-        this.player_list[player_id].walk = true;
+      if (
+        !(this.player_list[player_id].walk[0] == walkAnimation[0]) &&
+        !(this.player_list[player_id].walk[1] == walkAnimation[1])
+      ) {
+        this.player_list[player_id].playAnimation(walkAnimation);
+        this.player_list[player_id].walk = walkAnimation;
       }
     } else {
-      this.player_list[player_id].show(
-        this.player_list[player_id].animationStates.up,
-      );
+      this.player_list[player_id].show(standAnimation);
       this.player_list[player_id].walk = false;
     }
   }
@@ -210,40 +216,61 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(direction: Vec2, newState: State, player_id: number): void {
+  decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
+    let walkingAnimation;
+    let standingAnimation;
     //Right
-    if (direction.x === 1 && direction.y == 0) {
-      this.player_list[player_id].rotation = pi * 0.5;
+    if (player.direction.x === 1 && player.direction.y === 0) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkRight;
+      standingAnimation = this.player_list[player.id].animationStates.right;
     }
     //Down
-    if (direction.x === 0 && direction.y == 1) {
-      this.player_list[player_id].rotation = pi;
+    if (player.direction.x === 0 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkDown;
+      standingAnimation = this.player_list[player.id].animationStates.down;
     }
     //Up
-    if (direction.x === 0 && direction.y == -1) {
-      this.player_list[player_id].rotation = 0;
+    if (player.direction.x === 0 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkUp;
+      standingAnimation = this.player_list[player.id].animationStates.up;
     }
     //Left
-    if (direction.x === -1 && direction.y == 0) {
-      this.player_list[player_id].rotation = -pi * 0.5;
+    if (player.direction.x === -1 && player.direction.y === 0) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkLeft;
+      standingAnimation = this.player_list[player.id].animationStates.left;
     }
     //Right Up
-    if (direction.x === 1 && direction.y == -1) {
-      this.player_list[player_id].rotation = pi * 0.25;
+    if (player.direction.x === 1 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkRightUp;
+      standingAnimation = this.player_list[player.id].animationStates.upRight;
     }
     //Right Down
-    if (direction.x === 1 && direction.y == 1) {
-      this.player_list[player_id].rotation = pi * 0.75;
+    if (player.direction.x === 1 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkRightDown;
+      standingAnimation = this.player_list[player.id].animationStates.rightDown;
     }
 
     //Left Up
-    if (direction.x === -1 && direction.y == -1) {
-      this.player_list[player_id].rotation = -pi * 0.25;
+    if (player.direction.x === -1 && player.direction.y === -1) {
+      walkingAnimation = this.player_list[player.id].animationStates.walkLeftUp;
+      standingAnimation = this.player_list[player.id].animationStates.leftUp;
     }
     //Left Down
-    if (direction.x === -1 && direction.y == 1) {
-      this.player_list[player_id].rotation = -pi * 0.75;
+    if (player.direction.x === -1 && player.direction.y === 1) {
+      walkingAnimation = this.player_list[player.id].animationStates
+        .walkLeftDown;
+      standingAnimation = this.player_list[player.id].animationStates.leftDown;
+    }
+    if (!(player.direction.x === 0 && player.direction.y === 0)) {
+      this.walking_animation(
+        player.walking,
+        player.id,
+        walkingAnimation,
+        standingAnimation,
+      );
     }
   }
 
@@ -266,6 +293,7 @@ export default class ClientGame extends GameLoop {
     this.stage.addChild(character);
     character.show(character.animationStates.down);
     character.shot_line = this.add_shot_line({ x: x, y: y }, { x: 0, y: 0 });
+    this.add_health_bar(character, scale);
   }
 
   add_enemy(
@@ -287,7 +315,40 @@ export default class ClientGame extends GameLoop {
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
+    this.add_health_bar(enemy, scale);
   }
+
+  add_health_bar(sprite: PIXI.Graphics, scale: number): void {
+    const width = HP_BAR_WIDTH;
+    const height = HP_BAR_HEIGHT;
+    const flot_height = HP_BAR_FLOAT;
+    const new_scale = 1 / scale;
+    const total_hp = new PIXI.Graphics();
+    total_hp.lineStyle(0, 0x000000, 0);
+    total_hp.beginFill(0xff3300);
+    total_hp.drawRect(0, 0, new_scale * width, new_scale * height);
+    total_hp.endFill();
+    total_hp.x = (-width * new_scale) / 2;
+    total_hp.y = -flot_height * new_scale;
+    sprite.addChild(total_hp);
+
+    const hp = new PIXI.Graphics();
+    hp.lineStyle(0, 0xff3300, 0);
+    hp.beginFill(0x32cd32);
+    hp.drawRect(0, 0, width * new_scale, height * new_scale);
+    hp.endFill();
+    hp.x = 0;
+    hp.y = 0;
+    total_hp.addChild(hp);
+    hp.width = width * new_scale;
+  }
+
+  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number): void {
+    const outerWidth = sprite.children[0].width;
+    const percent = current_hp / max_hp;
+    sprite.children[0].children[0].width = outerWidth * percent;
+  }
+
   add_shot_line(
     start: { x: number; y: number },
     stop: { x: number; y: number },
