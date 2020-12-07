@@ -305,7 +305,6 @@ export default class ClientGame extends GameLoop {
     total_hp.y = -flot_height*new_scale;
     sprite.addChild(total_hp);
 
-
     let hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
     hp.beginFill(0x32CD32);
@@ -315,6 +314,13 @@ export default class ClientGame extends GameLoop {
     hp.y = 0;
     total_hp.addChild(hp);
     hp.width = 15*new_scale;
+    console.log(total_hp.children[0]);
+  }
+
+  change_hp(sprite, max_hp, current_hp){
+    let outerWidth = sprite.children[0].width
+    let percent = current_hp/max_hp;
+    sprite.children[0].children[0].width = outerWidth * percent;
   }
   
   add_shot_line(
