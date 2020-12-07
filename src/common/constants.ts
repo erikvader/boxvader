@@ -52,7 +52,7 @@ export const HP_BAR_HEIGHT = 5;
 /**
  * How many pixels an hp bar is.
  */
-export const HP_BAR_FLOAT = 20;
+export const HP_BAR_FLOAT = 30;
 
 /**
  * How many meters an entities' hitbox is.
