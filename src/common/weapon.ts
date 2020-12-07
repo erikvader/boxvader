@@ -3,7 +3,7 @@ export default abstract class Weapon {
   protected _attack_damage: number;
   protected _projectile_color: number;
   protected _projectile_width: number;
-  protected _timeOfLastShot: number = 0;
+  protected _timeOfLastShot = 0;
 
   public get attack_rate(): number {
     return this._attack_rate;

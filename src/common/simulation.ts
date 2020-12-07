@@ -353,11 +353,14 @@ export default abstract class Simulation {
 
     // TODO: hantera kollisioner om något speciellt ska hända
     world.on('begin-contact', contact => {
-      let a = contact.getFixtureA(),
-        b = contact.getFixtureB();
-
-      let user_data_a = a.getBody().getUserData() as { id: number };
-      let user_data_b = b.getBody().getUserData() as { id: number };
+      const user_data_a = contact
+        .getFixtureA()
+        .getBody()
+        .getUserData() as { id: number };
+      const user_data_b = contact
+        .getFixtureB()
+        .getBody()
+        .getUserData() as { id: number };
       let player_id: number | undefined = undefined;
       let enemy_id: number | undefined = undefined;
       if (this._state.players[user_data_a?.id] !== undefined) {

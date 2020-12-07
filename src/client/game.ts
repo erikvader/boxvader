@@ -10,7 +10,7 @@ import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
-import Weapon, { E11_blaster_rifle } from '../common/weapon';
+import Weapon from '../common/weapon';
 import {
   PLAYER_SPRITE,
   LOGICAL_TO_PIXELS,
@@ -149,7 +149,7 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(prevState, newState, player.id);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
-      if (player.firing == true) {
+      if (player.firing) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
