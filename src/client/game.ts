@@ -10,14 +10,16 @@ import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
-import Weapon from '../common/weapon';
+import { Weapon } from '../common/weapon';
 import {
   PLAYER_SPRITE,
   LOGICAL_TO_PIXELS,
   PLAYER_SIZE,
   ENEMY_SIZE,
   ENEMY_SPRITE,
+  SERVER_BROADCAST_RATE,
 } from '../common/constants';
+import { Vec2 } from 'planck-js';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -53,8 +55,9 @@ export default class ClientGame extends GameLoop {
   private right;
   private fire;
   private initialized;
-
   private sendInputFun;
+
+  private stateNumber: number;
 
   constructor(args: ClientGameOpt) {
     super(args);
@@ -65,6 +68,7 @@ export default class ClientGame extends GameLoop {
     this.inputHistory = new Deque();
     this.my_id = args.my_id;
     this.map = args.map;
+    this.stateNumber = 0;
   }
 
   public start(): Promise<void> {
@@ -110,7 +114,7 @@ export default class ClientGame extends GameLoop {
 
   serverMsg(data: any): void {
     if (!this.running) return;
-
+    this.stateNumber += SERVER_BROADCAST_RATE;
     const message = deserializeSTC(data);
 
     if (this.my_id in message.inputAck) {
@@ -146,10 +150,17 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      this.decide_direction(prevState, newState, player.id);
+      this.decide_direction(player.direction, newState, player.id);
+      this.walking_animation(player.walking, player.id);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
-      if (player.firing) {
+
+      if (
+        player.weapons[0].timeOfLastShot <
+          this.stateNumber + SERVER_BROADCAST_RATE &&
+        player.weapons[0].timeOfLastShot + 3 * SERVER_BROADCAST_RATE >
+          this.stateNumber + SERVER_BROADCAST_RATE
+      ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
@@ -173,6 +184,21 @@ export default class ClientGame extends GameLoop {
     }
   }
 
+  walking_animation(walking: boolean, player_id: number): void {
+    if (walking) {
+      if (!this.player_list[player_id].walk) {
+        this.player_list[player_id].playAnimation(
+          this.player_list[player_id].animationStates.walkUp,
+        );
+        this.player_list[player_id].walk = true;
+      }
+    } else {
+      this.player_list[player_id].show(
+        this.player_list[player_id].animationStates.up,
+      );
+      this.player_list[player_id].walk = false;
+    }
+  }
   update_enemy_sprites(prevState: State | undefined, newState: State): void {
     this.remove_entity_sprites(newState);
 
@@ -213,56 +239,40 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(
-    prevState: State | undefined,
-    newState: State,
-    player_id: number,
-  ): void {
-    if (!prevState) return;
-    const dx =
-      newState.players[player_id].position.x -
-      prevState.players[player_id].position.x;
-    const dy =
-      newState.players[player_id].position.y -
-      prevState.players[player_id].position.y;
+  decide_direction(direction: Vec2, newState: State, player_id: number): void {
     const pi = Math.PI;
     //Right
-    if (dy === 0 && dx > 0) {
+    if (direction.x === 1 && direction.y == 0) {
       this.player_list[player_id].rotation = pi * 0.5;
     }
-    //Right Up
-    if (dy < 0 && dx > 0) {
-      this.player_list[player_id].rotation = pi * 0.25;
-    }
-    //Right Down
-    if (dy > 0 && dx > 0) {
-      this.player_list[player_id].rotation = pi * 0.75;
-    }
-    //Left
-    if (dy === 0 && dx < 0) {
-      this.player_list[player_id].rotation = -pi * 0.5;
-    }
-    //Left Up
-    if (dy < 0 && dx < 0) {
-      this.player_list[player_id].rotation = -pi * 0.25;
-    }
-    //Left Down
-    if (dy > 0 && dx < 0) {
-      this.player_list[player_id].rotation = -pi * 0.75;
-    }
     //Down
-    if (dy > 0 && dx === 0) {
+    if (direction.x === 0 && direction.y == 1) {
       this.player_list[player_id].rotation = pi;
     }
     //Up
-    if (dy < 0 && dx === 0) {
+    if (direction.x === 0 && direction.y == -1) {
       this.player_list[player_id].rotation = 0;
     }
-    //Still
-    if (dy === 0 && dx === 0) {
-      this.player_list[player_id].playAnimation(
-        this.player_list[player_id].animationStates.walkUp,
-      );
+    //Left
+    if (direction.x === -1 && direction.y == 0) {
+      this.player_list[player_id].rotation = -pi * 0.5;
+    }
+    //Right Up
+    if (direction.x === 1 && direction.y == -1) {
+      this.player_list[player_id].rotation = pi * 0.25;
+    }
+    //Right Down
+    if (direction.x === 1 && direction.y == 1) {
+      this.player_list[player_id].rotation = pi * 0.75;
+    }
+
+    //Left Up
+    if (direction.x === -1 && direction.y == -1) {
+      this.player_list[player_id].rotation = -pi * 0.25;
+    }
+    //Left Down
+    if (direction.x === -1 && direction.y == 1) {
+      this.player_list[player_id].rotation = -pi * 0.75;
     }
   }
 

@@ -4,6 +4,7 @@ import State from './state';
 import { Body, Box, Circle, Vec2, World, Fixture } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
+import Wave from './wave';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -14,6 +15,7 @@ export default abstract class Simulation {
   protected _state: State;
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
+  protected _wave: Wave;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -30,6 +32,9 @@ export default abstract class Simulation {
   public get state(): State {
     return this._state;
   }
+  public get stepCounter(): number {
+    return this._stepCounter;
+  }
 
   /**
    * @param map The map to use
@@ -44,16 +49,51 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = enemyIdCounter;
     this._gameMap = map;
+    this._wave = new Wave(
+      1,
+      constants.WAVE_ENEMY_COUNT_INCREMENT,
+      constants.WAVE_ENEMY_HEALTH_INCREMENT,
+    );
   }
 
   public commonUpdate(): void {
     this._stepCounter += 1;
 
-    //spawns a baby yoda per second
-    if (this._stepCounter % Math.floor(1 / this.updateStep) === 0) {
-      this.addEnemy();
+    const killed = this.despawnEntities();
+    this._wave.kill(killed);
+
+    if (this._wave.finished) {
+      // mark this instant as when the wave was finished
+      if (this._wave.clearStep === 0) {
+        this._wave.clearStep = this._stepCounter;
+        // TODO: remove this when we display the wave information on screen
+        console.info(`Finished wave ${this._wave.waveNumber}`);
+      }
+
+      // create a new wave
+      if (
+        this._stepCounter - this._wave.clearStep >=
+        constants.WAVE_COOLDOWN * constants.SERVER_UPS
+      ) {
+        const number = this._wave.waveNumber + 1;
+        const enemies = number * constants.WAVE_ENEMY_COUNT_INCREMENT;
+        const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
+        this._wave = new Wave(number, enemies, health);
+        // TODO: remove this when we display the wave information on screen
+        console.info(`Creating wave ${this._wave.waveNumber}`);
+      }
+    } else {
+      if (
+        this._wave.unspawned > 0 &&
+        this._stepCounter %
+          (constants.WAVE_SPAWN_DELAY * constants.SERVER_UPS) ===
+          0
+      ) {
+        this.addEnemy(this._wave.enemyHealth);
+        this._wave.spawnSingle();
+      }
     }
-    this.despawnEntities();
+
     this.moveEnemies();
   }
 
@@ -78,7 +118,7 @@ export default abstract class Simulation {
   //spawns in a fixed location, should probably have a vec2 array as input for location
   // Should probably have a type of enemy as well for later
 
-  public addEnemy(): void {
+  public addEnemy(health: number): void {
     if (this._enemyIdCounter in this.state.players)
       throw new Error(
         `ID ${this._enemyIdCounter} is already taken (by a player).`,
@@ -90,20 +130,28 @@ export default abstract class Simulation {
       );
 
     const position = this._gameMap.randomEnemySpawn();
-
-    const enemy = new Enemy(this._enemyIdCounter, 2, position, 1);
+    const enemy_damage = 1; //Snälla Dark Vader, blunda när du ser detta. Det är tillfälligt och bör ändras om vi har olika typer av fiender...
+    const enemy = new Enemy(
+      this._enemyIdCounter,
+      health,
+      position,
+      enemy_damage,
+    );
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
     this._enemyIdCounter += 1;
   }
 
-  private despawnEntities(): void {
+  private despawnEntities(): number {
+    let despawned = 0;
+
     for (const enemy of Object.values(this.state.enemies)) {
       if (!enemy.alive) {
         this._world.destroyBody(this._bodies.get(enemy.id)!);
         this._bodies.delete(enemy.id);
 
         delete this.state.enemies[enemy.id];
+        despawned += 1;
       }
     }
     for (const player of Object.values(this.state.players)) {
@@ -112,6 +160,7 @@ export default abstract class Simulation {
         this._bodies.delete(player.id);
       }
     }
+    return despawned;
   }
 
   public snapshot(): State {
@@ -312,6 +361,9 @@ export default abstract class Simulation {
       }
       if (!Vec2.areEqual(newDirection, Vec2.zero())) {
         player.direction = newDirection;
+        player.walking = true;
+      } else {
+        player.walking = false;
       }
     }
 

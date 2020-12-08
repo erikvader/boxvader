@@ -15,7 +15,7 @@ export const PLAYER_HEALTH_MAX = 5;
  * How big a tile should be drawn as. This determines the final scale of the
  * game and is the only constant expressed in pixels.
  */
-export const TILE_TARGET_SIZE_PIXELS = 32;
+export const TILE_TARGET_SIZE_PIXELS = 48;
 
 /**
  * How big a tile or square is logically. Everything else will be dependent on
@@ -76,3 +76,15 @@ export const SERVER_BROADCAST_RATE = 1;
  * many updates without getting popped.
  */
 export const INPUT_QUEUE_MAX_AGE = 3;
+
+/** The multiplier for the number of enemies to spawn in each wave. */
+export const WAVE_ENEMY_COUNT_INCREMENT = PLAYER_LIMIT;
+
+/** The increment in enemy health for each wave. */
+export const WAVE_ENEMY_HEALTH_INCREMENT = 2;
+
+/** Delay (in seconds) between enemy spawns in a wave. */
+export const WAVE_SPAWN_DELAY = 0.5;
+
+/** Delay (in seconds) between waves. */
+export const WAVE_COOLDOWN = 3;

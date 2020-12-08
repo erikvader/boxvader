@@ -1,6 +1,6 @@
 import { Id, reviveVec2, isObjectWithKeys } from './misc';
 import { Body, Vec2 } from 'planck-js';
-import Weapon, { E11_blaster_rifle } from './weapon';
+import * as Weapon from './weapon';
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
@@ -11,19 +11,17 @@ export abstract class Entity {
   public position: Vec2;
   public velocity: Vec2;
   public direction: Vec2;
-  public _health: number;
-
+  private _health: number;
+  public walking: boolean;
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
     this.maxHealth = health;
-
+    this.walking = false;
     this._health = health;
     this.position = position;
     this.velocity = Vec2.zero();
     this.direction = new Vec2(0, -1);
   }
-
-  public abstract draw(pixi): void;
 
   public static revive(
     obj: unknown,
@@ -33,6 +31,7 @@ export abstract class Entity {
       isObjectWithKeys(obj, [
         'id',
         'maxHealth',
+        'walking',
         'position',
         '_health',
         'velocity',
@@ -44,6 +43,7 @@ export abstract class Entity {
         obj['maxHealth'],
         reviveVec2(obj['position']),
       );
+      e.walking = obj['walking'];
       e._health = obj['_health'];
       e.velocity = reviveVec2(obj['velocity']);
       e.direction = reviveVec2(obj['direction']);
@@ -83,14 +83,14 @@ export class Player extends Entity {
   private _firing: boolean;
   public target: Vec2;
   private _score: number;
-  public weapons: Weapon[];
+  public weapons: Weapon.Weapon[];
   public constructor(id: Id, health: number, position: Vec2, name: string) {
     super(id, health, position);
     this.name = name;
     this._score = 0;
     this._firing = false;
     this.target = new Vec2(0, 0);
-    this.weapons = [new E11_blaster_rifle()];
+    this.weapons = [new Weapon.E11_blaster_rifle()];
   }
 
   public get firing(): boolean {
@@ -107,10 +107,6 @@ export class Player extends Entity {
 
   public addScore(points: number): void {
     this._score += points;
-  }
-
-  public draw(pixi): void {
-    throw new Error('Method not implemented.');
   }
 
   /**
@@ -135,6 +131,11 @@ export class Player extends Entity {
         p._firing = obj['_firing'];
         p._score = obj['_score'];
         p.target = obj['target'];
+        p.weapons = [];
+        for (const weapon of obj['weapons']) {
+          p.weapons.push(Weapon[weapon['_weaponType']].revive(weapon));
+        }
+
         return p;
       }) as Player;
     }
@@ -147,10 +148,6 @@ export class Enemy extends Entity {
   public constructor(id: Id, health: number, position: Vec2, damage: number) {
     super(id, health, position);
     this.damage = damage;
-  }
-
-  public draw(pixi): void {
-    throw new Error('Method not implemented.');
   }
 
   /**
