@@ -15,9 +15,11 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 function setup(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer();
-  renderer.backgroundColor = 0xffd700;
-  document.body.appendChild(renderer.view);
   const stage = new PIXI.Container();
+
+  document.getElementById('game-container')!.append(renderer.view);
+  renderer.backgroundColor = 0xffd700;
+  renderer.view.id = 'game';
 
   const { maxMessageSize } = channel;
   let game;
