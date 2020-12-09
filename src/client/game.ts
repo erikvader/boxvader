@@ -410,7 +410,11 @@ export default class ClientGame extends GameLoop {
   update_score(): void {
     let message = new PIXI.Text('Hello Pixi!');
     this.stage.addChild(message);
-    message.position.set(300, 48);
+    console.log(this.gameMap)
+    //message.position.set(
+      //(this.gameMap.width * this.gameMap.tileset.tileSize) / 2,
+      //48,
+    );
   }
 }
 function load_zombie(img_filepath): any {
