@@ -32,6 +32,9 @@ export default abstract class Simulation {
   public get state(): State {
     return this._state;
   }
+  public get stepCounter(): number {
+    return this._stepCounter;
+  }
 
   /**
    * @param map The map to use
@@ -40,7 +43,7 @@ export default abstract class Simulation {
    */
   constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
     this.updateStep = updateStep;
-    this._world = createWorld(map);
+    this._world = this.createWorld(map);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
     this._stepCounter = 0;
@@ -56,7 +59,7 @@ export default abstract class Simulation {
   public commonUpdate(): void {
     this._stepCounter += 1;
 
-    const killed = this.despawnEnemies();
+    const killed = this.despawnEntities();
     this._wave.kill(killed);
 
     if (this._wave.finished) {
@@ -127,14 +130,19 @@ export default abstract class Simulation {
       );
 
     const position = this._gameMap.randomEnemySpawn();
-
-    const enemy = new Enemy(this._enemyIdCounter, health, position);
+    const enemy_damage = 1; //Snälla Dark Vader, blunda när du ser detta. Det är tillfälligt och bör ändras om vi har olika typer av fiender...
+    const enemy = new Enemy(
+      this._enemyIdCounter,
+      health,
+      position,
+      enemy_damage,
+    );
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
     this._enemyIdCounter += 1;
   }
 
-  private despawnEnemies(): number {
+  private despawnEntities(): number {
     let despawned = 0;
 
     for (const enemy of Object.values(this.state.enemies)) {
@@ -146,7 +154,12 @@ export default abstract class Simulation {
         despawned += 1;
       }
     }
-
+    for (const player of Object.values(this.state.players)) {
+      if (!player.alive && this._bodies.get(player.id) !== undefined) {
+        this._world.destroyBody(this._bodies.get(player.id)!);
+        this._bodies.delete(player.id);
+      }
+    }
     return despawned;
   }
 
@@ -173,12 +186,14 @@ export default abstract class Simulation {
   }
 
   private moveEnemies(): void {
-    let targetPlayerPosition = new Vec2();
     for (const enemy of Object.values(this.state.enemies)) {
+      let targetPlayerPosition = new Vec2(enemy.position);
       const enemyTile = this._gameMap.positionToTile(enemy.position);
-
       let maxDistance = Infinity;
       for (const player of Object.values(this.state.players)) {
+        if (player.alive === false) {
+          continue;
+        }
         const playerTile = this._gameMap.positionToTile(player.position);
         if (
           this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
@@ -208,16 +223,12 @@ export default abstract class Simulation {
     return new Vec2(x, y);
   }
 
-  handlePlayerInput(body: Body, input?: Input): void {
+  handlePlayerInput(body: Body, player: Player, input?: Input): void {
+    if (player.alive === false) {
+      return;
+    }
     if (input?.fire) {
-      this.state.players[
-        (body.getUserData() as { id: number }).id
-      ].firing = true;
       this.handleShot(body, input);
-    } else {
-      this.state.players[
-        (body.getUserData() as { id: number }).id
-      ].firing = false;
     }
 
     this.updatePlayerBodyFromInput(body, input);
@@ -227,22 +238,34 @@ export default abstract class Simulation {
     const player = this.state.players[
       (body.getUserData() as { id: number }).id
     ];
+
+    if (
+      !(
+        player.weapons[0].timeOfLastShot +
+          player.weapons[0].attack_rate * constants.SERVER_UPS <=
+        this._stepCounter
+      )
+    ) {
+      return;
+    }
+    player.weapons[0].timeOfLastShot = this._stepCounter;
+
     const direction = player.direction;
 
     let multiplier = Infinity;
 
-    const mapw = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
-    const maph = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
+    const mapWidth = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
+    const mapHeight = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
 
     if (direction.x > 0) {
-      multiplier = mapw - body.getPosition().x;
+      multiplier = mapWidth - body.getPosition().x;
     } else if (direction.x < 0) {
       multiplier = body.getPosition().x;
     }
     if (direction.y > 0) {
       multiplier =
-        maph - body.getPosition().y < multiplier
-          ? maph - body.getPosition().y
+        mapHeight - body.getPosition().y < multiplier
+          ? mapHeight - body.getPosition().y
           : multiplier;
     } else if (direction.y < 0) {
       multiplier =
@@ -291,10 +314,13 @@ export default abstract class Simulation {
     if (!fixture || !point) {
       return;
     }
+
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
     const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    this._state.enemies[userData?.id]?.takeDamage(1);
+    this._state.enemies[userData?.id]?.takeDamage(
+      this.state.players[player.id].weapons[0].attack_damage,
+    );
   }
 
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
@@ -338,50 +364,68 @@ export default abstract class Simulation {
     body.setLinearVelocity(velocity);
     body.setAwake(true);
   }
-}
 
-function createWorld(map: GameMap): World {
-  const world = new World();
+  createWorld(map: GameMap): World {
+    const world = new World();
 
-  const fixDef: any = {
-    friction: 0.0,
-    restitution: 0.0,
-  };
+    const fixDef: any = {
+      friction: 0.0,
+      restitution: 0.0,
+    };
 
-  const halfSize = 0.5 * constants.TILE_LOGICAL_SIZE;
+    const halfSize = 0.5 * constants.TILE_LOGICAL_SIZE;
 
-  for (let y = 0; y < map.height; ++y) {
-    for (let x = 0; x < map.width; ++x) {
-      if (!map.at(x, y).walkable) {
-        const center = new Vec2(
-          x * constants.TILE_LOGICAL_SIZE + halfSize,
-          y * constants.TILE_LOGICAL_SIZE + halfSize,
-        );
-        const shape: any = new Box(halfSize, halfSize, Vec2.zero(), 0.0);
+    for (let y = 0; y < map.height; ++y) {
+      for (let x = 0; x < map.width; ++x) {
+        if (!map.at(x, y).walkable) {
+          const center = new Vec2(
+            x * constants.TILE_LOGICAL_SIZE + halfSize,
+            y * constants.TILE_LOGICAL_SIZE + halfSize,
+          );
+          const shape: any = new Box(halfSize, halfSize, Vec2.zero(), 0.0);
 
-        const body = world.createBody({
-          type: Body.STATIC,
-          position: center,
-          fixedRotation: true,
-          active: true,
-          awake: false,
-        });
+          const body = world.createBody({
+            type: Body.STATIC,
+            position: center,
+            fixedRotation: true,
+            active: true,
+            awake: false,
+          });
 
-        body.createFixture(shape, fixDef);
+          body.createFixture(shape, fixDef);
+        }
       }
     }
+
+    // TODO: hantera kollisioner om något speciellt ska hända
+    world.on('begin-contact', contact => {
+      const user_data_a = contact
+        .getFixtureA()
+        .getBody()
+        .getUserData() as { id: number };
+      const user_data_b = contact
+        .getFixtureB()
+        .getBody()
+        .getUserData() as { id: number };
+      let player_id: number | undefined = undefined;
+      let enemy_id: number | undefined = undefined;
+      if (this._state.players[user_data_a?.id]) {
+        player_id = user_data_a?.id;
+        enemy_id = user_data_b?.id;
+      }
+      if (this._state.players[user_data_b?.id]) {
+        player_id = user_data_b?.id;
+        enemy_id = user_data_a?.id;
+      }
+      if (enemy_id && player_id && this._state.enemies[enemy_id]) {
+        const damage = this._state.enemies[enemy_id].damage;
+
+        this._state.players[player_id].takeDamage(damage);
+      }
+    });
+
+    return world;
   }
-
-  // TODO: hantera kollisioner om något speciellt ska hända
-  // world.on('begin-contact', contact => {
-  //   let a = contact.getFixtureA(),
-  //     b = contact.getFixtureB();
-
-  //   console.log('A: ', a.getType(), a.getBody().getPosition());
-  //   console.log('B: ', b.getType(), b.getBody().getPosition());
-  // });
-
-  return world;
 }
 
 /**

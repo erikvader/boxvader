@@ -11,6 +11,7 @@ import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
+import { Weapon } from '../common/weapon';
 import {
   PLAYER_SPRITE,
   LOGICAL_TO_PIXELS,
@@ -20,6 +21,7 @@ import {
   HP_BAR_WIDTH,
   HP_BAR_HEIGHT,
   HP_BAR_FLOAT,
+  SERVER_BROADCAST_RATE,
 } from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
@@ -56,7 +58,6 @@ export default class ClientGame extends GameLoop {
   private right;
   private fire;
   private initialized;
-
   private sendInputFun;
 
   constructor(args: ClientGameOpt) {
@@ -113,7 +114,6 @@ export default class ClientGame extends GameLoop {
 
   serverMsg(data: any): void {
     if (!this.running) return;
-
     const message = deserializeSTC(data);
 
     if (this.my_id in message.inputAck) {
@@ -131,7 +131,9 @@ export default class ClientGame extends GameLoop {
 
   update_player_sprites(prevState: State | undefined, newState: State): void {
     // spawn new players
+    this.remove_entity_sprites(newState);
     for (const player of Object.values(newState.players)) {
+      const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
           LOGICAL_TO_PIXELS(player.position.x),
@@ -139,6 +141,7 @@ export default class ClientGame extends GameLoop {
           PLAYER_SIZE,
           PLAYER_SPRITE,
           player.id,
+          weapon,
         );
 
         if (player.id === this.my_id) {
@@ -149,10 +152,17 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(player, newState);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
-      if (player.firing == true) {
+      if (
+        player.weapons[0].timeOfLastShot <
+          this.states.last + SERVER_BROADCAST_RATE &&
+        player.weapons[0].timeOfLastShot +
+          player.weapons[0].projectileVisibiltyDuration >
+          this.states.last + SERVER_BROADCAST_RATE
+      ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
+          weapon,
           {
             x: LOGICAL_TO_PIXELS(player.position.x),
             y: LOGICAL_TO_PIXELS(player.position.y),
@@ -162,9 +172,12 @@ export default class ClientGame extends GameLoop {
             y: LOGICAL_TO_PIXELS(player.target.y),
           },
         );
+
         this.player_list[player.id].shot_line.visible = true;
+      } else if (this.player_list[player.id].shot_line.expires > 0) {
+        this.player_list[player.id].shot_line.expires -= 1;
       } else {
-        this.player_list[player.id].shot_line.visible = false;
+        this.stage.removeChild(this.player_list[player.id].shot_line);
       }
     }
   }
@@ -189,7 +202,7 @@ export default class ClientGame extends GameLoop {
     }
   }
   update_enemy_sprites(prevState: State | undefined, newState: State): void {
-    this.remove_enemy_sprites(newState);
+    this.remove_entity_sprites(newState);
 
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
@@ -207,11 +220,23 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  remove_enemy_sprites(newState: State): void {
+  remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
+      }
+    }
+    for (const player_id in this.player_list) {
+      if (
+        newState.players[player_id].alive === false &&
+        this.player_list[player_id] !== undefined
+      ) {
+        if (this.player_list[player_id].shot_line !== undefined) {
+          this.stage.removeChild(this.player_list[player_id].shot_line);
+        }
+        this.stage.removeChild(this.player_list[player_id]);
+        delete this.player_list[player_id];
       }
     }
   }
@@ -264,7 +289,10 @@ export default class ClientGame extends GameLoop {
         .walkLeftDown;
       standingAnimation = this.player_list[player.id].animationStates.leftDown;
     }
-    if (!(player.direction.x === 0 && player.direction.y === 0)) {
+    if (
+      !(player.direction.x === 0 && player.direction.y === 0) &&
+      player.alive
+    ) {
       this.walking_animation(
         player.walking,
         player.id,
@@ -280,6 +308,7 @@ export default class ClientGame extends GameLoop {
     target_width: number,
     img_filepath: string,
     id: number,
+    weapon: Weapon,
   ): void {
     const character = load_zombie(img_filepath);
 
@@ -292,7 +321,11 @@ export default class ClientGame extends GameLoop {
     this.player_list[id] = character;
     this.stage.addChild(character);
     character.show(character.animationStates.down);
-    character.shot_line = this.add_shot_line({ x: x, y: y }, { x: 0, y: 0 });
+    character.shot_line = this.add_shot_line(
+      weapon,
+      { x: x, y: y },
+      { x: 0, y: 0 },
+    );
     this.add_health_bar(character, scale);
   }
 
@@ -350,15 +383,17 @@ export default class ClientGame extends GameLoop {
   }
 
   add_shot_line(
+    weapon: Weapon,
     start: { x: number; y: number },
     stop: { x: number; y: number },
   ): PIXI.Graphics {
     const line = new PIXI.Graphics();
-    line.lineStyle(4, 0xffffff, 1);
+    line.lineStyle(weapon.projectile_width, weapon.projectile_color, 1);
     line.moveTo(stop.x, stop.y);
     line.lineTo(start.x, start.y);
     line.x = 0;
     line.y = 0;
+    line.expires = 1;
     line.visible = true;
     this.stage.addChild(line);
     return line;

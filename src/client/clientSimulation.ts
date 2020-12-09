@@ -12,7 +12,7 @@ export default class ClientSimulation extends Simulation {
 
   public update(body: Body, input: Input): void {
     this.commonUpdate();
-    this.handlePlayerInput(body, input);
+    //this.handlePlayerInput(body, input);
   }
 
   public reset(state: State): void {

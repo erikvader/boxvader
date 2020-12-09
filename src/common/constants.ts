@@ -9,7 +9,7 @@ export const PLAYER_SPRITE = 'imgs/zombie_0.png';
 export const ENEMY_SPRITE = 'imgs/b_yoda.png';
 
 /** Maximum and initial health of a player. */
-export const PLAYER_HEALTH_MAX = 100;
+export const PLAYER_HEALTH_MAX = 5;
 
 /**
  * How big a tile should be drawn as. This determines the final scale of the
@@ -80,7 +80,7 @@ export const MAP_PLAYER_SPAWN_LAYER_NAME = 'Player spawn';
 export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
 
 /**
- * How seldom the server broadcasts it's state to all clients. Can be an integer
+ * How seldom the server broadcasts its state to all clients. Can be an integer
  * in the range [1,∞). 1 means send every update, 2 means send every other
  * update etc.
  */
@@ -96,7 +96,7 @@ export const INPUT_QUEUE_MAX_AGE = 3;
 export const WAVE_ENEMY_COUNT_INCREMENT = PLAYER_LIMIT;
 
 /** The increment in enemy health for each wave. */
-export const WAVE_ENEMY_HEALTH_INCREMENT = 10;
+export const WAVE_ENEMY_HEALTH_INCREMENT = 2;
 
 /** Delay (in seconds) between enemy spawns in a wave. */
 export const WAVE_SPAWN_DELAY = 0.5;
