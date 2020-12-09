@@ -19,7 +19,7 @@ export default class ServerSimulation extends Simulation {
       const idNum = parseInt(id);
       const body = this.bodies.get(idNum)!;
       const input = inputs.get(idNum);
-      this.handlePlayerInput(body, idNum, input);
+      this.handlePlayerInput(body, this.state.players[idNum], input);
     }
 
     this.world.step(this.updateStep);

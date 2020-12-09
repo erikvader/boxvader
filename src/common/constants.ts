@@ -84,7 +84,7 @@ export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
  * in the range [1,∞). 1 means send every update, 2 means send every other
  * update etc.
  */
-export const SERVER_BROADCAST_RATE = 1;
+export const SERVER_BROADCAST_RATE = 2;
 
 /**
  * An [[Input]] is considered old if it has been in the input queue for this

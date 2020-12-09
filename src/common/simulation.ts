@@ -223,15 +223,12 @@ export default abstract class Simulation {
     return new Vec2(x, y);
   }
 
-  handlePlayerInput(body: Body, id: number, input?: Input): void {
-    if (this.state.players[id].alive === false) {
+  handlePlayerInput(body: Body, player: Player, input?: Input): void {
+    if (player.alive === false) {
       return;
     }
     if (input?.fire) {
-      this.state.players[id].firing = true;
       this.handleShot(body, input);
-    } else {
-      this.state.players[id].firing = false;
     }
 
     this.updatePlayerBodyFromInput(body, input);
@@ -242,8 +239,6 @@ export default abstract class Simulation {
       (body.getUserData() as { id: number }).id
     ];
 
-    //this._stepCounter % Math.floor(1 / this.updateStep) === 0
-
     if (
       !(
         player.weapons[0].timeOfLastShot +
@@ -251,7 +246,6 @@ export default abstract class Simulation {
         this._stepCounter
       )
     ) {
-      player.firing = false;
       return;
     }
     player.weapons[0].timeOfLastShot = this._stepCounter;
@@ -415,28 +409,19 @@ export default abstract class Simulation {
         .getUserData() as { id: number };
       let player_id: number | undefined = undefined;
       let enemy_id: number | undefined = undefined;
-      if (this._state.players[user_data_a?.id] !== undefined) {
+      if (this._state.players[user_data_a?.id]) {
         player_id = user_data_a?.id;
         enemy_id = user_data_b?.id;
       }
-      if (this._state.players[user_data_b?.id] !== undefined) {
+      if (this._state.players[user_data_b?.id]) {
         player_id = user_data_b?.id;
         enemy_id = user_data_a?.id;
       }
-      if (
-        enemy_id !== undefined &&
-        player_id !== undefined &&
-        this._state.enemies[enemy_id] !== undefined
-      ) {
+      if (enemy_id && player_id && this._state.enemies[enemy_id]) {
         const damage = this._state.enemies[enemy_id].damage;
 
         this._state.players[player_id].takeDamage(damage);
       }
-
-      //console.log(id_a);
-      //console.log(id_b);
-      //  console.log('A: ', a.getType(), a.getBody().getPosition());
-      //  console.log('B: ', b.getType(), b.getBody().getPosition());
     });
 
     return world;

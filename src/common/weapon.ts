@@ -7,6 +7,7 @@ export abstract class Weapon {
   protected _projectile_width: number;
   protected _timeOfLastShot: number;
   protected _weaponType: string;
+  protected _projectileVisibiltyDuration: number;
 
   public get attack_rate(): number {
     return this._attack_rate;
@@ -29,6 +30,9 @@ export abstract class Weapon {
   public get weaponType(): string {
     return this._weaponType;
   }
+  public get projectileVisibiltyDuration(): number {
+    return this._projectileVisibiltyDuration;
+  }
 
   constructor(
     weaponType: string,
@@ -36,12 +40,14 @@ export abstract class Weapon {
     attack_damage: number,
     projectile_color: number,
     projectile_width: number,
+    projectileVisibiltyDuration: number,
   ) {
     this._weaponType = weaponType;
     this._attack_rate = 1 / attack_rate; // attacks per second
     this._attack_damage = attack_damage;
     this._projectile_color = projectile_color;
     this._projectile_width = projectile_width;
+    this._projectileVisibiltyDuration = projectileVisibiltyDuration;
 
     this._timeOfLastShot = 0;
   }
@@ -55,6 +61,7 @@ export abstract class Weapon {
         '_projectile_color',
         '_projectile_width',
         '_timeOfLastShot',
+        '_projectileVisibiltyDuration',
       ])
     ) {
       const weapon = construct();
@@ -64,6 +71,7 @@ export abstract class Weapon {
       weapon._attack_rate = obj['_attack_rate'];
       weapon._projectile_color = obj['_projectile_color'];
       weapon._projectile_width = obj['_projectile_width'];
+      weapon._projectileVisibiltyDuration = obj['_projectileVisibiltyDuration'];
       return weapon;
     }
     throw new Error("couldn't revive Weapon");
@@ -72,14 +80,16 @@ export abstract class Weapon {
 
 /*
    Standard issue weapon used by imperial stormtroopers
+   Weapon Type: E11_blaster_rifle
    APS: 2
    Damage: 1
    Color: Red
    Projectile width: 2
+   projectile visibilty duration: 4
 */
 export class E11_blaster_rifle extends Weapon {
   public constructor() {
-    super('E11_blaster_rifle', 2, 2, 0xf72331, 2);
+    super('E11_blaster_rifle', 2, 2, 0xf72331, 2, 3);
   }
   public static revive(obj: unknown): E11_blaster_rifle {
     if (isObjectWithKeys(obj, [])) {

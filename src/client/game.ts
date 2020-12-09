@@ -60,8 +60,6 @@ export default class ClientGame extends GameLoop {
   private initialized;
   private sendInputFun;
 
-  private stateNumber: number;
-
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
@@ -71,7 +69,6 @@ export default class ClientGame extends GameLoop {
     this.inputHistory = new Deque();
     this.my_id = args.my_id;
     this.map = args.map;
-    this.stateNumber = 0;
   }
 
   public start(): Promise<void> {
@@ -117,7 +114,6 @@ export default class ClientGame extends GameLoop {
 
   serverMsg(data: any): void {
     if (!this.running) return;
-    this.stateNumber += SERVER_BROADCAST_RATE;
     const message = deserializeSTC(data);
 
     if (this.my_id in message.inputAck) {
@@ -156,12 +152,12 @@ export default class ClientGame extends GameLoop {
       this.decide_direction(player, newState);
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
-
       if (
         player.weapons[0].timeOfLastShot <
-          this.stateNumber + SERVER_BROADCAST_RATE &&
-        player.weapons[0].timeOfLastShot + 3 * SERVER_BROADCAST_RATE >
-          this.stateNumber + SERVER_BROADCAST_RATE
+          this.states.last + SERVER_BROADCAST_RATE &&
+        player.weapons[0].timeOfLastShot +
+          player.weapons[0].projectileVisibiltyDuration >
+          this.states.last + SERVER_BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);

@@ -80,7 +80,6 @@ export abstract class Entity {
 export class Player extends Entity {
   public readonly name: string;
 
-  private _firing: boolean;
   public target: Vec2;
   private _score: number;
   public weapons: Weapon.Weapon[];
@@ -88,17 +87,8 @@ export class Player extends Entity {
     super(id, health, position);
     this.name = name;
     this._score = 0;
-    this._firing = false;
     this.target = new Vec2(0, 0);
     this.weapons = [new Weapon.E11_blaster_rifle()];
-  }
-
-  public get firing(): boolean {
-    return this._firing;
-  }
-
-  public set firing(firing: boolean) {
-    this._firing = firing;
   }
 
   public get score(): number {
@@ -125,10 +115,9 @@ export class Player extends Entity {
   }
 
   public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_firing', '_score', 'target'])) {
+    if (isObjectWithKeys(obj, ['name', '_score', 'target'])) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
         const p = new Player(id, health, position, obj['name']);
-        p._firing = obj['_firing'];
         p._score = obj['_score'];
         p.target = obj['target'];
         p.weapons = [];
@@ -166,7 +155,7 @@ export class Enemy extends Entity {
   }
 
   public static revive(obj: unknown): Enemy {
-    if (isObjectWithKeys(obj, [])) {
+    if (isObjectWithKeys(obj, ['damage'])) {
       return Entity.revive(
         obj,
         (id: Id, health: number, position: Vec2) =>
