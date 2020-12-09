@@ -150,6 +150,11 @@ export default class ClientGame extends GameLoop {
       }
 
       this.decide_direction(player, newState);
+      this.change_hp(
+        this.player_list[player.id],
+        player.maxHealth,
+        player.health,
+      );
       this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
       this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
       if (
@@ -214,7 +219,7 @@ export default class ClientGame extends GameLoop {
           enemy.id,
         );
       }
-
+      this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
       this.enemy_list[enemy.id].x = LOGICAL_TO_PIXELS(enemy.position.x);
       this.enemy_list[enemy.id].y = LOGICAL_TO_PIXELS(enemy.position.y);
     }
