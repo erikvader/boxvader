@@ -12,17 +12,7 @@ import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
-import {
-  PLAYER_SPRITE,
-  LOGICAL_TO_PIXELS,
-  PLAYER_SIZE,
-  ENEMY_SIZE,
-  ENEMY_SPRITE,
-  HP_BAR_WIDTH,
-  HP_BAR_HEIGHT,
-  HP_BAR_FLOAT,
-  SERVER_BROADCAST_RATE,
-} from '../common/constants';
+import * as CONSTANTS from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -60,6 +50,9 @@ export default class ClientGame extends GameLoop {
   private initialized;
   private sendInputFun;
 
+  private score;
+  //  private waveNumber;
+
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
@@ -69,6 +62,7 @@ export default class ClientGame extends GameLoop {
     this.inputHistory = new Deque();
     this.my_id = args.my_id;
     this.map = args.map;
+    this.create_scoreboard();
   }
 
   public start(): Promise<void> {
@@ -125,7 +119,7 @@ export default class ClientGame extends GameLoop {
 
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
-    this.update_score();
+    this.update_scoreboard(newState);
     this.states.reset(newState, message.stateNum);
   }
 
@@ -136,10 +130,10 @@ export default class ClientGame extends GameLoop {
       const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
-          LOGICAL_TO_PIXELS(player.position.x),
-          LOGICAL_TO_PIXELS(player.position.y),
-          PLAYER_SIZE,
-          PLAYER_SPRITE,
+          CONSTANTS.LOGICAL_TO_PIXELS(player.position.x),
+          CONSTANTS.LOGICAL_TO_PIXELS(player.position.y),
+          CONSTANTS.PLAYER_SIZE,
+          CONSTANTS.PLAYER_SPRITE,
           player.id,
           weapon,
         );
@@ -155,26 +149,30 @@ export default class ClientGame extends GameLoop {
         player.maxHealth,
         player.health,
       );
-      this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
-      this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
+      this.player_list[player.id].x = CONSTANTS.LOGICAL_TO_PIXELS(
+        player.position.x,
+      );
+      this.player_list[player.id].y = CONSTANTS.LOGICAL_TO_PIXELS(
+        player.position.y,
+      );
       if (
         player.weapons[0].timeOfLastShot <
-          this.states.last + SERVER_BROADCAST_RATE &&
+          this.states.last + CONSTANTS.SERVER_BROADCAST_RATE &&
         player.weapons[0].timeOfLastShot +
           player.weapons[0].projectileVisibiltyDuration >
-          this.states.last + SERVER_BROADCAST_RATE
+          this.states.last + CONSTANTS.SERVER_BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
           weapon,
           {
-            x: LOGICAL_TO_PIXELS(player.position.x),
-            y: LOGICAL_TO_PIXELS(player.position.y),
+            x: CONSTANTS.LOGICAL_TO_PIXELS(player.position.x),
+            y: CONSTANTS.LOGICAL_TO_PIXELS(player.position.y),
           },
           {
-            x: LOGICAL_TO_PIXELS(player.target.x),
-            y: LOGICAL_TO_PIXELS(player.target.y),
+            x: CONSTANTS.LOGICAL_TO_PIXELS(player.target.x),
+            y: CONSTANTS.LOGICAL_TO_PIXELS(player.target.y),
           },
         );
 
@@ -212,16 +210,20 @@ export default class ClientGame extends GameLoop {
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(
-          LOGICAL_TO_PIXELS(enemy.position.x),
-          LOGICAL_TO_PIXELS(enemy.position.y),
-          ENEMY_SIZE,
-          ENEMY_SPRITE,
+          CONSTANTS.LOGICAL_TO_PIXELS(enemy.position.x),
+          CONSTANTS.LOGICAL_TO_PIXELS(enemy.position.y),
+          CONSTANTS.ENEMY_SIZE,
+          CONSTANTS.ENEMY_SPRITE,
           enemy.id,
         );
       }
       this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
-      this.enemy_list[enemy.id].x = LOGICAL_TO_PIXELS(enemy.position.x);
-      this.enemy_list[enemy.id].y = LOGICAL_TO_PIXELS(enemy.position.y);
+      this.enemy_list[enemy.id].x = CONSTANTS.LOGICAL_TO_PIXELS(
+        enemy.position.x,
+      );
+      this.enemy_list[enemy.id].y = CONSTANTS.LOGICAL_TO_PIXELS(
+        enemy.position.y,
+      );
     }
   }
 
@@ -357,9 +359,9 @@ export default class ClientGame extends GameLoop {
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
-    const width = HP_BAR_WIDTH;
-    const height = HP_BAR_HEIGHT;
-    const flot_height = HP_BAR_FLOAT;
+    const width = CONSTANTS.HP_BAR_WIDTH;
+    const height = CONSTANTS.HP_BAR_HEIGHT;
+    const flot_height = CONSTANTS.HP_BAR_FLOAT;
     const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
@@ -412,14 +414,42 @@ export default class ClientGame extends GameLoop {
     this.fire = new Key(' '); //Spacebar¨
   }
 
-  update_score(): void {
-    let message = new PIXI.Text('Hello Pixi!');
-    this.stage.addChild(message);
-    console.log(this.gameMap)
-    //message.position.set(
-      //(this.gameMap.width * this.gameMap.tileset.tileSize) / 2,
-      //48,
+  create_scoreboard(): void {
+    let style = new PIXI.TextStyle({
+      fontFamily: 'Arial',
+      fontSize: 36,
+      fill: 'white',
+      stroke: '#ff3300',
+      strokeThickness: 4,
+      dropShadow: true,
+      dropShadowColor: '#000000',
+      dropShadowBlur: 4,
+      dropShadowAngle: Math.PI / 6,
+      dropShadowDistance: 6,
+    });
+    this.score = new PIXI.Text('hej', style);
+    this.stage.addChild(this.score);
+    this.score.position.set(
+      (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS -
+        2 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
+        2,
+      CONSTANTS.TILE_TARGET_SIZE_PIXELS,
     );
+    console.log('sparrat!!');
+
+    let wave = new PIXI.Text('1', style);
+    this.stage.addChild(wave);
+    wave.position.set(
+      (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS +
+        2 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
+        2,
+      CONSTANTS.TILE_TARGET_SIZE_PIXELS,
+    );
+  }
+
+  update_scoreboard(state: State): void {
+    //  this.score.text = state.players[this.my_id].score;
+    //this.waveNumber.text = state.wave;
   }
 }
 function load_zombie(img_filepath): any {

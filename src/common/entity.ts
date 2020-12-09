@@ -59,12 +59,14 @@ export abstract class Entity {
   public get alive(): boolean {
     return this.health > 0;
   }
-
-  public takeDamage(damage: number): void {
-    if (damage > this._health) {
+  // returns true if enemy dies else false.
+  public takeDamage(damage: number): boolean {
+    if (damage >= this._health) {
       this._health = 0;
+      return true;
     } else {
       this._health -= damage;
+      return false;
     }
   }
 

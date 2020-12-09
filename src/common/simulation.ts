@@ -79,7 +79,7 @@ export default abstract class Simulation {
         const enemies = number * constants.WAVE_ENEMY_COUNT_INCREMENT;
         const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
-        // TODO: remove this when we display the wave information on screen
+        this.state.wave = this._wave.waveNumber;
         console.info(`Creating wave ${this._wave.waveNumber}`);
       }
     } else {
@@ -318,9 +318,12 @@ export default abstract class Simulation {
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
     const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    this._state.enemies[userData?.id]?.takeDamage(
+    const enemyDead = this._state.enemies[userData?.id]?.takeDamage(
       this.state.players[player.id].weapons[0].attack_damage,
     );
+    if (enemyDead) {
+      this.state.players[player.id].addScore(10);
+    }
   }
 
   updatePlayerBodyFromInput(body: Body, input?: Input): void {
@@ -426,11 +429,6 @@ export default abstract class Simulation {
 
         this._state.players[player_id].takeDamage(damage);
       }
-
-      //console.log(id_a);
-      //console.log(id_b);
-      //  console.log('A: ', a.getType(), a.getBody().getPosition());
-      //  console.log('B: ', b.getType(), b.getBody().getPosition());
     });
 
     return world;
