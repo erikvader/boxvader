@@ -65,6 +65,11 @@ function setup(): void {
     channel.onDisconnect(_reason => {
       game?.stop();
     });
+
+    // TODO: accept user input
+    setTimeout(() => {
+      channel.emit('ready', { status: true }, { reliable: true });
+    }, 1000);
   });
 }
 
