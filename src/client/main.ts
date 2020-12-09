@@ -69,5 +69,6 @@ function setup(): void {
 PIXI.loader
   .add(PLAYER_SPRITE)
   .add(ENEMY_SPRITE)
+  .add("imgs/splatter1.png")
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
   .load(setup);

@@ -22,7 +22,9 @@ import {
   HP_BAR_FLOAT,
 } from '../common/constants';
 const su = new SpriteUtilities(PIXI);
-
+import 'pixi-layers';
+//window.PIXI = PIXI;
+//require("pixi-layers")
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
@@ -73,6 +75,7 @@ export default class ClientGame extends GameLoop {
   public start(): Promise<void> {
     display_map(this.stage, this.map);
     this.key_presses();
+    console.log("dsadawsfd")
     return super.start();
   }
 
@@ -210,12 +213,25 @@ export default class ClientGame extends GameLoop {
   remove_enemy_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
+        this.add_blood_splatter(this.enemy_list[enemy_id].x, this.enemy_list[enemy_id].y)
         this.stage.removeChild(this.enemy_list[enemy_id]);
         delete this.enemy_list[enemy_id];
       }
     }
   }
+  add_blood_splatter(x, y){
+    const splatter = su.sprite("imgs/splatter1.png");
 
+    //const scale = target_width / enemy.width;
+
+    splatter.position.set(x, y);
+    splatter.scale.set(1, 1);
+    splatter.anchor.set(0.5, 0.5);
+    //this.enemy_list[id] = enemy;
+    this.stage.addChild(splatter);
+    console.log(this.stage)
+    //this.add_health_bar(enemy, scale);
+  }
   decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
     let walkingAnimation;
@@ -281,6 +297,7 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
+    var layer = new PIXI.display.Layer();
     const character = load_zombie(img_filepath);
 
     const scale = target_width / character.width;
