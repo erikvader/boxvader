@@ -125,7 +125,7 @@ export default class ClientGame extends GameLoop {
 
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
-
+    this.update_score();
     this.states.reset(newState, message.stateNum);
   }
 
@@ -404,10 +404,15 @@ export default class ClientGame extends GameLoop {
     this.up = new Key('ArrowUp');
     this.right = new Key('ArrowRight');
     this.down = new Key('ArrowDown');
-    this.fire = new Key(' '); //Spacebar
+    this.fire = new Key(' '); //Spacebar¨
+  }
+
+  update_score(): void {
+    let message = new PIXI.Text('Hello Pixi!');
+    this.stage.addChild(message);
+    message.position.set(300, 48);
   }
 }
-
 function load_zombie(img_filepath): any {
   const frames = su.filmstrip(img_filepath, 128, 128);
   const animation = su.sprite(frames);

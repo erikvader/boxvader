@@ -409,19 +409,28 @@ export default abstract class Simulation {
         .getUserData() as { id: number };
       let player_id: number | undefined = undefined;
       let enemy_id: number | undefined = undefined;
-      if (this._state.players[user_data_a?.id]) {
+      if (this._state.players[user_data_a?.id] !== undefined) {
         player_id = user_data_a?.id;
         enemy_id = user_data_b?.id;
       }
-      if (this._state.players[user_data_b?.id]) {
+      if (this._state.players[user_data_b?.id] !== undefined) {
         player_id = user_data_b?.id;
         enemy_id = user_data_a?.id;
       }
-      if (enemy_id && player_id && this._state.enemies[enemy_id]) {
+      if (
+        enemy_id !== undefined &&
+        player_id !== undefined &&
+        this._state.enemies[enemy_id] !== undefined
+      ) {
         const damage = this._state.enemies[enemy_id].damage;
 
         this._state.players[player_id].takeDamage(damage);
       }
+
+      //console.log(id_a);
+      //console.log(id_b);
+      //  console.log('A: ', a.getType(), a.getBody().getPosition());
+      //  console.log('B: ', b.getType(), b.getBody().getPosition());
     });
 
     return world;
