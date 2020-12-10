@@ -4,7 +4,7 @@ import { isObjectWithKeys, NumMap } from './misc';
 export default class State {
   public players: NumMap<Player> = {};
   public enemies: NumMap<Enemy> = {};
-  public wave: number = 1;
+  public wave = 1;
 
   /**
    * Returns a deep copy of this `State`.

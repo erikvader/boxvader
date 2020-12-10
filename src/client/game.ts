@@ -415,9 +415,9 @@ export default class ClientGame extends GameLoop {
   }
 
   create_scoreboard(): void {
-    let style = new PIXI.TextStyle({
+    const style = new PIXI.TextStyle({
       fontFamily: 'Arial',
-      fontSize: 36,
+      fontSize: 20,
       fill: 'white',
       stroke: '#ff3300',
       strokeThickness: 4,
@@ -427,28 +427,27 @@ export default class ClientGame extends GameLoop {
       dropShadowAngle: Math.PI / 6,
       dropShadowDistance: 6,
     });
-    this.score = new PIXI.Text('0', style);
+    this.score = new PIXI.Text('Score: 0', style);
     this.stage.addChild(this.score);
     this.score.position.set(
       (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS -
-        2 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
+        4 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
         2,
-      CONSTANTS.TILE_TARGET_SIZE_PIXELS,
+      CONSTANTS.TILE_TARGET_SIZE_PIXELS * 1.2,
     );
-
-    this.waveNumber = new PIXI.Text('1', style);
+    this.waveNumber = new PIXI.Text('Wave: 1', style);
     this.stage.addChild(this.waveNumber);
     this.waveNumber.position.set(
       (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS +
         2 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
         2,
-      CONSTANTS.TILE_TARGET_SIZE_PIXELS,
+      CONSTANTS.TILE_TARGET_SIZE_PIXELS * 1.2,
     );
   }
 
   update_scoreboard(state: State): void {
-    this.score.text = state.players[this.my_id].score;
-    this.waveNumber.text = state.wave;
+    this.score.text = 'Score: ' + state.players[this.my_id].score;
+    this.waveNumber.text = 'Wave: ' + state.wave;
   }
 }
 function load_zombie(img_filepath): any {
