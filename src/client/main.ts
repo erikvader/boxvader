@@ -9,6 +9,8 @@ import {
   CLIENT_FPS,
 } from '../common/constants';
 import GameMap from '../common/gameMap';
+window.PIXI = PIXI;
+import 'pixi-layers';
 
 function onDocumentReady(callback: () => void): void {
   // https://codetonics.com/javascript/detect-document-ready/
@@ -24,7 +26,7 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 function finishedResources(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer();
-  const stage = new PIXI.Container();
+  const stage = new PIXI.display.Stage();
 
   document.getElementById('game-container')!.append(renderer.view);
   renderer.backgroundColor = 0xffd700;
@@ -83,7 +85,6 @@ function finishedResources(): void {
 
     onDocumentReady(() => {
       const button = document.getElementById('btn-ready');
-
       if (button !== null) {
         button.addEventListener('click', () => {
           if (game !== undefined) return;
@@ -96,7 +97,8 @@ function finishedResources(): void {
   });
 }
 
-PIXI.loader
+const loader = new PIXI.Loader();
+loader
   .add(PLAYER_SPRITE)
   .add(ENEMY_SPRITE)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow

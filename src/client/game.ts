@@ -6,19 +6,18 @@ import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
 
-import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
-const su = new SpriteUtilities(PIXI);
+//const su = new SpriteUtilities(PIXI); // sprite utils
 
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
-  stage: PIXI.Stage;
+  stage: PIXI.display.Stage;
   map: GameMap;
   my_id: number;
 }
@@ -343,19 +342,17 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    const enemy = su.sprite(img_filepath);
-
-    const scale = target_width / enemy.width;
-
-    enemy.position.set(x, y);
-    enemy.vx = 0;
-    enemy.vy = 0;
-    enemy.id = id;
-    enemy.scale.set(scale, scale);
-    enemy.anchor.set(0.5, 0.5);
-    this.enemy_list[id] = enemy;
-    this.stage.addChild(enemy);
-    this.add_health_bar(enemy, scale);
+    // const enemy = su.sprite(img_filepath);
+    // const scale = target_width / enemy.width;
+    // enemy.position.set(x, y);
+    // enemy.vx = 0;
+    // enemy.vy = 0;
+    // enemy.id = id;
+    // enemy.scale.set(scale, scale);
+    // enemy.anchor.set(0.5, 0.5);
+    // this.enemy_list[id] = enemy;
+    // this.stage.addChild(enemy);
+    // this.add_health_bar(enemy, scale);
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
@@ -384,9 +381,9 @@ export default class ClientGame extends GameLoop {
   }
 
   change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number): void {
-    const outerWidth = sprite.children[0].width;
+    //const outerWidth = sprite.children[0].width;
     const percent = current_hp / max_hp;
-    sprite.children[0].children[0].width = outerWidth * percent;
+    //sprite.children[0].children[0].width = outerWidth * percent;
   }
 
   add_shot_line(
@@ -400,7 +397,7 @@ export default class ClientGame extends GameLoop {
     line.lineTo(start.x, start.y);
     line.x = 0;
     line.y = 0;
-    line.expires = 1;
+    //line.expires = 1;
     line.visible = true;
     this.stage.addChild(line);
     return line;
@@ -451,54 +448,54 @@ export default class ClientGame extends GameLoop {
   }
 }
 function load_zombie(img_filepath): any {
-  const frames = su.filmstrip(img_filepath, 128, 128);
-  const animation = su.sprite(frames);
+  // const frames = su.filmstrip(img_filepath, 128, 128);
+  // const animation = su.sprite(frames);
   const stripSize = 36;
   const walkOffset = 4;
   const walkAnimationLength = 7;
 
-  animation.fps = 12;
-  animation.animationStates = {
-    left: 0,
-    leftUp: stripSize,
-    up: stripSize * 2,
-    upRight: stripSize * 3,
-    right: stripSize * 4,
-    rightDown: stripSize * 5,
-    down: stripSize * 6,
-    leftDown: stripSize * 7,
-    walkLeftDown: [
-      stripSize * 0 + walkOffset,
-      stripSize * 0 + walkOffset + walkAnimationLength,
-    ],
-    walkLeft: [
-      stripSize * 1 + walkOffset,
-      stripSize * 1 + walkOffset + walkAnimationLength,
-    ],
-    walkLeftUp: [
-      stripSize * 2 + walkOffset,
-      stripSize * 2 + walkOffset + walkAnimationLength,
-    ],
-    walkUp: [
-      stripSize * 3 + walkOffset,
-      stripSize * 3 + walkOffset + walkAnimationLength,
-    ],
-    walkRightUp: [
-      stripSize * 4 + walkOffset,
-      stripSize * 4 + walkOffset + walkAnimationLength,
-    ],
-    walkRight: [
-      stripSize * 5 + walkOffset,
-      stripSize * 5 + walkOffset + walkAnimationLength,
-    ],
-    walkRightDown: [
-      stripSize * 6 + walkOffset,
-      stripSize * 6 + walkOffset + walkAnimationLength,
-    ],
-    walkDown: [
-      stripSize * 7 + walkOffset,
-      stripSize * 7 + walkOffset + walkAnimationLength,
-    ],
-  };
-  return animation;
+  // animation.fps = 12;
+  // animation.animationStates = {
+  //   left: 0,
+  //   leftUp: stripSize,
+  //   up: stripSize * 2,
+  //   upRight: stripSize * 3,
+  //   right: stripSize * 4,
+  //   rightDown: stripSize * 5,
+  //   down: stripSize * 6,
+  //   leftDown: stripSize * 7,
+  //   walkLeftDown: [
+  //     stripSize * 0 + walkOffset,
+  //     stripSize * 0 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkLeft: [
+  //     stripSize * 1 + walkOffset,
+  //     stripSize * 1 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkLeftUp: [
+  //     stripSize * 2 + walkOffset,
+  //     stripSize * 2 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkUp: [
+  //     stripSize * 3 + walkOffset,
+  //     stripSize * 3 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkRightUp: [
+  //     stripSize * 4 + walkOffset,
+  //     stripSize * 4 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkRight: [
+  //     stripSize * 5 + walkOffset,
+  //     stripSize * 5 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkRightDown: [
+  //     stripSize * 6 + walkOffset,
+  //     stripSize * 6 + walkOffset + walkAnimationLength,
+  //   ],
+  //   walkDown: [
+  //     stripSize * 7 + walkOffset,
+  //     stripSize * 7 + walkOffset + walkAnimationLength,
+  //   ],
+  // };
+  //return animation;
 }

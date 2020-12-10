@@ -98,6 +98,7 @@ io.onConnection(channel => {
   });
 
   channel.on('ready', data => {
+    console.log('ready');
     if (game !== undefined) return;
 
     const status = data['status'];
