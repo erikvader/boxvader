@@ -64,8 +64,6 @@ export default abstract class Simulation {
       // mark this instant as when the wave was finished
       if (this._wave.clearStep === 0) {
         this._wave.clearStep = this._stepCounter;
-        // TODO: remove this when we display the wave information on screen
-        console.info(`Finished wave ${this._wave.waveNumber}`);
       }
 
       // create a new wave
@@ -77,8 +75,7 @@ export default abstract class Simulation {
         const enemies = number * this._numPlayers;
         const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
-        // TODO: remove this when we display the wave information on screen
-        console.info(`Creating wave ${this._wave.waveNumber}`);
+        this.state.wave = this._wave.waveNumber;
       }
     } else {
       if (
@@ -129,11 +126,13 @@ export default abstract class Simulation {
 
     const position = this._gameMap.randomEnemySpawn();
     const enemy_damage = 1; //Snälla Dark Vader, blunda när du ser detta. Det är tillfälligt och bör ändras om vi har olika typer av fiender...
+    const enemy_score = 10; // ――″――
     const enemy = new Enemy(
       this._enemyIdCounter,
       health,
       position,
       enemy_damage,
+      enemy_score,
     );
     this.state.enemies[this._enemyIdCounter] = enemy;
     this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
@@ -316,9 +315,14 @@ export default abstract class Simulation {
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
     const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    this._state.enemies[userData?.id]?.takeDamage(
+    const enemyDead = this._state.enemies[userData?.id]?.takeDamage(
       this.state.players[player.id].weapons[0].attack_damage,
     );
+    if (enemyDead) {
+      this.state.players[player.id].addScore(
+        this._state.enemies[userData?.id].score,
+      );
+    }
   }
 
   updatePlayerBodyFromInput(body: Body, input?: Input): void {

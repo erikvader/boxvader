@@ -59,12 +59,14 @@ export abstract class Entity {
   public get alive(): boolean {
     return this.health > 0;
   }
-
-  public takeDamage(damage: number): void {
-    if (damage > this._health) {
+  // returns true if enemy dies else false.
+  public takeDamage(damage: number): boolean {
+    if (damage >= this._health) {
       this._health = 0;
+      return true;
     } else {
       this._health -= damage;
+      return false;
     }
   }
 
@@ -134,9 +136,17 @@ export class Player extends Entity {
 
 export class Enemy extends Entity {
   public damage: number;
-  public constructor(id: Id, health: number, position: Vec2, damage: number) {
+  public score: number;
+  public constructor(
+    id: Id,
+    health: number,
+    position: Vec2,
+    damage: number,
+    score: number,
+  ) {
     super(id, health, position);
     this.damage = damage;
+    this.score = score;
   }
 
   /**
@@ -148,6 +158,7 @@ export class Enemy extends Entity {
       this.health,
       this.position.clone(),
       this.damage,
+      this.score,
     );
 
     enemy.velocity = this.velocity.clone();
@@ -155,11 +166,11 @@ export class Enemy extends Entity {
   }
 
   public static revive(obj: unknown): Enemy {
-    if (isObjectWithKeys(obj, ['damage'])) {
+    if (isObjectWithKeys(obj, ['damage', 'score'])) {
       return Entity.revive(
         obj,
         (id: Id, health: number, position: Vec2) =>
-          new Enemy(id, health, position, obj['damage']),
+          new Enemy(id, health, position, obj['damage'], obj['score']),
       ) as Enemy;
     }
     throw new Error("couldn't revive Enemy");

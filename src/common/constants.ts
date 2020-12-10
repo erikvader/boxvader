@@ -2,7 +2,7 @@ export const SERVER_FPS = 60;
 export const SERVER_UPS = 60;
 export const CLIENT_UPS = 60;
 export const CLIENT_FPS = 60;
-export const PLAYER_LIMIT = 1;
+export const PLAYER_LIMIT = 6;
 export const PORT = 3000;
 
 export const PLAYER_SPRITE = 'imgs/zombie_0.png';

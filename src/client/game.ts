@@ -12,17 +12,7 @@ import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
-import {
-  PLAYER_SPRITE,
-  LOGICAL_TO_PIXELS,
-  PLAYER_SIZE,
-  ENEMY_SIZE,
-  ENEMY_SPRITE,
-  HP_BAR_WIDTH,
-  HP_BAR_HEIGHT,
-  HP_BAR_FLOAT,
-  SERVER_BROADCAST_RATE,
-} from '../common/constants';
+import * as constants from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -60,6 +50,9 @@ export default class ClientGame extends GameLoop {
   private initialized;
   private sendInputFun;
 
+  private score;
+  private waveNumber;
+
   constructor(args: ClientGameOpt) {
     super(args);
     this.sendInputFun = args.sendInputFun;
@@ -73,6 +66,7 @@ export default class ClientGame extends GameLoop {
 
   public start(): Promise<void> {
     display_map(this.stage, this.map);
+    this.create_scoreboard();
     this.key_presses();
     return super.start();
   }
@@ -125,7 +119,7 @@ export default class ClientGame extends GameLoop {
 
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
-
+    this.update_scoreboard(newState);
     this.states.reset(newState, message.stateNum);
   }
 
@@ -136,10 +130,10 @@ export default class ClientGame extends GameLoop {
       const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
-          LOGICAL_TO_PIXELS(player.position.x),
-          LOGICAL_TO_PIXELS(player.position.y),
-          PLAYER_SIZE,
-          PLAYER_SPRITE,
+          constants.LOGICAL_TO_PIXELS(player.position.x),
+          constants.LOGICAL_TO_PIXELS(player.position.y),
+          constants.PLAYER_SIZE,
+          constants.PLAYER_SPRITE,
           player.id,
           weapon,
         );
@@ -155,26 +149,30 @@ export default class ClientGame extends GameLoop {
         player.maxHealth,
         player.health,
       );
-      this.player_list[player.id].x = LOGICAL_TO_PIXELS(player.position.x);
-      this.player_list[player.id].y = LOGICAL_TO_PIXELS(player.position.y);
+      this.player_list[player.id].x = constants.LOGICAL_TO_PIXELS(
+        player.position.x,
+      );
+      this.player_list[player.id].y = constants.LOGICAL_TO_PIXELS(
+        player.position.y,
+      );
       if (
         player.weapons[0].timeOfLastShot <
-          this.states.last + SERVER_BROADCAST_RATE &&
+          this.states.last + constants.SERVER_BROADCAST_RATE &&
         player.weapons[0].timeOfLastShot +
           player.weapons[0].projectileVisibiltyDuration >
-          this.states.last + SERVER_BROADCAST_RATE
+          this.states.last + constants.SERVER_BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
           weapon,
           {
-            x: LOGICAL_TO_PIXELS(player.position.x),
-            y: LOGICAL_TO_PIXELS(player.position.y),
+            x: constants.LOGICAL_TO_PIXELS(player.position.x),
+            y: constants.LOGICAL_TO_PIXELS(player.position.y),
           },
           {
-            x: LOGICAL_TO_PIXELS(player.target.x),
-            y: LOGICAL_TO_PIXELS(player.target.y),
+            x: constants.LOGICAL_TO_PIXELS(player.target.x),
+            y: constants.LOGICAL_TO_PIXELS(player.target.y),
           },
         );
 
@@ -212,16 +210,20 @@ export default class ClientGame extends GameLoop {
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(
-          LOGICAL_TO_PIXELS(enemy.position.x),
-          LOGICAL_TO_PIXELS(enemy.position.y),
-          ENEMY_SIZE,
-          ENEMY_SPRITE,
+          constants.LOGICAL_TO_PIXELS(enemy.position.x),
+          constants.LOGICAL_TO_PIXELS(enemy.position.y),
+          constants.ENEMY_SIZE,
+          constants.ENEMY_SPRITE,
           enemy.id,
         );
       }
       this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
-      this.enemy_list[enemy.id].x = LOGICAL_TO_PIXELS(enemy.position.x);
-      this.enemy_list[enemy.id].y = LOGICAL_TO_PIXELS(enemy.position.y);
+      this.enemy_list[enemy.id].x = constants.LOGICAL_TO_PIXELS(
+        enemy.position.x,
+      );
+      this.enemy_list[enemy.id].y = constants.LOGICAL_TO_PIXELS(
+        enemy.position.y,
+      );
     }
   }
 
@@ -357,9 +359,9 @@ export default class ClientGame extends GameLoop {
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
-    const width = HP_BAR_WIDTH;
-    const height = HP_BAR_HEIGHT;
-    const flot_height = HP_BAR_FLOAT;
+    const width = constants.HP_BAR_WIDTH;
+    const height = constants.HP_BAR_HEIGHT;
+    const flot_height = constants.HP_BAR_FLOAT;
     const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
@@ -411,8 +413,43 @@ export default class ClientGame extends GameLoop {
     this.down = new Key('ArrowDown');
     this.fire = new Key(' '); //Spacebar
   }
-}
 
+  create_scoreboard(): void {
+    const style = new PIXI.TextStyle({
+      fontFamily: 'Arial',
+      fontSize: 20,
+      fill: 'white',
+      stroke: '#ff3300',
+      strokeThickness: 4,
+      dropShadow: true,
+      dropShadowColor: '#000000',
+      dropShadowBlur: 4,
+      dropShadowAngle: Math.PI / 6,
+      dropShadowDistance: 6,
+    });
+    this.score = new PIXI.Text('Score: 0', style);
+    this.stage.addChild(this.score);
+    this.score.position.set(
+      (this.map.width * constants.TILE_TARGET_SIZE_PIXELS -
+        4 * constants.TILE_TARGET_SIZE_PIXELS) /
+        2,
+      constants.TILE_TARGET_SIZE_PIXELS * 1.2,
+    );
+    this.waveNumber = new PIXI.Text('Wave: 1', style);
+    this.stage.addChild(this.waveNumber);
+    this.waveNumber.position.set(
+      (this.map.width * constants.TILE_TARGET_SIZE_PIXELS +
+        2 * constants.TILE_TARGET_SIZE_PIXELS) /
+        2,
+      constants.TILE_TARGET_SIZE_PIXELS * 1.2,
+    );
+  }
+
+  update_scoreboard(state: State): void {
+    this.score.text = 'Score: ' + state.players[this.my_id].score;
+    this.waveNumber.text = 'Wave: ' + state.wave;
+  }
+}
 function load_zombie(img_filepath): any {
   const frames = su.filmstrip(img_filepath, 128, 128);
   const animation = su.sprite(frames);
