@@ -6,8 +6,8 @@ import State from '../common/state';
 import { Body } from 'planck-js';
 
 export default class ClientSimulation extends Simulation {
-  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
-    super(map, updateStep, enemyIdCounter);
+  constructor(map: GameMap, updateStep: number, numPlayers: number) {
+    super(map, updateStep, numPlayers);
   }
 
   public update(body: Body, input: Input): void {

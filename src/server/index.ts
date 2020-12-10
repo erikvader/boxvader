@@ -24,6 +24,7 @@ type Player = {
   channel_id?: string;
   player_id: number;
   channel: ServerChannel;
+  ready: boolean;
 };
 
 let client_id = 0;
@@ -31,6 +32,11 @@ const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
 function startGame(maxMessageSize?: number): void {
+  // normalize the players' IDs
+  for (let i = 0; i < player_list.length; i++) {
+    player_list[i].player_id = i;
+  }
+
   game = new ServerGame(
     new GameMap('scifi-1', 'scifi'),
     x => {
@@ -60,7 +66,11 @@ function startGame(maxMessageSize?: number): void {
 }
 
 io.onConnection(channel => {
+  if (game !== undefined) return;
+  if (player_list.length >= PLAYER_LIMIT) return;
+
   console.info(`${channel.id} connected`);
+
   channel.onDrop(drop => {
     console.warn('We are dropping packets: ', drop);
   });
@@ -71,6 +81,7 @@ io.onConnection(channel => {
     channel_id: channel.id,
     player_id: my_id,
     channel: channel,
+    ready: false,
   });
 
   channel.onDisconnect(() => {
@@ -80,15 +91,27 @@ io.onConnection(channel => {
       player_list.splice(i, 1);
       if (player_list.length === 0) {
         game?.stop();
+        client_id = 0;
+        game = undefined;
       }
     }
   });
 
-  // NOTE: temporary start condition
-  if (player_list.length === PLAYER_LIMIT) {
-    const { maxMessageSize } = channel;
-    startGame(maxMessageSize);
-  }
+  channel.on('ready', data => {
+    if (game !== undefined) return;
+
+    const status = data['status'];
+    const index = player_list.findIndex(p => p.player_id === my_id);
+
+    if (index >= 0) {
+      player_list[index].ready = status;
+
+      if (player_list.every(p => p.ready)) {
+        const { maxMessageSize } = channel;
+        startGame(maxMessageSize);
+      }
+    }
+  });
 });
 
 if ((process.env.NODE_SERVER_TEST ?? '') === '') {

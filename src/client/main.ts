@@ -10,9 +10,18 @@ import {
 } from '../common/constants';
 import GameMap from '../common/gameMap';
 
+function onDocumentReady(callback: () => void): void {
+  // https://codetonics.com/javascript/detect-document-ready/
+  if (document.readyState !== 'loading') {
+    callback();
+  } else {
+    document.addEventListener('DOMContentLoaded', callback);
+  }
+}
+
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-function setup(): void {
+function finishedResources(): void {
   const channel = geckos({ port: PORT });
   const renderer = PIXI.autoDetectRenderer();
   const stage = new PIXI.Container();
@@ -23,6 +32,7 @@ function setup(): void {
 
   const { maxMessageSize } = channel;
   let game;
+  let readyStatus = false;
 
   channel.onConnect(error => {
     if (error) {
@@ -33,6 +43,11 @@ function setup(): void {
     channel.onRaw(data => game?.serverMsg(data));
 
     channel.on('start', data => {
+      const button = document.getElementById('btn-ready');
+      if (button !== null) {
+        button.remove();
+      }
+
       const map = new GameMap(data['map'], data['tileset']);
       const [
         maps_total_pixel_width,
@@ -65,6 +80,19 @@ function setup(): void {
     channel.onDisconnect(_reason => {
       game?.stop();
     });
+
+    onDocumentReady(() => {
+      const button = document.getElementById('btn-ready');
+
+      if (button !== null) {
+        button.addEventListener('click', () => {
+          if (game !== undefined) return;
+          readyStatus = !readyStatus;
+          button.innerText = ':-' + (readyStatus ? ')' : '(');
+          channel.emit('ready', { status: readyStatus }, { reliable: true });
+        });
+      }
+    });
   });
 }
 
@@ -72,4 +100,4 @@ PIXI.loader
   .add(PLAYER_SPRITE)
   .add(ENEMY_SPRITE)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
-  .load(setup);
+  .load(finishedResources);
