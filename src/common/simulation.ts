@@ -16,6 +16,7 @@ export default abstract class Simulation {
   protected _stepCounter: number;
   protected _enemyIdCounter: number;
   protected _wave: Wave;
+  protected _numPlayers: number;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -39,21 +40,18 @@ export default abstract class Simulation {
   /**
    * @param map The map to use
    * @param updateStep How big an update step is in seconds.
-   * @param enemyIdCounter The starting value for the enemy ids.
+   * @param numPlayers The number of players.
    */
-  constructor(map: GameMap, updateStep: number, enemyIdCounter: number) {
+  constructor(map: GameMap, updateStep: number, numPlayers: number) {
     this.updateStep = updateStep;
     this._world = this.createWorld(map);
     this._bodies = new Map<Id, Body>();
     this._state = new State();
     this._stepCounter = 0;
-    this._enemyIdCounter = enemyIdCounter;
+    this._enemyIdCounter = numPlayers;
     this._gameMap = map;
-    this._wave = new Wave(
-      1,
-      constants.WAVE_ENEMY_COUNT_INCREMENT,
-      constants.WAVE_ENEMY_HEALTH_INCREMENT,
-    );
+    this._wave = new Wave(1, numPlayers, constants.WAVE_ENEMY_HEALTH_INCREMENT);
+    this._numPlayers = numPlayers;
   }
 
   public commonUpdate(): void {
@@ -76,7 +74,7 @@ export default abstract class Simulation {
         constants.WAVE_COOLDOWN * constants.SERVER_UPS
       ) {
         const number = this._wave.waveNumber + 1;
-        const enemies = number * constants.WAVE_ENEMY_COUNT_INCREMENT;
+        const enemies = number * this._numPlayers;
         const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
         // TODO: remove this when we display the wave information on screen

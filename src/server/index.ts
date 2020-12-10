@@ -32,6 +32,11 @@ const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
 function startGame(maxMessageSize?: number): void {
+  // normalize the players' IDs
+  for (let i = 0; i < player_list.length; i++) {
+    player_list[i].player_id = i;
+  }
+
   game = new ServerGame(
     new GameMap('scifi-1', 'scifi'),
     x => {
@@ -101,10 +106,7 @@ io.onConnection(channel => {
     if (index >= 0) {
       player_list[index].ready = status;
 
-      if (
-        player_list.length === PLAYER_LIMIT &&
-        player_list.every(p => p.ready)
-      ) {
+      if (player_list.every(p => p.ready)) {
         const { maxMessageSize } = channel;
         startGame(maxMessageSize);
       }
