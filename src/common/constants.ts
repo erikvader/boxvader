@@ -92,9 +92,6 @@ export const SERVER_BROADCAST_RATE = 2;
  */
 export const INPUT_QUEUE_MAX_AGE = 3;
 
-/** The multiplier for the number of enemies to spawn in each wave. */
-export const WAVE_ENEMY_COUNT_INCREMENT = PLAYER_LIMIT;
-
 /** The increment in enemy health for each wave. */
 export const WAVE_ENEMY_HEALTH_INCREMENT = 2;
 
