@@ -51,7 +51,7 @@ export default class ClientGame extends GameLoop {
   private sendInputFun;
 
   private score;
-  //  private waveNumber;
+  private waveNumber;
 
   constructor(args: ClientGameOpt) {
     super(args);
@@ -62,11 +62,11 @@ export default class ClientGame extends GameLoop {
     this.inputHistory = new Deque();
     this.my_id = args.my_id;
     this.map = args.map;
-    this.create_scoreboard();
   }
 
   public start(): Promise<void> {
     display_map(this.stage, this.map);
+    this.create_scoreboard();
     this.key_presses();
     return super.start();
   }
@@ -427,7 +427,7 @@ export default class ClientGame extends GameLoop {
       dropShadowAngle: Math.PI / 6,
       dropShadowDistance: 6,
     });
-    this.score = new PIXI.Text('hej', style);
+    this.score = new PIXI.Text('0', style);
     this.stage.addChild(this.score);
     this.score.position.set(
       (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS -
@@ -435,11 +435,10 @@ export default class ClientGame extends GameLoop {
         2,
       CONSTANTS.TILE_TARGET_SIZE_PIXELS,
     );
-    console.log('sparrat!!');
 
-    let wave = new PIXI.Text('1', style);
-    this.stage.addChild(wave);
-    wave.position.set(
+    this.waveNumber = new PIXI.Text('1', style);
+    this.stage.addChild(this.waveNumber);
+    this.waveNumber.position.set(
       (this.map.width * CONSTANTS.TILE_TARGET_SIZE_PIXELS +
         2 * CONSTANTS.TILE_TARGET_SIZE_PIXELS) /
         2,
@@ -448,8 +447,8 @@ export default class ClientGame extends GameLoop {
   }
 
   update_scoreboard(state: State): void {
-    //  this.score.text = state.players[this.my_id].score;
-    //this.waveNumber.text = state.wave;
+    this.score.text = state.players[this.my_id].score;
+    this.waveNumber.text = state.wave;
   }
 }
 function load_zombie(img_filepath): any {
