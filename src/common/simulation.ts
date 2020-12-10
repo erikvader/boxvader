@@ -50,7 +50,11 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = numPlayers;
     this._gameMap = map;
-    this._wave = new Wave(1, numPlayers, constants.WAVE_ENEMY_HEALTH_INCREMENT);
+    this._wave = new Wave(
+      1,
+      numPlayers,
+      constants.GAME_WAVE_ENEMY_HEALTH_INCREMENT,
+    );
     this._numPlayers = numPlayers;
   }
 
@@ -69,11 +73,11 @@ export default abstract class Simulation {
       // create a new wave
       if (
         this._stepCounter - this._wave.clearStep >=
-        constants.WAVE_COOLDOWN * constants.SERVER_UPS
+        constants.GAME_WAVE_COOLDOWN * constants.SERVER_UPS
       ) {
         const number = this._wave.waveNumber + 1;
         const enemies = number * this._numPlayers;
-        const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
+        const health = number * constants.GAME_WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
         this.state.wave = this._wave.waveNumber;
       }
@@ -81,7 +85,7 @@ export default abstract class Simulation {
       if (
         this._wave.unspawned > 0 &&
         this._stepCounter %
-          (constants.WAVE_SPAWN_DELAY * constants.SERVER_UPS) ===
+          (constants.GAME_WAVE_SPAWN_DELAY * constants.SERVER_UPS) ===
           0
       ) {
         this.addEnemy(this._wave.enemyHealth);
@@ -105,7 +109,12 @@ export default abstract class Simulation {
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
     const position = this._gameMap.randomPlayerSpawn();
-    const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
+    const player = new Player(
+      id,
+      constants.GAME_PLAYER_HEALTH_MAX,
+      position,
+      name,
+    );
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
   }
@@ -203,7 +212,7 @@ export default abstract class Simulation {
         }
       }
       const newMove = this.enemyNextMove(enemy.position, targetPlayerPosition);
-      newMove.mul(constants.ENEMY_MOVEMENT_SPEED);
+      newMove.mul(constants.GAME_ENEMY_MOVEMENT_SPEED);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
     }
@@ -338,19 +347,19 @@ export default abstract class Simulation {
       ];
       const newDirection = new Vec2(0, 0);
       if (input.up && !input.down) {
-        velocity.y = -constants.PLAYER_MOVEMENT_SPEED;
+        velocity.y = -constants.GAME_PLAYER_MOVEMENT_SPEED;
         newDirection.y = -1;
       } else if (input.down && !input.up) {
-        velocity.y = constants.PLAYER_MOVEMENT_SPEED;
+        velocity.y = constants.GAME_PLAYER_MOVEMENT_SPEED;
         newDirection.y = 1;
       } else {
         velocity.y = 0;
       }
       if (input.left && !input.right) {
-        velocity.x = -constants.PLAYER_MOVEMENT_SPEED;
+        velocity.x = -constants.GAME_PLAYER_MOVEMENT_SPEED;
         newDirection.x = -1;
       } else if (input.right && !input.left) {
-        velocity.x = constants.PLAYER_MOVEMENT_SPEED;
+        velocity.x = constants.GAME_PLAYER_MOVEMENT_SPEED;
         newDirection.x = 1;
       } else {
         velocity.x = 0;
@@ -445,7 +454,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_HITBOX_RADIUS,
+      constants.GAME_PLAYER_HITBOX_RADIUS,
       entity.id,
     );
   } else if (entity instanceof Enemy) {
@@ -454,7 +463,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.ENEMY_HITBOX_RADIUS,
+      constants.GAME_ENEMY_HITBOX_RADIUS,
       entity.id,
     );
   }

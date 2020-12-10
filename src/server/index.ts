@@ -1,11 +1,11 @@
 import path from 'path';
-import { PLAYER_LIMIT, PORT } from '../common/constants';
+import { SERVER_PLAYER_LIMIT, SERVER_PORT } from '../common/constants';
 
 import express from 'express';
 import http from 'http';
 const app = express();
 const server = http.createServer(app);
-const port = PORT;
+const port = SERVER_PORT;
 
 import geckos, { ServerChannel, iceServers } from '@geckos.io/server';
 const io = geckos({
@@ -67,7 +67,7 @@ function startGame(maxMessageSize?: number): void {
 
 io.onConnection(channel => {
   if (game !== undefined) return;
-  if (player_list.length >= PLAYER_LIMIT) return;
+  if (player_list.length >= SERVER_PLAYER_LIMIT) return;
 
   console.info(`${channel.id} connected`);
 

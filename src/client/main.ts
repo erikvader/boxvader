@@ -16,7 +16,7 @@ function onDocumentReady(callback: () => void): void {
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 function finishedResources(): void {
-  const channel = geckos({ port: constants.PORT });
+  const channel = geckos({ port: constants.SERVER_PORT });
   const renderer = PIXI.autoDetectRenderer();
   const stage = new PIXI.Container();
 
@@ -91,7 +91,7 @@ function finishedResources(): void {
 }
 
 PIXI.loader
-  .add(constants.PLAYER_SPRITE)
-  .add(constants.ENEMY_SPRITE)
+  .add(constants.UI_PLAYER_SPRITE_PATH)
+  .add(constants.UI_ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
   .load(finishedResources);

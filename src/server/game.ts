@@ -107,6 +107,6 @@ export default class ServerGame extends GameLoop {
   }
 
   private isOld(stateNum): boolean {
-    return this.stateNum - stateNum >= constants.INPUT_QUEUE_MAX_AGE;
+    return this.stateNum - stateNum >= constants.SERVER_INPUT_QUEUE_MAX_AGE;
   }
 }

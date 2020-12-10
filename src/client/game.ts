@@ -132,8 +132,8 @@ export default class ClientGame extends GameLoop {
         this.add_character(
           constants.LOGICAL_TO_PIXELS(player.position.x),
           constants.LOGICAL_TO_PIXELS(player.position.y),
-          constants.PLAYER_SIZE,
-          constants.PLAYER_SPRITE,
+          constants.UI_PLAYER_SIZE,
+          constants.UI_PLAYER_SPRITE_PATH,
           player.id,
           weapon,
         );
@@ -212,8 +212,8 @@ export default class ClientGame extends GameLoop {
         this.add_enemy(
           constants.LOGICAL_TO_PIXELS(enemy.position.x),
           constants.LOGICAL_TO_PIXELS(enemy.position.y),
-          constants.ENEMY_SIZE,
-          constants.ENEMY_SPRITE,
+          constants.UI_ENEMY_SIZE,
+          constants.UI_ENEMY_SPRITE_PATH,
           enemy.id,
         );
       }
@@ -359,9 +359,9 @@ export default class ClientGame extends GameLoop {
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
-    const width = constants.HP_BAR_WIDTH;
-    const height = constants.HP_BAR_HEIGHT;
-    const flot_height = constants.HP_BAR_FLOAT;
+    const width = constants.UI_HP_BAR_WIDTH;
+    const height = constants.UI_HP_BAR_HEIGHT;
+    const flot_height = constants.UI_HP_BAR_FLOAT;
     const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
