@@ -70,9 +70,20 @@ export abstract class Entity {
     }
   }
 
+  public giveMaxHealth(): void {
+    this._health = this.maxHealth;
+  }
+
   public updateFromBody(body: Body): void {
     this.position = body.getPosition();
     this.velocity = body.getLinearVelocity();
+  }
+
+  public respawn(position: Vec2): void {
+    this.giveMaxHealth();
+    this.position = position.clone();
+    this.velocity = Vec2.zero();
+    this.walking = false;
   }
 }
 
