@@ -1,7 +1,7 @@
 import { Id, Input } from './misc';
 import GameMap from './gameMap';
 import State from './state';
-import { Body, Box, Circle, Vec2, World, Fixture } from 'planck-js';
+import { Body, Box, Circle, Vec2, World, Fixture, Contact } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
 import Wave from './wave';
@@ -17,6 +17,9 @@ export default abstract class Simulation {
   protected _enemyIdCounter: number;
   protected _wave: Wave;
   protected _numPlayers: number;
+
+  public timeOfDamageTaken: Map<Id, number>;
+  public enemyContacts: Map<Id, Id[]>;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -52,10 +55,14 @@ export default abstract class Simulation {
     this._gameMap = map;
     this._wave = new Wave(1, numPlayers, constants.WAVE_ENEMY_HEALTH_INCREMENT);
     this._numPlayers = numPlayers;
+    this.timeOfDamageTaken = new Map<Id, Id>();
+    this.enemyContacts = new Map<Id, Id[]>();
   }
 
   public commonUpdate(): void {
     this._stepCounter += 1;
+
+    this.playerTakeDamage();
 
     const killed = this.despawnEntities();
     this._wave.kill(killed);
@@ -109,6 +116,8 @@ export default abstract class Simulation {
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
+    this.enemyContacts.set(id, []);
+    this.timeOfDamageTaken.set(id, -constants.PLAYER_INVULNERABILITY_TIME);
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -414,37 +423,61 @@ export default abstract class Simulation {
     }
 
     // TODO: hantera kollisioner om något speciellt ska hända
-    world.on('begin-contact', contact => {
-      const user_data_a = contact
-        .getFixtureA()
-        .getBody()
-        .getUserData() as { id: number };
-      const user_data_b = contact
-        .getFixtureB()
-        .getBody()
-        .getUserData() as { id: number };
-      let player_id: number | undefined = undefined;
-      let enemy_id: number | undefined = undefined;
-      if (this._state.players[user_data_a?.id] !== undefined) {
-        player_id = user_data_a?.id;
-        enemy_id = user_data_b?.id;
-      }
-      if (this._state.players[user_data_b?.id] !== undefined) {
-        player_id = user_data_b?.id;
-        enemy_id = user_data_a?.id;
-      }
-      if (
-        enemy_id !== undefined &&
-        player_id !== undefined &&
-        this._state.enemies[enemy_id] !== undefined
-      ) {
-        const damage = this._state.enemies[enemy_id].damage;
-
-        this._state.players[player_id].takeDamage(damage);
-      }
-    });
+    world.on('begin-contact', contact => this.contactListener(contact, true));
+    world.on('end-contact', contact => this.contactListener(contact, false));
 
     return world;
+  }
+
+  contactListener(contact: Contact, isBeginContact: boolean): void {
+    const user_data_a = contact
+      .getFixtureA()
+      .getBody()
+      .getUserData() as { id: number };
+    const user_data_b = contact
+      .getFixtureB()
+      .getBody()
+      .getUserData() as { id: number };
+    let player_id: number | undefined = undefined;
+    let enemy_id: number | undefined = undefined;
+    if (this._state.players[user_data_a?.id] !== undefined) {
+      player_id = user_data_a?.id;
+      enemy_id = user_data_b?.id;
+    }
+    if (this._state.players[user_data_b?.id] !== undefined) {
+      player_id = user_data_b?.id;
+      enemy_id = user_data_a?.id;
+    }
+    if (
+      enemy_id !== undefined &&
+      player_id !== undefined &&
+      this._state.enemies[enemy_id] !== undefined
+    ) {
+      if (isBeginContact) {
+        const enemyContactList = this.enemyContacts.get(player_id)!;
+        enemyContactList.push(enemy_id);
+        this.enemyContacts.set(player_id, enemyContactList);
+      } else {
+        this.enemyContacts
+          .get(player_id)!
+          .splice(this.enemyContacts.get(player_id)!.indexOf(enemy_id), 1);
+      }
+    }
+  }
+  playerTakeDamage(): void {
+    for (const player of Object.values(this._state.players)) {
+      if (
+        this.timeOfDamageTaken.get(player.id)! +
+          constants.PLAYER_INVULNERABILITY_TIME <
+          this._stepCounter &&
+        this.enemyContacts.get(player.id)!.length > 0
+      ) {
+        const enemy_id = this.enemyContacts.get(player.id)![0];
+        player.takeDamage(this._state.enemies[enemy_id].damage);
+
+        this.timeOfDamageTaken.set(player.id, this._stepCounter);
+      }
+    }
   }
 }
 

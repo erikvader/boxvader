@@ -69,7 +69,6 @@ export abstract class Entity {
       return false;
     }
   }
-
   public giveMaxHealth(): void {
     this._health = this.maxHealth;
   }
@@ -96,6 +95,7 @@ export class Player extends Entity {
   public target: Vec2;
   private _score: number;
   public weapons: Weapon.Weapon[];
+
   public constructor(id: Id, health: number, position: Vec2, name: string) {
     super(id, health, position);
     this.name = name;
@@ -128,7 +128,7 @@ export class Player extends Entity {
   }
 
   public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_score', 'target'])) {
+    if (isObjectWithKeys(obj, ['name', '_score', 'target', 'weapons'])) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
         const p = new Player(id, health, position, obj['name']);
         p._score = obj['_score'];
