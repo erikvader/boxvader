@@ -76,8 +76,6 @@ export const MAP = {
    */
   TILE_LOGICAL_SIZE: 1,
 
-  /** Name of the object group layer that holds spawn positions of enemies. */
-
   /** Turn a logical unit (meters) to its corresponding pixel size. */
   LOGICAL_TO_PIXELS: (logical: number): number =>
     (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE,
