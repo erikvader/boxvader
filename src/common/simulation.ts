@@ -18,7 +18,8 @@ export default abstract class Simulation {
   protected _wave: Wave;
   protected _numPlayers: number;
 
-  protected _contactList: Map<Id, Id>;
+  public timeOfDamageTaken: Map<Id, number>;
+  public enemyContacts: Map<Id, Id[]>;
 
   public get map(): GameMap {
     return this._gameMap;
@@ -54,7 +55,8 @@ export default abstract class Simulation {
     this._gameMap = map;
     this._wave = new Wave(1, numPlayers, constants.WAVE_ENEMY_HEALTH_INCREMENT);
     this._numPlayers = numPlayers;
-    this._contactList = new Map<Id, Id>();
+    this.timeOfDamageTaken = new Map<Id, Id>();
+    this.enemyContacts = new Map<Id, Id[]>();
   }
 
   public commonUpdate(): void {
@@ -113,6 +115,8 @@ export default abstract class Simulation {
     const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
+    this.enemyContacts.set(id, []);
+    this.timeOfDamageTaken.set(id, -constants.PLAYER_INVULNERABILITY_TIME);
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -436,40 +440,32 @@ export default abstract class Simulation {
       this._state.enemies[enemy_id] !== undefined
     ) {
       if (isBeginContact) {
-        this._state.players[player_id].enemyContacts.push(enemy_id);
+        const enemyContactList = this.enemyContacts.get(player_id)!;
+        enemyContactList.push(enemy_id);
+        this.enemyContacts.set(player_id, enemyContactList);
       } else {
-        this._state.players[player_id].enemyContacts.splice(
-          this._state.players[player_id].enemyContacts.indexOf(enemy_id),
-          1,
-        );
+        this.enemyContacts
+          .get(player_id)!
+          .splice(this.enemyContacts.get(player_id)!.indexOf(enemy_id), 1);
       }
     }
   }
   playerTakeDamage(): void {
     for (const player of Object.values(this._state.players)) {
       if (
-        player.timeOfDamageTaken + constants.PLAYER_INVULNERABILITY_TIME <
+        this.timeOfDamageTaken.get(player.id)! +
+          constants.PLAYER_INVULNERABILITY_TIME <
           this._stepCounter &&
-        player.enemyContacts.length > 0
+        this.enemyContacts.get(player.id)!.length > 0
       ) {
-        for (const enemy_id of player.enemyContacts) {
-          player.takeDamage(this._state.enemies[enemy_id].damage);
-        }
-        player.timeOfDamageTaken = this._stepCounter;
+        const enemy_id = this.enemyContacts.get(player.id)![0];
+        player.takeDamage(this._state.enemies[enemy_id].damage);
+
+        this.timeOfDamageTaken.set(player.id, this._stepCounter);
       }
     }
   }
 }
-
-/*
-if (
-  this._state.players[player_id].timeOfDamageTaken + 300 <
-  this._stepCounter
-) {
-  const damage = this._state.enemies[enemy_id].damage;
-  this._state.players[player_id].takeDamage(damage);
-  this._state.players[player_id].timeOfDamageTaken = this._stepCounter;
-}*/
 
 /**
  * Create and return a body for the given entity in the given world.

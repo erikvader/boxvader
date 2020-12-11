@@ -85,16 +85,13 @@ export class Player extends Entity {
   public target: Vec2;
   private _score: number;
   public weapons: Weapon.Weapon[];
-  public timeOfDamageTaken: number;
-  public enemyContacts: Id[];
+
   public constructor(id: Id, health: number, position: Vec2, name: string) {
     super(id, health, position);
     this.name = name;
     this._score = 0;
     this.target = new Vec2(0, 0);
     this.weapons = [new Weapon.E11_blaster_rifle()];
-    this.timeOfDamageTaken = 0;
-    this.enemyContacts = [];
   }
 
   public get score(): number {
@@ -121,21 +118,11 @@ export class Player extends Entity {
   }
 
   public static revive(obj: unknown): Player {
-    if (
-      isObjectWithKeys(obj, [
-        'name',
-        '_score',
-        'target',
-        'weapons',
-        'enemyContacts',
-      ])
-    ) {
+    if (isObjectWithKeys(obj, ['name', '_score', 'target', 'weapons'])) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
         const p = new Player(id, health, position, obj['name']);
         p._score = obj['_score'];
         p.target = obj['target'];
-        p.timeOfDamageTaken = obj['timeOfDamageTaken'];
-        p.enemyContacts = obj['enemyContacts'];
         p.weapons = [];
         for (const weapon of obj['weapons']) {
           p.weapons.push(Weapon[weapon['_weaponType']].revive(weapon));
