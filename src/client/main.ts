@@ -1,13 +1,7 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
-import {
-  PLAYER_SPRITE,
-  ENEMY_SPRITE,
-  PORT,
-  CLIENT_UPS,
-  CLIENT_FPS,
-} from '../common/constants';
+import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
 
 function onDocumentReady(callback: () => void): void {
@@ -22,7 +16,7 @@ function onDocumentReady(callback: () => void): void {
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 function finishedResources(): void {
-  const channel = geckos({ port: PORT });
+  const channel = geckos({ port: constants.SERVER.PORT });
   const renderer = PIXI.autoDetectRenderer();
   const stage = new PIXI.Container();
 
@@ -65,8 +59,8 @@ function finishedResources(): void {
           channel.raw.emit(x);
         },
         renderer,
-        ups: CLIENT_UPS,
-        fps: CLIENT_FPS,
+        ups: constants.CLIENT.UPS,
+        fps: constants.CLIENT.FPS,
         stage,
         map,
         my_id: data['id'],
@@ -97,7 +91,7 @@ function finishedResources(): void {
 }
 
 PIXI.loader
-  .add(PLAYER_SPRITE)
-  .add(ENEMY_SPRITE)
+  .add(constants.UI.PLAYER_SPRITE_PATH)
+  .add(constants.UI.ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
   .load(finishedResources);

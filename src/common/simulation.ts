@@ -53,7 +53,11 @@ export default abstract class Simulation {
     this._stepCounter = 0;
     this._enemyIdCounter = numPlayers;
     this._gameMap = map;
-    this._wave = new Wave(1, numPlayers, constants.WAVE_ENEMY_HEALTH_INCREMENT);
+    this._wave = new Wave(
+      1,
+      numPlayers,
+      constants.GAME.WAVE_ENEMY_HEALTH_INCREMENT,
+    );
     this._numPlayers = numPlayers;
     this.timeOfDamageTaken = new Map<Id, Id>();
     this.enemyContacts = new Map<Id, Id[]>();
@@ -77,11 +81,11 @@ export default abstract class Simulation {
       // create a new wave
       if (
         this._stepCounter - this._wave.clearStep >=
-        constants.WAVE_COOLDOWN * constants.SERVER_UPS
+        constants.GAME.WAVE_COOLDOWN * constants.SERVER.UPS
       ) {
         const number = this._wave.waveNumber + 1;
         const enemies = number * this._numPlayers;
-        const health = number * constants.WAVE_ENEMY_HEALTH_INCREMENT;
+        const health = number * constants.GAME.WAVE_ENEMY_HEALTH_INCREMENT;
         this._wave = new Wave(number, enemies, health);
         this.state.wave = this._wave.waveNumber;
       }
@@ -89,7 +93,7 @@ export default abstract class Simulation {
       if (
         this._wave.unspawned > 0 &&
         this._stepCounter %
-          (constants.WAVE_SPAWN_DELAY * constants.SERVER_UPS) ===
+          (constants.GAME.WAVE_SPAWN_DELAY * constants.SERVER.UPS) ===
           0
       ) {
         this.addEnemy(this._wave.enemyHealth);
@@ -113,11 +117,16 @@ export default abstract class Simulation {
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
     const position = this._gameMap.randomPlayerSpawn();
-    const player = new Player(id, constants.PLAYER_HEALTH_MAX, position, name);
+    const player = new Player(
+      id,
+      constants.GAME.PLAYER_HEALTH_MAX,
+      position,
+      name,
+    );
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
     this.enemyContacts.set(id, []);
-    this.timeOfDamageTaken.set(id, -constants.PLAYER_INVULNERABILITY_TIME);
+    this.timeOfDamageTaken.set(id, -constants.GAME.PLAYER_INVULNERABILITY_TIME);
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -226,7 +235,7 @@ export default abstract class Simulation {
         }
       }
       const newMove = this.enemyNextMove(enemy.position, targetPlayerPosition);
-      newMove.mul(constants.ENEMY_MOVEMENT_SPEED);
+      newMove.mul(constants.GAME.ENEMY_MOVEMENT_SPEED);
       const body: Body = this._bodies.get(enemy.id)!;
       body.setLinearVelocity(newMove);
     }
@@ -262,7 +271,7 @@ export default abstract class Simulation {
     if (
       !(
         player.weapons[0].timeOfLastShot +
-          player.weapons[0].attack_rate * constants.SERVER_UPS <=
+          player.weapons[0].attack_rate * constants.SERVER.UPS <=
         this._stepCounter
       )
     ) {
@@ -274,8 +283,8 @@ export default abstract class Simulation {
 
     let multiplier = Infinity;
 
-    const mapWidth = this._gameMap.width * constants.TILE_LOGICAL_SIZE;
-    const mapHeight = this._gameMap.height * constants.TILE_LOGICAL_SIZE;
+    const mapWidth = this._gameMap.width * constants.MAP.TILE_LOGICAL_SIZE;
+    const mapHeight = this._gameMap.height * constants.MAP.TILE_LOGICAL_SIZE;
 
     if (direction.x > 0) {
       multiplier = mapWidth - body.getPosition().x;
@@ -361,19 +370,19 @@ export default abstract class Simulation {
       ];
       const newDirection = new Vec2(0, 0);
       if (input.up && !input.down) {
-        velocity.y = -constants.PLAYER_MOVEMENT_SPEED;
+        velocity.y = -constants.GAME.PLAYER_MOVEMENT_SPEED;
         newDirection.y = -1;
       } else if (input.down && !input.up) {
-        velocity.y = constants.PLAYER_MOVEMENT_SPEED;
+        velocity.y = constants.GAME.PLAYER_MOVEMENT_SPEED;
         newDirection.y = 1;
       } else {
         velocity.y = 0;
       }
       if (input.left && !input.right) {
-        velocity.x = -constants.PLAYER_MOVEMENT_SPEED;
+        velocity.x = -constants.GAME.PLAYER_MOVEMENT_SPEED;
         newDirection.x = -1;
       } else if (input.right && !input.left) {
-        velocity.x = constants.PLAYER_MOVEMENT_SPEED;
+        velocity.x = constants.GAME.PLAYER_MOVEMENT_SPEED;
         newDirection.x = 1;
       } else {
         velocity.x = 0;
@@ -398,14 +407,14 @@ export default abstract class Simulation {
       restitution: 0.0,
     };
 
-    const halfSize = 0.5 * constants.TILE_LOGICAL_SIZE;
+    const halfSize = 0.5 * constants.MAP.TILE_LOGICAL_SIZE;
 
     for (let y = 0; y < map.height; ++y) {
       for (let x = 0; x < map.width; ++x) {
         if (!map.at(x, y).walkable) {
           const center = new Vec2(
-            x * constants.TILE_LOGICAL_SIZE + halfSize,
-            y * constants.TILE_LOGICAL_SIZE + halfSize,
+            x * constants.MAP.TILE_LOGICAL_SIZE + halfSize,
+            y * constants.MAP.TILE_LOGICAL_SIZE + halfSize,
           );
           const shape: any = new Box(halfSize, halfSize, Vec2.zero(), 0.0);
 
@@ -468,7 +477,7 @@ export default abstract class Simulation {
     for (const player of Object.values(this._state.players)) {
       if (
         this.timeOfDamageTaken.get(player.id)! +
-          constants.PLAYER_INVULNERABILITY_TIME <
+          constants.GAME.PLAYER_INVULNERABILITY_TIME <
           this._stepCounter &&
         this.enemyContacts.get(player.id)!.length > 0
       ) {
@@ -492,7 +501,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.PLAYER_HITBOX_RADIUS,
+      constants.GAME.PLAYER_HITBOX_RADIUS,
       entity.id,
     );
   } else if (entity instanceof Enemy) {
@@ -501,7 +510,7 @@ export function createBody(world: World, entity: Entity): Body {
       world,
       entity.position,
       entity.velocity,
-      constants.ENEMY_HITBOX_RADIUS,
+      constants.GAME.ENEMY_HITBOX_RADIUS,
       entity.id,
     );
   }

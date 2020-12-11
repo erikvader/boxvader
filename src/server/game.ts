@@ -29,7 +29,7 @@ export default class ServerGame extends GameLoop {
     broadcast: (buf: ByteBuffer) => void,
     players: Array<Id>,
   ) {
-    super({ ups: constants.SERVER_UPS, fps: constants.SERVER_FPS });
+    super({ ups: constants.SERVER.UPS, fps: constants.SERVER.FPS });
     this.broadcast = broadcast;
     this.stateNum = 0;
     this.playerInputs = {};
@@ -74,7 +74,7 @@ export default class ServerGame extends GameLoop {
 
     this.simulation.update(inputs);
 
-    if (this.stateNum % constants.SERVER_BROADCAST_RATE === 0) {
+    if (this.stateNum % constants.SERVER.BROADCAST_RATE === 0) {
       this.broadcast(
         serialize({
           inputAck: this.inputAcks,
@@ -107,6 +107,6 @@ export default class ServerGame extends GameLoop {
   }
 
   private isOld(stateNum): boolean {
-    return this.stateNum - stateNum >= constants.INPUT_QUEUE_MAX_AGE;
+    return this.stateNum - stateNum >= constants.SERVER.INPUT_QUEUE_MAX_AGE;
   }
 }
