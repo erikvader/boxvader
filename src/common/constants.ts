@@ -1,3 +1,5 @@
+import * as misc from './misc';
+
 /** Server constants. */
 export const SERVER = {
   /** Number of server updates per second. */
@@ -76,10 +78,6 @@ export const MAP = {
    */
   TILE_LOGICAL_SIZE: 1,
 
-  /** Turn a logical unit (meters) to its corresponding pixel size. */
-  LOGICAL_TO_PIXELS: (logical: number): number =>
-    (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE,
-
   /** Name of the tile layer that holds the tile data of a map. */
   TILE_LAYER_LAYER_NAME: 'Map',
 
@@ -99,10 +97,10 @@ export const UI = {
   ENEMY_SPRITE_PATH: 'imgs/b_yoda.png',
 
   /** How many pixels wide an enemy sprite is. */
-  ENEMY_SIZE: MAP.LOGICAL_TO_PIXELS(1),
+  ENEMY_SIZE: misc.logical_to_pixels(1),
 
   /** How many pixels wide a player sprite is. */
-  PLAYER_SIZE: MAP.LOGICAL_TO_PIXELS(1),
+  PLAYER_SIZE: misc.logical_to_pixels(1),
 
   /** How many pixels wide a hp bar is. */
   HP_BAR_WIDTH: 30,

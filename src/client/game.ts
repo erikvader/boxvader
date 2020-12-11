@@ -13,6 +13,8 @@ import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
+import * as misc from '../common/misc';
+
 const su = new SpriteUtilities(PIXI);
 
 export interface ClientGameOpt extends GameLoopOpt {
@@ -130,8 +132,8 @@ export default class ClientGame extends GameLoop {
       const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
-          constants.MAP.LOGICAL_TO_PIXELS(player.position.x),
-          constants.MAP.LOGICAL_TO_PIXELS(player.position.y),
+          misc.logical_to_pixels(player.position.x),
+          misc.logical_to_pixels(player.position.y),
           constants.UI.PLAYER_SIZE,
           constants.UI.PLAYER_SPRITE_PATH,
           player.id,
@@ -149,12 +151,8 @@ export default class ClientGame extends GameLoop {
         player.maxHealth,
         player.health,
       );
-      this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
-        player.position.x,
-      );
-      this.player_list[player.id].y = constants.MAP.LOGICAL_TO_PIXELS(
-        player.position.y,
-      );
+      this.player_list[player.id].x = misc.logical_to_pixels(player.position.x);
+      this.player_list[player.id].y = misc.logical_to_pixels(player.position.y);
       if (
         player.weapons[0].timeOfLastShot <
           this.states.last + constants.SERVER.BROADCAST_RATE &&
@@ -167,12 +165,12 @@ export default class ClientGame extends GameLoop {
         this.player_list[player.id].shot_line = this.add_shot_line(
           weapon,
           {
-            x: constants.MAP.LOGICAL_TO_PIXELS(player.position.x),
-            y: constants.MAP.LOGICAL_TO_PIXELS(player.position.y),
+            x: misc.logical_to_pixels(player.position.x),
+            y: misc.logical_to_pixels(player.position.y),
           },
           {
-            x: constants.MAP.LOGICAL_TO_PIXELS(player.target.x),
-            y: constants.MAP.LOGICAL_TO_PIXELS(player.target.y),
+            x: misc.logical_to_pixels(player.target.x),
+            y: misc.logical_to_pixels(player.target.y),
           },
         );
 
@@ -210,20 +208,16 @@ export default class ClientGame extends GameLoop {
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(
-          constants.MAP.LOGICAL_TO_PIXELS(enemy.position.x),
-          constants.MAP.LOGICAL_TO_PIXELS(enemy.position.y),
+          misc.logical_to_pixels(enemy.position.x),
+          misc.logical_to_pixels(enemy.position.y),
           constants.UI.ENEMY_SIZE,
           constants.UI.ENEMY_SPRITE_PATH,
           enemy.id,
         );
       }
       this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
-      this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
-        enemy.position.x,
-      );
-      this.enemy_list[enemy.id].y = constants.MAP.LOGICAL_TO_PIXELS(
-        enemy.position.y,
-      );
+      this.enemy_list[enemy.id].x = misc.logical_to_pixels(enemy.position.x);
+      this.enemy_list[enemy.id].y = misc.logical_to_pixels(enemy.position.y);
     }
   }
 
