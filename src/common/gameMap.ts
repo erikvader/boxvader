@@ -74,15 +74,15 @@ export default class GameMap {
 
     const tileLayer = getNamedTileLayer(
       jsonMap.layers,
-      constants.MAP_TILE_LAYER_LAYER_NAME,
+      constants.MAP.TILE_LAYER_LAYER_NAME,
     );
     const playerLayer = getNamedObjectGroup(
       jsonMap.layers,
-      constants.MAP_PLAYER_SPAWN_LAYER_NAME,
+      constants.MAP.PLAYER_SPAWN_LAYER_NAME,
     );
     const enemyLayer = getNamedObjectGroup(
       jsonMap.layers,
-      constants.MAP_ENEMY_SPAWN_LAYER_NAME,
+      constants.MAP.ENEMY_SPAWN_LAYER_NAME,
     );
 
     const tileIds = tileLayer.data.map(id => id - 1);
@@ -102,7 +102,7 @@ export default class GameMap {
     this.tiles = tileIds.map(id => this.tileset.tiles[id]);
 
     const to_logical = (pix: number): number =>
-      (pix * constants.TILE_LOGICAL_SIZE) / this.tileset.tileSize;
+      (pix * constants.MAP.TILE_LOGICAL_SIZE) / this.tileset.tileSize;
 
     this.playerSpawns = playerLayer.objects.map(
       obj =>
@@ -232,19 +232,21 @@ export default class GameMap {
   }
 
   public positionToTile(position: Vec2): number {
-    const widthCoord = Math.floor(position.x / constants.TILE_LOGICAL_SIZE);
-    const heightCoord = Math.floor(position.y / constants.TILE_LOGICAL_SIZE);
+    const widthCoord = Math.floor(position.x / constants.MAP.TILE_LOGICAL_SIZE);
+    const heightCoord = Math.floor(
+      position.y / constants.MAP.TILE_LOGICAL_SIZE,
+    );
 
     return this.height * heightCoord + widthCoord;
   }
 
   public tileToPosition(tilePosition: number): Vec2 {
     const x =
-      Math.floor(tilePosition % this.width) * constants.TILE_LOGICAL_SIZE +
-      constants.TILE_LOGICAL_SIZE / 2;
+      Math.floor(tilePosition % this.width) * constants.MAP.TILE_LOGICAL_SIZE +
+      constants.MAP.TILE_LOGICAL_SIZE / 2;
     const y =
-      Math.floor(tilePosition / this.height) * constants.TILE_LOGICAL_SIZE +
-      constants.TILE_LOGICAL_SIZE / 2;
+      Math.floor(tilePosition / this.height) * constants.MAP.TILE_LOGICAL_SIZE +
+      constants.MAP.TILE_LOGICAL_SIZE / 2;
 
     return new Vec2(x, y);
   }
@@ -255,8 +257,8 @@ export default class GameMap {
   }
 
   public total_pixel_size(): [number, number] {
-    const w = this.width * constants.TILE_TARGET_SIZE_PIXELS;
-    const h = this.height * constants.TILE_TARGET_SIZE_PIXELS;
+    const w = this.width * constants.MAP.TILE_TARGET_SIZE_PIXELS;
+    const h = this.height * constants.MAP.TILE_TARGET_SIZE_PIXELS;
     return [w, h];
   }
 

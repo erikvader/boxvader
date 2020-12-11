@@ -1,122 +1,117 @@
-// ------------------
-// ----- SERVER -----
-// ------------------
+/** Server constants. */
+export const SERVER = {
+  /** Number of server updates per second. */
+  UPS: 60,
 
-/** Number of server updates per second. */
-export const SERVER_UPS = 60;
+  /** Number of server frames per second. */
+  FPS: 60,
 
-/** Number of server frames per second. */
-export const SERVER_FPS = 60;
+  /** Server port. */
+  PORT: 3000,
 
-/** Server port. */
-export const SERVER_PORT = 3000;
+  /**
+   * How seldom the server broadcasts its state to all clients. Can be an integer
+   * in the range [1,∞). 1 means send every update, 2 means send every other
+   * update etc.
+   */
+  BROADCAST_RATE: 2,
 
-/**
- * How seldom the server broadcasts its state to all clients. Can be an integer
- * in the range [1,∞). 1 means send every update, 2 means send every other
- * update etc.
- */
-export const SERVER_BROADCAST_RATE = 2;
+  /** Maximum number of players per lobby. */
+  PLAYER_LIMIT: 6,
 
-/** Maximum number of players per lobby. */
-export const SERVER_PLAYER_LIMIT = 1;
+  /**
+   * An [[Input]] is considered old if it has been in the input queue for this
+   * many updates without getting popped.
+   */
+  INPUT_QUEUE_MAX_AGE: 3,
+};
 
-/**
- * An [[Input]] is considered old if it has been in the input queue for this
- * many updates without getting popped.
- */
-export const SERVER_INPUT_QUEUE_MAX_AGE = 3;
+/** Client constants. */
+export const CLIENT = {
+  /** Number of client updates per second. */
+  UPS: 60,
 
-// ------------------
-// ----- CLIENT -----
-// ------------------
+  /** Number of client frames per second. */
+  FPS: 60,
+};
 
-/** Number of client updates per second. */
-export const CLIENT_UPS = 60;
+/** Game constants. */
+export const GAME = {
+  /** Maximum and initial health of a player. */
+  PLAYER_HEALTH_MAX: 5,
 
-/** Number of client frames per second. */
-export const CLIENT_FPS = 60;
+  /** Player hitbox radius (meters). */
+  PLAYER_HITBOX_RADIUS: 0.5,
 
-// ----------------
-// ----- GAME -----
-// ----------------
+  /** Enemy hitbox radius (meters) */
+  ENEMY_HITBOX_RADIUS: 0.5,
 
-/** Maximum and initial health of a player. */
-export const GAME_PLAYER_HEALTH_MAX = 5;
+  /**  Player movement speed in meters per second. */
+  PLAYER_MOVEMENT_SPEED: 2,
 
-/** Player hitbox radius (meters). */
-export const GAME_PLAYER_HITBOX_RADIUS = 0.5;
+  /** Enemy movement speed in meters per second. */
+  ENEMY_MOVEMENT_SPEED: 1,
 
-/** Enemy hitbox radius (meters) */
-export const GAME_ENEMY_HITBOX_RADIUS = 0.5;
+  /** The increment in enemy health for each wave. */
+  WAVE_ENEMY_HEALTH_INCREMENT: 2,
 
-/**  Player movement speed in meters per second. */
-export const GAME_PLAYER_MOVEMENT_SPEED = 2;
+  /** Delay (in seconds) between enemy spawns in a wave. */
+  WAVE_SPAWN_DELAY: 0.5,
 
-/** Enemy movement speed in meters per second. */
-export const GAME_ENEMY_MOVEMENT_SPEED = 1;
+  /** Delay (in seconds) between waves. */
+  WAVE_COOLDOWN: 3,
+};
 
-/** The increment in enemy health for each wave. */
-export const GAME_WAVE_ENEMY_HEALTH_INCREMENT = 2;
+/** Map and tile constants. */
+export const MAP = {
+  /**
+   * How big a tile should be drawn as. This determines the final scale of the
+   * game and is the only constant expressed in pixels.
+   */
+  TILE_TARGET_SIZE_PIXELS: 48,
 
-/** Delay (in seconds) between enemy spawns in a wave. */
-export const GAME_WAVE_SPAWN_DELAY = 0.5;
+  /**
+   * How big a tile or square is logically. Everything else will be dependent on
+   * this. The unit is in meters.
+   */
+  TILE_LOGICAL_SIZE: 1,
 
-/** Delay (in seconds) between waves. */
-export const GAME_WAVE_COOLDOWN = 3;
+  /** Name of the object group layer that holds spawn positions of enemies. */
 
-// --------------------
-// ----- MAP/TILE -----
-// --------------------
+  /** Turn a logical unit (meters) to its corresponding pixel size. */
+  LOGICAL_TO_PIXELS: (logical: number): number =>
+    (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE,
 
-/**
- * How big a tile should be drawn as. This determines the final scale of the
- * game and is the only constant expressed in pixels.
- */
-export const TILE_TARGET_SIZE_PIXELS = 48;
+  /** Name of the tile layer that holds the tile data of a map. */
+  TILE_LAYER_LAYER_NAME: 'Map',
 
-/**
- * How big a tile or square is logically. Everything else will be dependent on
- * this. The unit is in meters.
- */
-export const TILE_LOGICAL_SIZE = 1;
+  /** Name of the object group layer that holds spawn positions of players. */
+  PLAYER_SPAWN_LAYER_NAME: 'Player spawn',
 
-/** Name of the object group layer that holds spawn positions of enemies. */
+  /** Name of the object group layer that holds spawn positions of enemies. */
+  ENEMY_SPAWN_LAYER_NAME: 'Enemy spawn',
+};
 
-/** Turn a logical unit (meters) to its corresponding pixel size. */
-export const LOGICAL_TO_PIXELS = (logical: number): number =>
-  (logical * TILE_TARGET_SIZE_PIXELS) / TILE_LOGICAL_SIZE;
+/** UI constants. */
+export const UI = {
+  /** Spritesheet for players. */
+  PLAYER_SPRITE_PATH: 'imgs/zombie_0.png',
 
-/** Name of the tile layer that holds the tile data of a map. */
-export const MAP_TILE_LAYER_LAYER_NAME = 'Map';
+  /** Spritesheet for enemies. */
+  ENEMY_SPRITE_PATH: 'imgs/b_yoda.png',
 
-/** Name of the object group layer that holds spawn positions of players. */
-export const MAP_PLAYER_SPAWN_LAYER_NAME = 'Player spawn';
+  /** How many pixels wide an enemy sprite is. */
+  ENEMY_SIZE: MAP.LOGICAL_TO_PIXELS(1),
 
-/** Name of the object group layer that holds spawn positions of enemies. */
-export const MAP_ENEMY_SPAWN_LAYER_NAME = 'Enemy spawn';
+  /** How many pixels wide a player sprite is. */
+  PLAYER_SIZE: MAP.LOGICAL_TO_PIXELS(1),
 
-// --------------
-// ----- UI -----
-// --------------
+  /** How many pixels wide a hp bar is. */
+  HP_BAR_WIDTH: 30,
 
-/** Spritesheet for players. */
-export const UI_PLAYER_SPRITE_PATH = 'imgs/zombie_0.png';
+  /** How many pixels high a hp bar is. */
+  HP_BAR_HEIGHT: 5,
 
-/** Spritesheet for enemies. */
-export const UI_ENEMY_SPRITE_PATH = 'imgs/b_yoda.png';
-
-/** How many pixels wide an enemy sprite is. */
-export const UI_ENEMY_SIZE = LOGICAL_TO_PIXELS(1);
-
-/** How many pixels wide a player sprite is. */
-export const UI_PLAYER_SIZE = LOGICAL_TO_PIXELS(1);
-
-/** How many pixels wide a hp bar is. */
-export const UI_HP_BAR_WIDTH = 30;
-
-/** How many pixels high a hp bar is. */
-export const UI_HP_BAR_HEIGHT = 5;
-
-/** How many pixels an hp bar is. */
-export const UI_HP_BAR_FLOAT = 30;
+  /** How many pixels an hp bar is. */
+  HP_BAR_FLOAT: 30,
+};

@@ -83,7 +83,7 @@ export default class Tileset {
   }
 
   public scaleFactor(): number {
-    return constants.TILE_TARGET_SIZE_PIXELS / this.tileSize;
+    return constants.MAP.TILE_TARGET_SIZE_PIXELS / this.tileSize;
   }
 
   public tilePos(tile_type: number): { row: number; column: number } {

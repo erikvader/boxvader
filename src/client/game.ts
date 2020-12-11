@@ -130,10 +130,10 @@ export default class ClientGame extends GameLoop {
       const weapon = newState.players[player.id].weapons[0];
       if (this.player_list[player.id] === undefined) {
         this.add_character(
-          constants.LOGICAL_TO_PIXELS(player.position.x),
-          constants.LOGICAL_TO_PIXELS(player.position.y),
-          constants.UI_PLAYER_SIZE,
-          constants.UI_PLAYER_SPRITE_PATH,
+          constants.MAP.LOGICAL_TO_PIXELS(player.position.x),
+          constants.MAP.LOGICAL_TO_PIXELS(player.position.y),
+          constants.UI.PLAYER_SIZE,
+          constants.UI.PLAYER_SPRITE_PATH,
           player.id,
           weapon,
         );
@@ -149,30 +149,30 @@ export default class ClientGame extends GameLoop {
         player.maxHealth,
         player.health,
       );
-      this.player_list[player.id].x = constants.LOGICAL_TO_PIXELS(
+      this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.x,
       );
-      this.player_list[player.id].y = constants.LOGICAL_TO_PIXELS(
+      this.player_list[player.id].y = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.y,
       );
       if (
         player.weapons[0].timeOfLastShot <
-          this.states.last + constants.SERVER_BROADCAST_RATE &&
+          this.states.last + constants.SERVER.BROADCAST_RATE &&
         player.weapons[0].timeOfLastShot +
           player.weapons[0].projectileVisibiltyDuration >
-          this.states.last + constants.SERVER_BROADCAST_RATE
+          this.states.last + constants.SERVER.BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
         this.player_list[player.id].shot_line = this.add_shot_line(
           weapon,
           {
-            x: constants.LOGICAL_TO_PIXELS(player.position.x),
-            y: constants.LOGICAL_TO_PIXELS(player.position.y),
+            x: constants.MAP.LOGICAL_TO_PIXELS(player.position.x),
+            y: constants.MAP.LOGICAL_TO_PIXELS(player.position.y),
           },
           {
-            x: constants.LOGICAL_TO_PIXELS(player.target.x),
-            y: constants.LOGICAL_TO_PIXELS(player.target.y),
+            x: constants.MAP.LOGICAL_TO_PIXELS(player.target.x),
+            y: constants.MAP.LOGICAL_TO_PIXELS(player.target.y),
           },
         );
 
@@ -210,18 +210,18 @@ export default class ClientGame extends GameLoop {
     for (const enemy of Object.values(newState.enemies)) {
       if (this.enemy_list[enemy.id] === undefined) {
         this.add_enemy(
-          constants.LOGICAL_TO_PIXELS(enemy.position.x),
-          constants.LOGICAL_TO_PIXELS(enemy.position.y),
-          constants.UI_ENEMY_SIZE,
-          constants.UI_ENEMY_SPRITE_PATH,
+          constants.MAP.LOGICAL_TO_PIXELS(enemy.position.x),
+          constants.MAP.LOGICAL_TO_PIXELS(enemy.position.y),
+          constants.UI.ENEMY_SIZE,
+          constants.UI.ENEMY_SPRITE_PATH,
           enemy.id,
         );
       }
       this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
-      this.enemy_list[enemy.id].x = constants.LOGICAL_TO_PIXELS(
+      this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
-      this.enemy_list[enemy.id].y = constants.LOGICAL_TO_PIXELS(
+      this.enemy_list[enemy.id].y = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.y,
       );
     }
@@ -359,9 +359,9 @@ export default class ClientGame extends GameLoop {
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
-    const width = constants.UI_HP_BAR_WIDTH;
-    const height = constants.UI_HP_BAR_HEIGHT;
-    const flot_height = constants.UI_HP_BAR_FLOAT;
+    const width = constants.UI.HP_BAR_WIDTH;
+    const height = constants.UI.HP_BAR_HEIGHT;
+    const flot_height = constants.UI.HP_BAR_FLOAT;
     const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
@@ -430,18 +430,18 @@ export default class ClientGame extends GameLoop {
     this.score = new PIXI.Text('Score: 0', style);
     this.stage.addChild(this.score);
     this.score.position.set(
-      (this.map.width * constants.TILE_TARGET_SIZE_PIXELS -
-        4 * constants.TILE_TARGET_SIZE_PIXELS) /
+      (this.map.width * constants.MAP.TILE_TARGET_SIZE_PIXELS -
+        4 * constants.MAP.TILE_TARGET_SIZE_PIXELS) /
         2,
-      constants.TILE_TARGET_SIZE_PIXELS * 1.2,
+      constants.MAP.TILE_TARGET_SIZE_PIXELS * 1.2,
     );
     this.waveNumber = new PIXI.Text('Wave: 1', style);
     this.stage.addChild(this.waveNumber);
     this.waveNumber.position.set(
-      (this.map.width * constants.TILE_TARGET_SIZE_PIXELS +
-        2 * constants.TILE_TARGET_SIZE_PIXELS) /
+      (this.map.width * constants.MAP.TILE_TARGET_SIZE_PIXELS +
+        2 * constants.MAP.TILE_TARGET_SIZE_PIXELS) /
         2,
-      constants.TILE_TARGET_SIZE_PIXELS * 1.2,
+      constants.MAP.TILE_TARGET_SIZE_PIXELS * 1.2,
     );
   }
 
