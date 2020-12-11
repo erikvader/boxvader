@@ -66,6 +66,12 @@ export const ENEMY_HITBOX_RADIUS = 0.5;
 export const PLAYER_MOVEMENT_SPEED = 2;
 
 /**
+ * Player invulnerability time between consecutive damages.
+   60 = 1 sec.
+ */
+export const PLAYER_INVULNERABILITY_TIME = 30;
+
+/**
  * Enemy movement speed in meters per second.
  */
 export const ENEMY_MOVEMENT_SPEED = 1;
