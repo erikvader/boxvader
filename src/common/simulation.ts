@@ -64,6 +64,7 @@ export default abstract class Simulation {
       // mark this instant as when the wave was finished
       if (this._wave.clearStep === 0) {
         this._wave.clearStep = this._stepCounter;
+        this.respawnPlayers();
       }
 
       // create a new wave
@@ -158,6 +159,19 @@ export default abstract class Simulation {
       }
     }
     return despawned;
+  }
+
+  protected respawnPlayers(): void {
+    for (const p of Object.values(this.state.players)) {
+      const player = p as Player;
+
+      if (!player.alive) {
+        player.respawn(this.map.randomPlayerSpawn());
+        this.bodies.set(player.id, createBody(this.world, player));
+      } else {
+        player.giveMaxHealth();
+      }
+    }
   }
 
   public snapshot(): State {

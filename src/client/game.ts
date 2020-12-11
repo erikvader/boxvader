@@ -241,6 +241,8 @@ export default class ClientGame extends GameLoop {
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
         }
+      } else {
+        this.player_list[player_id].visible = true;
       }
     }
   }
