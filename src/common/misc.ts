@@ -1,5 +1,4 @@
 import { Vec2 } from 'planck-js';
-import { MAP } from './constants';
 
 export type Id = number;
 
@@ -58,9 +57,4 @@ export function randomChoice<T>(ts: T[]): T | undefined {
     const index = Math.floor(Math.random() * ts.length);
     return ts[index];
   }
-}
-
-/** Turn a logical unit (meters) to its corresponding pixel size. */
-export function logical_to_pixels(logical: number): number {
-  return (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE;
 }
