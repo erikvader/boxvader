@@ -28,6 +28,10 @@ function finishedResources(): void {
   let game;
   let readyStatus = false;
 
+  window.addEventListener('beforeunload', () => {
+    channel.close();
+  });
+
   channel.onConnect(error => {
     if (error) {
       console.error(error.message);
@@ -71,7 +75,8 @@ function finishedResources(): void {
       });
     });
 
-    channel.onDisconnect(_reason => {
+    channel.onDisconnect(() => {
+      console.info('Disconnected from the server');
       game?.stop();
     });
 
