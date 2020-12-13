@@ -36,6 +36,7 @@ export default class ClientGame extends GameLoop {
 
   // inputs not confirmed by server
   private inputHistory: Deque<Input>;
+  private inputHistoryLast: number;
 
   private my_id: number;
   private my_sprite?;
@@ -60,6 +61,7 @@ export default class ClientGame extends GameLoop {
     this.stage = args.stage;
     this.states = new Deque();
     this.inputHistory = new Deque();
+    this.inputHistoryLast = -1;
     this.my_id = args.my_id;
     this.map = args.map;
   }
@@ -80,6 +82,12 @@ export default class ClientGame extends GameLoop {
 
   afterUpdate(): void {
     this.renderer.render(this.stage);
+
+    if (this.inputHistory.last > this.inputHistoryLast) {
+      this.inputHistory.trim_to(constants.CLIENT.MAX_INPUTS);
+      this.sendInputFun(serialize({ inputs: this.inputHistory }));
+      this.inputHistoryLast = this.inputHistory.last;
+    }
   }
 
   doUpdate(): void {
@@ -94,8 +102,6 @@ export default class ClientGame extends GameLoop {
     };
 
     this.inputHistory.push_back(inp);
-
-    this.sendInputFun(serialize({ inputs: this.inputHistory }));
   }
 
   protected cleanup(): void {

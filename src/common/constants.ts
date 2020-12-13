@@ -33,6 +33,9 @@ export const CLIENT = {
 
   /** Number of client frames per second. */
   FPS: 60,
+
+  /** Maximum number of inputs to send to the server at a time. */
+  MAX_INPUTS: 20,
 };
 
 /** Game constants. */
