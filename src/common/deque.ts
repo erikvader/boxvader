@@ -160,6 +160,16 @@ export default class Deque<T> {
   }
 
   /**
+   * Only keep the up to `limit` latest elements.
+   * @param limit how many elements to keep.
+   */
+  public trim_to(limit: number): void {
+    while (this.length > limit) {
+      this.pop_front();
+    }
+  }
+
+  /**
    * Adds the newer elements of `other` into ourselves if no gaps are formed.
    * @returns true if something new was added.
    */
