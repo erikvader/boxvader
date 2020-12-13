@@ -1,4 +1,4 @@
-import { Input, NumMap } from './misc';
+import { Input, NumMap, compactInput, explodeInput } from './misc';
 import State from './state';
 import { ByteBuffer } from 'bytebuffer';
 import pson from './pson';
@@ -28,13 +28,24 @@ export interface ServerToClient {
 export function serialize(
   message: ServerToClient | ClientToServer,
 ): ByteBuffer {
-  return pson.encode(message).toArrayBuffer();
+  if ('inputs' in message) {
+    const msg = message as ClientToServer;
+    return pson
+      .encode({
+        inputs: msg.inputs.mapArray(compactInput),
+        startSeq: msg.inputs.first,
+      })
+      .toArrayBuffer();
+  } else {
+    const msg = message as ServerToClient;
+    return pson.encode(msg).toArrayBuffer();
+  }
 }
 
 export function deserializeCTS(message: ByteBuffer): ClientToServer {
   const d = pson.decode(message);
   return {
-    inputs: Deque.revive(d['inputs'], ele => ele as Input),
+    inputs: Deque.fromArrayMap(d['inputs'], d['startSeq'], explodeInput),
   };
 }
 
