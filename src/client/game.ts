@@ -106,6 +106,8 @@ export default class ClientGame extends GameLoop {
 
   protected cleanup(): void {
     // TODO: reset pixi
+    this.renderer.destroy();
+    this.stage.destroy({ children: true });
     this.left.unsubscribe();
     this.right.unsubscribe();
     this.down.unsubscribe();
@@ -122,7 +124,6 @@ export default class ClientGame extends GameLoop {
 
     const prevState = this.states.last_elem();
     const newState = message.state;
-
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
     this.update_scoreboard(newState);

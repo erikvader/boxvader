@@ -43,7 +43,7 @@ function finishedResources(): void {
     channel.on('start', data => {
       const button = document.getElementById('btn-ready');
       if (button !== null) {
-        button.remove();
+        button.hidden = true;
       }
 
       const map = new GameMap(data['map'], data['tileset']);
@@ -73,6 +73,21 @@ function finishedResources(): void {
       game.start().then(() => {
         console.info('game finished');
       });
+    });
+
+    channel.on('game_over', data => {
+      console.info('Game over');
+      game?.stop();
+      game = undefined;
+      channel.close();
+      document.getElementById('game')?.remove();
+
+      const button = document.getElementById('btn-ready');
+      if (button !== null) {
+        button.innerText = ':-(';
+        button.hidden = false;
+      }
+      finishedResources();
     });
 
     channel.onDisconnect(() => {
