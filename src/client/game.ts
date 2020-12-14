@@ -11,7 +11,7 @@ import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
-import { Weapon } from '../common/weapon';
+import Weapon from '../common/weapon';
 import * as constants from '../common/constants';
 const su = new SpriteUtilities(PIXI);
 
