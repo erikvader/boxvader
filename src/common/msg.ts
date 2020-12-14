@@ -25,6 +25,24 @@ export interface ServerToClient {
   state: State;
 }
 
+function flattenSTC(stc: ServerToClient): number[] {
+  const flattened: number[] = [];
+  flattened.push(stc.stateNum);
+
+  const numacks = Object.values(stc.inputAck).length;
+  flattened.push(numacks);
+  for (let i = 0; i < numacks; i++) {
+    const ia = stc.inputAck[i];
+    if (ia === undefined) {
+      throw new Error('player IDs are not continous it seems');
+    }
+    flattened.push(ia);
+  }
+
+  stc.state.flatten(flattened);
+  return flattened;
+}
+
 export function serialize(
   message: ServerToClient | ClientToServer,
 ): ByteBuffer {

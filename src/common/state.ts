@@ -39,4 +39,20 @@ export default class State {
     }
     throw new Error("couldn't revive State");
   }
+
+  public flatten(flat: number[]): void {
+    const players = Object.values(this.players);
+    flat.push(players.length);
+    for (const p of players) {
+      p.flatten(flat);
+    }
+
+    const enemies = Object.values(this.enemies);
+    flat.push(enemies.length);
+    for (const e of enemies) {
+      e.flatten(flat);
+    }
+
+    flat.push(this.wave);
+  }
 }

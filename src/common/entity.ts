@@ -84,6 +84,21 @@ export abstract class Entity {
     this.velocity = Vec2.zero();
     this.walking = false;
   }
+
+  public flatten(flat: number[]): void {
+    flat.push(
+      this.id,
+      this.maxHealth,
+      Math.fround(this.position.x),
+      Math.fround(this.position.y),
+      Math.fround(this.velocity.x),
+      Math.fround(this.velocity.y),
+      Math.fround(this.direction.x),
+      Math.fround(this.direction.y),
+      this._health,
+      this.walking ? 1 : 0,
+    );
+  }
 }
 
 /**
@@ -135,6 +150,19 @@ export class Player extends Entity {
     }
     throw new Error("couldn't revive Player");
   }
+
+  public flatten(flat: number[]): void {
+    super.flatten(flat);
+    flat.push(
+      Math.fround(this.target.x),
+      Math.fround(this.target.y),
+      this._score,
+      this.weapons.length,
+    );
+    for (const w of this.weapons) {
+      w.flatten(flat);
+    }
+  }
 }
 
 export class Enemy extends Entity {
@@ -177,5 +205,10 @@ export class Enemy extends Entity {
       ) as Enemy;
     }
     throw new Error("couldn't revive Enemy");
+  }
+
+  public flatten(flat: number[]): void {
+    super.flatten(flat);
+    flat.push(this.damage, this.score);
   }
 }

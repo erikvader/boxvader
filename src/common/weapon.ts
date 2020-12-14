@@ -57,4 +57,8 @@ export default class Weapon {
     }
     throw new Error("couldn't revive Weapon");
   }
+
+  public flatten(flat: number[]): void {
+    flat.push(this._weaponType, this._timeOfLastShot);
+  }
 }
