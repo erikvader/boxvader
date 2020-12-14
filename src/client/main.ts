@@ -97,9 +97,12 @@ function finishedResources(): void {
   });
 }
 
-const loader = new PIXI.Loader();
-loader
+//const loader = new PIXI.Loader();
+//loader
+PIXI.Loader.shared
   .add(PLAYER_SPRITE)
   .add(ENEMY_SPRITE)
+  .add('imgs/shoot.json')
+  .add('imgs/shoot.png')
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
   .load(finishedResources);

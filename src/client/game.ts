@@ -115,15 +115,18 @@ export default class ClientGame extends GameLoop {
 
     const prevState = this.states.last_elem();
     const newState = message.state;
-
+    this.test_animatedsprite()
+    /*
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
     this.update_scoreboard(newState);
     this.states.reset(newState, message.stateNum);
+    */
   }
 
   update_player_sprites(prevState: State | undefined, newState: State): void {
     // spawn new players
+    
     this.remove_entity_sprites(newState);
     for (const player of Object.values(newState.players)) {
       const weapon = newState.players[player.id].weapons[0];
@@ -182,6 +185,7 @@ export default class ClientGame extends GameLoop {
         this.stage.removeChild(this.player_list[player.id].shot_line);
       }
     }
+    
   }
 
   walking_animation(
@@ -307,7 +311,11 @@ export default class ClientGame extends GameLoop {
       );
     }
   }
-
+  test_animatedsprite(){
+    let sheet = PIXI.Loader.shared.resources["imgs/shoot.json"].spritesheet!;
+    console.log(sheet);
+    let animatedSprite = new PIXI.AnimatedSprite(sheet.textures);
+  }
   add_character(
     x: number,
     y: number,
