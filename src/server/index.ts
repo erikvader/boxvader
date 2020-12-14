@@ -66,13 +66,22 @@ function startGame(maxMessageSize?: number): void {
 }
 
 io.onConnection(channel => {
-  if (game !== undefined) return;
-  if (player_list.length >= SERVER.PLAYER_LIMIT) return;
+  if (game !== undefined || player_list.length >= SERVER.PLAYER_LIMIT) {
+    console.info(
+      'ignoring new connection because the game has already started or there are too many players connected',
+    );
+    // TODO: the client's onDisconnect is not fired immediately for some reason.
+    // And it is spewing errors.
+    channel.close();
+    return;
+  }
 
   console.info(`${channel.id} connected`);
 
   channel.onDrop(drop => {
-    console.warn('We are dropping packets: ', drop);
+    if (drop['reason'] !== 'DROPPED_FROM_BUFFERING') {
+      console.warn('We are dropping packets: ', drop);
+    }
   });
 
   const my_id = client_id;

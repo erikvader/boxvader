@@ -1,5 +1,4 @@
 import { Vec2 } from 'planck-js';
-import { MAP } from './constants';
 
 export type Id = number;
 
@@ -16,6 +15,32 @@ export interface Input {
   left: boolean;
   right: boolean;
   fire: boolean;
+}
+
+/**
+ * Compresses an `Input` to a single whole number.
+ */
+export function compactInput(inp: Input): number {
+  return (
+    1 * (inp.up ? 1 : 0) +
+    2 * (inp.down ? 1 : 0) +
+    4 * (inp.left ? 1 : 0) +
+    8 * (inp.right ? 1 : 0) +
+    16 * (inp.fire ? 1 : 0)
+  );
+}
+
+/**
+ * Creates a `Input` from a whole number.
+ */
+export function explodeInput(comp: number): Input {
+  return {
+    up: (comp & 1) > 0,
+    down: (comp & 2) > 0,
+    left: (comp & 4) > 0,
+    right: (comp & 8) > 0,
+    fire: (comp & 16) > 0,
+  };
 }
 
 /**
@@ -58,9 +83,4 @@ export function randomChoice<T>(ts: T[]): T | undefined {
     const index = Math.floor(Math.random() * ts.length);
     return ts[index];
   }
-}
-
-/** Turn a logical unit (meters) to its corresponding pixel size. */
-export function logical_to_pixels(logical: number): number {
-  return (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE;
 }

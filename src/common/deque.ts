@@ -136,13 +136,48 @@ export default class Deque<T> {
    * @returns The values of this deque in an [[Array]].
    */
   public toArray(): T[] {
-    const res: T[] = [];
+    return this.mapArray(x => x);
+  }
+
+  /**
+   * @param f callback to run on each element.
+   * @returns An array in sequential order and every element mapped with `f`.
+   */
+  public mapArray<F>(f: (T) => F): F[] {
+    const res: F[] = [];
     if (this._last !== null) {
       for (let i = this._first; i <= this._last; i++) {
-        res.push(this.data[i]);
+        res.push(f(this.data[i]));
       }
     }
     return res;
+  }
+
+  /**
+   * Restores a Deque from an array.
+   * @param arr The array to restore from.
+   * @param first The sequence number all elements in `arr` starts from.
+   * @param f A callback to map each value in `arr` to possibly something else.
+   * @returns A fresh Deque
+   */
+  public static fromArrayMap<F, U>(
+    arr: F[],
+    first: number,
+    f: (F) => U,
+  ): Deque<U> {
+    const newDeque = new Deque<U>();
+    newDeque._first = first;
+    if (arr.length === 0) {
+      return newDeque;
+    }
+
+    let counter = first;
+    for (const a of arr) {
+      newDeque.data[counter] = f(a);
+      counter++;
+    }
+    newDeque._last = counter - 1;
+    return newDeque;
   }
 
   /**
@@ -157,6 +192,16 @@ export default class Deque<T> {
       ret = this.pop_front()[0];
     }
     return ret;
+  }
+
+  /**
+   * Only keep the up to `limit` latest elements.
+   * @param limit how many elements to keep.
+   */
+  public trim_to(limit: number): void {
+    while (this.length > limit) {
+      this.pop_front();
+    }
   }
 
   /**
