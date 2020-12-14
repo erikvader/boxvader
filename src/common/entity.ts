@@ -132,7 +132,15 @@ export class Player extends Entity {
   }
 
   public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_score', 'target', 'weapons', 'knockbackTime'])) {
+    if (
+      isObjectWithKeys(obj, [
+        'name',
+        '_score',
+        'target',
+        'weapons',
+        'knockbackTime',
+      ])
+    ) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
         const p = new Player(id, health, position, obj['name']);
         p._score = obj['_score'];

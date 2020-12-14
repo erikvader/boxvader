@@ -13,13 +13,12 @@ export default class ServerSimulation extends Simulation {
   public update(inputs: Map<Id, Input>): void {
     this.commonUpdate();
     // update players based on their inputs
-    // TODO: handle 'fire' input
 
     for (const id in this.state.players) {
       const idNum = parseInt(id);
       const body = this.bodies.get(idNum)!;
       const input = inputs.get(idNum);
-      this.handlePlayerInput(body, this.state.players[idNum], input);
+      this.updatePlayer(body, this.state.players[idNum], input);
     }
 
     this.world.step(this.updateStep);

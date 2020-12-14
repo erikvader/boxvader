@@ -255,12 +255,13 @@ export default abstract class Simulation {
     return new Vec2(x, y);
   }
 
-  handlePlayerInput(body: Body, player: Player, input?: Input): void {
+  updatePlayer(body: Body, player: Player, input?: Input): void {
     if (player.alive === false) {
       return;
     }
+
     if (input?.fire) {
-      this.handleShot(body, input);
+      this.handleShot(body, player);
     }
 
     if (player.knockbackTime > 0) {
@@ -271,11 +272,7 @@ export default abstract class Simulation {
     }
   }
 
-  handleShot(body: Body, input?: Input): void {
-    const player = this.state.players[
-      (body.getUserData() as { id: number }).id
-    ];
-
+  handleShot(body: Body, player: Player): void {
     if (
       !(
         player.weapons[0].timeOfLastShot +
@@ -286,7 +283,8 @@ export default abstract class Simulation {
       return;
     }
 
-    player.knockbackTime = constants.GAME.KNOCKBACK_DURATION * constants.SERVER.UPS;
+    player.knockbackTime =
+      constants.GAME.KNOCKBACK_DURATION * constants.SERVER.UPS;
     player.weapons[0].timeOfLastShot = this._stepCounter;
 
     const direction = player.direction;
@@ -448,7 +446,6 @@ export default abstract class Simulation {
       }
     }
 
-    // TODO: hantera kollisioner om något speciellt ska hända
     world.on('begin-contact', contact => this.contactListener(contact, true));
     world.on('end-contact', contact => this.contactListener(contact, false));
 
