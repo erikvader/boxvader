@@ -6,19 +6,18 @@ import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
 
-import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
-const su = new SpriteUtilities(PIXI);
-
+import { EnemySprite } from '../client/enemySprite';
+import { CharacterSprite } from '../client/charachterSprite';
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
-  stage: PIXI.Stage;
+  stage: PIXI.Container;
   map: GameMap;
   my_id: number;
 }
@@ -149,12 +148,12 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      this.decide_direction(player, newState);
-      this.change_hp(
+      //this.decide_direction(player, newState);
+      /*this.change_hp(
         this.player_list[player.id],
         player.maxHealth,
         player.health,
-      );
+      );*/
       this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.x,
       );
@@ -223,7 +222,7 @@ export default class ClientGame extends GameLoop {
           enemy.id,
         );
       }
-      this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
+      //this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
@@ -254,6 +253,7 @@ export default class ClientGame extends GameLoop {
   }
 
   decide_direction(player: Player, newState: State): void {
+    
     const pi = Math.PI;
     let walkingAnimation;
     let standingAnimation;
@@ -322,8 +322,8 @@ export default class ClientGame extends GameLoop {
     id: number,
     weapon: Weapon,
   ): void {
-    const character = load_zombie(img_filepath);
-
+    const character = new CharacterSprite(PIXI.Loader.shared.resources["imgs/b_yoda.png"].texture, id)//load_zombie(img_filepath);
+    character.width = 1000;
     const scale = target_width / character.width;
 
     character.position.set(x, y);
@@ -332,13 +332,13 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.player_list[id] = character;
     this.stage.addChild(character);
-    character.show(character.animationStates.down);
+    //character.show(character.animationStates.down);
     character.shot_line = this.add_shot_line(
       weapon,
       { x: x, y: y },
       { x: 0, y: 0 },
     );
-    this.add_health_bar(character, scale);
+    //this.add_health_bar(character, scale);
   }
 
   add_enemy(
@@ -348,19 +348,21 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    const enemy = su.sprite(img_filepath);
-
+    
+    let enemy = new EnemySprite(PIXI.Loader.shared.resources[img_filepath].texture, id);
     const scale = target_width / enemy.width;
 
     enemy.position.set(x, y);
-    enemy.vx = 0;
-    enemy.vy = 0;
+
     enemy.id = id;
     enemy.scale.set(scale, scale);
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
-    this.add_health_bar(enemy, scale);
+    //this.add_health_bar(enemy, scale);
+
+    //const enemy = PIXI.Sprite.from(PIXI.Loader.shared[img_filepath])
+    
   }
 
   add_health_bar(sprite: PIXI.Graphics, scale: number): void {
@@ -456,7 +458,7 @@ export default class ClientGame extends GameLoop {
   }
 }
 function load_zombie(img_filepath): any {
-  const frames = su.filmstrip(img_filepath, 128, 128);
+  /*const frames = //su.filmstrip(img_filepath, 128, 128);
   const animation = su.sprite(frames);
   const stripSize = 36;
   const walkOffset = 4;
@@ -504,6 +506,6 @@ function load_zombie(img_filepath): any {
       stripSize * 7 + walkOffset,
       stripSize * 7 + walkOffset + walkAnimationLength,
     ],
-  };
-  return animation;
+  };*/
+  return PIXI.Loader.shared.resources["imgs/yoda.png"];
 }
