@@ -263,7 +263,12 @@ export default abstract class Simulation {
       this.handleShot(body, input);
     }
 
-    this.updatePlayerBodyFromInput(body, input);
+    if (player.knockbackTime > 0) {
+      player.knockbackTime -= 1;
+      this.updatePlayerBodyFromKnockback(body, player.direction);
+    } else {
+      this.updatePlayerBodyFromInput(body, input);
+    }
   }
 
   handleShot(body: Body, input?: Input): void {
@@ -280,6 +285,8 @@ export default abstract class Simulation {
     ) {
       return;
     }
+
+    player.knockbackTime = constants.GAME.KNOCKBACK_DURATION * constants.SERVER.UPS;
     player.weapons[0].timeOfLastShot = this._stepCounter;
 
     const direction = player.direction;
@@ -400,6 +407,13 @@ export default abstract class Simulation {
 
     body.setLinearVelocity(velocity);
     body.setAwake(true);
+  }
+
+  updatePlayerBodyFromKnockback(body: Body, direction: Vec2): void {
+    const knockback = direction.clone();
+    knockback.normalize();
+    knockback.mul(-constants.GAME.KNOCKBACK_SPEED); // negative to reverse direction
+    body.setLinearVelocity(knockback);
   }
 
   createWorld(map: GameMap): World {
