@@ -25,6 +25,7 @@ type Player = {
   player_id: number;
   channel: ServerChannel;
   ready: boolean;
+  name: string;
 };
 
 let client_id = 0;
@@ -50,10 +51,15 @@ function startGame(maxMessageSize?: number): void {
     Array.from(player_list.map(p => p.player_id)),
   );
 
+  const all_names = {};
+  for (const p of player_list) {
+    all_names[p.player_id] = p.name;
+  }
+
   for (const p of player_list) {
     p.channel.emit(
       'start',
-      { id: p.player_id, map: 'scifi-1', tileset: 'scifi' },
+      { id: p.player_id, map: 'scifi-1', tileset: 'scifi', names: all_names },
       { reliable: true },
     );
     p.channel.onRaw(data => game?.clientMsg(p.player_id, data));
@@ -91,6 +97,7 @@ io.onConnection(channel => {
     player_id: my_id,
     channel: channel,
     ready: false,
+    name: 'default',
   });
 
   channel.onDisconnect(() => {
@@ -110,10 +117,12 @@ io.onConnection(channel => {
     if (game !== undefined) return;
 
     const status = data['status'];
+    const name = data['name'];
     const index = player_list.findIndex(p => p.player_id === my_id);
 
     if (index >= 0) {
       player_list[index].ready = status;
+      player_list[index].name = name;
 
       if (player_list.every(p => p.ready)) {
         const { maxMessageSize } = channel;

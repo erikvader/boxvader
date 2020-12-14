@@ -109,7 +109,7 @@ export default abstract class Simulation {
    * @param id ID for the new player.
    * @param name Name of the new player.
    */
-  public addPlayer(id: number, name: string): void {
+  public addPlayer(id: number): void {
     if (id in this.state.players)
       throw new Error(`ID ${id} is already taken (by a player).`);
 
@@ -117,12 +117,7 @@ export default abstract class Simulation {
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
     const position = this._gameMap.randomPlayerSpawn();
-    const player = new Player(
-      id,
-      constants.GAME.PLAYER_HEALTH_MAX,
-      position,
-      name,
-    );
+    const player = new Player(id, constants.GAME.PLAYER_HEALTH_MAX, position);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
     this.enemyContacts.set(id, []);

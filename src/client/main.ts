@@ -46,6 +46,8 @@ function finishedResources(): void {
         button.remove();
       }
 
+      // TODO: draw data['names'] above each player or something
+
       const map = new GameMap(data['map'], data['tileset']);
       const [
         maps_total_pixel_width,
@@ -88,7 +90,11 @@ function finishedResources(): void {
           if (game !== undefined) return;
           readyStatus = !readyStatus;
           button.innerText = ':-' + (readyStatus ? ')' : '(');
-          channel.emit('ready', { status: readyStatus }, { reliable: true });
+          channel.emit(
+            'ready',
+            { status: readyStatus, name: 'Borgov uwu' },
+            { reliable: true },
+          );
         });
       }
     });

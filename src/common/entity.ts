@@ -87,18 +87,15 @@ export abstract class Entity {
 }
 
 /**
- * A player with a name and score. An extension of `Entity`.
+ * A player with a score. An extension of `Entity`.
  */
 export class Player extends Entity {
-  public readonly name: string;
-
   public target: Vec2;
   private _score: number;
   public weapons: Weapon[];
 
-  public constructor(id: Id, health: number, position: Vec2, name: string) {
+  public constructor(id: Id, health: number, position: Vec2) {
     super(id, health, position);
-    this.name = name;
     this._score = 0;
     this.target = new Vec2(0, 0);
     this.weapons = [new Weapon(0)];
@@ -116,21 +113,16 @@ export class Player extends Entity {
    * Returns a deep copy of a `Player`.
    */
   public clone(): Player {
-    const player = new Player(
-      this.id,
-      this.health,
-      this.position.clone(),
-      this.name, // name is NOT deep-copied
-    );
+    const player = new Player(this.id, this.health, this.position.clone());
 
     player.velocity = this.velocity.clone();
     return player;
   }
 
   public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_score', 'target', 'weapons'])) {
+    if (isObjectWithKeys(obj, ['_score', 'target', 'weapons'])) {
       return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
-        const p = new Player(id, health, position, obj['name']);
+        const p = new Player(id, health, position);
         p._score = obj['_score'];
         p.target = obj['target'];
         p.weapons = [];

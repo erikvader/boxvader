@@ -13,7 +13,7 @@ const things = [
   { inputAck: {}, stateNum: 0, state: new State() } as ServerToClient,
   new State(),
   { up: false, down: false, right: false, left: false, fire: false } as Input,
-  new Player(0, 0, new Vec2(0, 0), ''),
+  new Player(0, 0, new Vec2(0, 0)),
   new Vec2(0, 0),
   new Enemy(0, 0, new Vec2(0, 0), 0, 0),
   new Weapon(0),
