@@ -310,8 +310,7 @@ export default class ClientGame extends GameLoop {
     const character = new CharacterSprite(
       PIXI.Loader.shared.resources['imgs/b_yoda.png'].texture,
       id,
-    ); //load_zombie(img_filepath);
-    //character.width = 1000;
+    );
     const scale = target_width / character.width;
 
     character.position.set(x, y);
@@ -320,7 +319,7 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.player_list[id] = character;
     this.stage.addChild(character);
-    //character.show(character.animationStates.down);
+
     character.shot_line = this.add_shot_line(
       weapon,
       { x: x, y: y },
@@ -449,56 +448,4 @@ export default class ClientGame extends GameLoop {
     this.score.text = 'Score: ' + state.players[this.my_id].score;
     this.waveNumber.text = 'Wave: ' + state.wave;
   }
-}
-function load_zombie(img_filepath): any {
-  /*const frames = //su.filmstrip(img_filepath, 128, 128);
-  const animation = su.sprite(frames);
-  const stripSize = 36;
-  const walkOffset = 4;
-  const walkAnimationLength = 7;
-
-  animation.fps = 12;
-  animation.animationStates = {
-    left: 0,
-    leftUp: stripSize,
-    up: stripSize * 2,
-    upRight: stripSize * 3,
-    right: stripSize * 4,
-    rightDown: stripSize * 5,
-    down: stripSize * 6,
-    leftDown: stripSize * 7,
-    walkLeftDown: [
-      stripSize * 0 + walkOffset,
-      stripSize * 0 + walkOffset + walkAnimationLength,
-    ],
-    walkLeft: [
-      stripSize * 1 + walkOffset,
-      stripSize * 1 + walkOffset + walkAnimationLength,
-    ],
-    walkLeftUp: [
-      stripSize * 2 + walkOffset,
-      stripSize * 2 + walkOffset + walkAnimationLength,
-    ],
-    walkUp: [
-      stripSize * 3 + walkOffset,
-      stripSize * 3 + walkOffset + walkAnimationLength,
-    ],
-    walkRightUp: [
-      stripSize * 4 + walkOffset,
-      stripSize * 4 + walkOffset + walkAnimationLength,
-    ],
-    walkRight: [
-      stripSize * 5 + walkOffset,
-      stripSize * 5 + walkOffset + walkAnimationLength,
-    ],
-    walkRightDown: [
-      stripSize * 6 + walkOffset,
-      stripSize * 6 + walkOffset + walkAnimationLength,
-    ],
-    walkDown: [
-      stripSize * 7 + walkOffset,
-      stripSize * 7 + walkOffset + walkAnimationLength,
-    ],
-  };*/
-  return PIXI.Loader.shared.resources['imgs/yoda.png'];
 }
