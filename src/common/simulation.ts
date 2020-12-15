@@ -277,8 +277,6 @@ export default abstract class Simulation {
       return;
     }
 
-    player.giveMaxHealth();
-
     if (input?.fire) {
       this.handleShot(body, input);
     }
