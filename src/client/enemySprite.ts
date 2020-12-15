@@ -1,14 +1,11 @@
 import * as PIXI from 'pixi.js';
-
-export class EnemySprite extends PIXI.Sprite {
-    public id: number;
-
+import { CustomSprite } from '../client/customSprite';
+export class EnemySprite extends CustomSprite {
     public constructor(
       filepath: PIXI.Texture,
       id: number
     ) {
-      super(filepath);
-      this.id = id;
+      super(filepath, id);
+
     }
-  
   }

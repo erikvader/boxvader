@@ -14,6 +14,7 @@ import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
 import { EnemySprite } from '../client/enemySprite';
 import { CharacterSprite } from '../client/charachterSprite';
+import { CustomSprite } from '../client/customSprite';
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
@@ -148,12 +149,12 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      //this.decide_direction(player, newState);
-      /*this.change_hp(
+      this.decide_direction(player, newState);
+      this.change_hp(
         this.player_list[player.id],
         player.maxHealth,
         player.health,
-      );*/
+      );
       this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.x,
       );
@@ -222,10 +223,11 @@ export default class ClientGame extends GameLoop {
           enemy.id,
         );
       }
-      //this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
+      this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
+      
       this.enemy_list[enemy.id].y = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.y,
       );
@@ -236,12 +238,14 @@ export default class ClientGame extends GameLoop {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
+        this.stage.removeChild(this.enemy_list[enemy_id].hpBar)
         delete this.enemy_list[enemy_id];
       }
     }
 
     for (const player_id in this.player_list) {
       if (!newState.players[player_id].alive) {
+        this.stage.removeChild(this.player_list[player_id].hpBar)
         this.player_list[player_id].visible = false;
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
@@ -253,64 +257,46 @@ export default class ClientGame extends GameLoop {
   }
 
   decide_direction(player: Player, newState: State): void {
-    
     const pi = Math.PI;
-    let walkingAnimation;
-    let standingAnimation;
+    let offset = 0
     //Right
     if (player.direction.x === 1 && player.direction.y === 0) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkRight;
-      standingAnimation = this.player_list[player.id].animationStates.right;
+      this.player_list[player.id].rotation = offset + 0
     }
     //Down
     if (player.direction.x === 0 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkDown;
-      standingAnimation = this.player_list[player.id].animationStates.down;
+      this.player_list[player.id].rotation = offset + pi/2
     }
     //Up
     if (player.direction.x === 0 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkUp;
-      standingAnimation = this.player_list[player.id].animationStates.up;
+      this.player_list[player.id].rotation = offset - pi/2
     }
     //Left
     if (player.direction.x === -1 && player.direction.y === 0) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkLeft;
-      standingAnimation = this.player_list[player.id].animationStates.left;
+      this.player_list[player.id].rotation = offset + pi
     }
     //Right Up
     if (player.direction.x === 1 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkRightUp;
-      standingAnimation = this.player_list[player.id].animationStates.upRight;
+      this.player_list[player.id].rotation = offset - pi/4
     }
     //Right Down
     if (player.direction.x === 1 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkRightDown;
-      standingAnimation = this.player_list[player.id].animationStates.rightDown;
+      this.player_list[player.id].rotation = offset + pi/4
     }
 
     //Left Up
     if (player.direction.x === -1 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkLeftUp;
-      standingAnimation = this.player_list[player.id].animationStates.leftUp;
+      this.player_list[player.id].rotation = offset - 3*pi/4
     }
     //Left Down
     if (player.direction.x === -1 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkLeftDown;
-      standingAnimation = this.player_list[player.id].animationStates.leftDown;
+      this.player_list[player.id].rotation = offset + 3*pi/4
     }
     if (
       !(player.direction.x === 0 && player.direction.y === 0) &&
       player.alive
     ) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        walkingAnimation,
-        standingAnimation,
-      );
+      
     }
   }
 
@@ -323,7 +309,7 @@ export default class ClientGame extends GameLoop {
     weapon: Weapon,
   ): void {
     const character = new CharacterSprite(PIXI.Loader.shared.resources["imgs/b_yoda.png"].texture, id)//load_zombie(img_filepath);
-    character.width = 1000;
+    //character.width = 1000;
     const scale = target_width / character.width;
 
     character.position.set(x, y);
@@ -338,7 +324,7 @@ export default class ClientGame extends GameLoop {
       { x: x, y: y },
       { x: 0, y: 0 },
     );
-    //this.add_health_bar(character, scale);
+    this.add_health_bar(character, scale);
   }
 
   add_enemy(
@@ -359,41 +345,46 @@ export default class ClientGame extends GameLoop {
     enemy.anchor.set(0.5, 0.5);
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
-    //this.add_health_bar(enemy, scale);
+    this.add_health_bar(enemy, scale);
 
     //const enemy = PIXI.Sprite.from(PIXI.Loader.shared[img_filepath])
     
   }
 
-  add_health_bar(sprite: PIXI.Graphics, scale: number): void {
+  add_health_bar(sprite: CustomSprite, scale: number): void {
     const width = constants.UI.HP_BAR_WIDTH;
     const height = constants.UI.HP_BAR_HEIGHT;
     const flot_height = constants.UI.HP_BAR_FLOAT;
-    const new_scale = 1 / scale;
+    //const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
-    total_hp.drawRect(0, 0, new_scale * width, new_scale * height);
+    total_hp.drawRect(0, 0,  width,  height);
     total_hp.endFill();
-    total_hp.x = (-width * new_scale) / 2;
-    total_hp.y = -flot_height * new_scale;
-    sprite.addChild(total_hp);
+    total_hp.x = sprite.x +(-width ) / 2;
+    total_hp.y = sprite.y-flot_height;
+    this.stage.addChild(total_hp);
 
     const hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
     hp.beginFill(0x32cd32);
-    hp.drawRect(0, 0, width * new_scale, height * new_scale);
+    hp.drawRect(0, 0, width , height );
     hp.endFill();
     hp.x = 0;
     hp.y = 0;
     total_hp.addChild(hp);
-    hp.width = width * new_scale;
+    sprite.setHpBar(total_hp)
+    hp.width = width //* new_scale;
   }
 
-  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number): void {
-    const outerWidth = sprite.children[0].width;
-    const percent = current_hp / max_hp;
-    sprite.children[0].children[0].width = outerWidth * percent;
+  change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
+    const width = constants.UI.HP_BAR_WIDTH;
+    const flot_height = constants.UI.HP_BAR_FLOAT;
+    const outerWidth = sprite.hpBar!.width;
+    const percent = current_hp / max_hp; 
+    sprite.hpBar!.x = sprite.x+(-width ) / 2;
+    sprite.hpBar!.y = sprite.y -flot_height;
+    (sprite.hpBar!.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
   add_shot_line(
@@ -407,7 +398,6 @@ export default class ClientGame extends GameLoop {
     line.lineTo(start.x, start.y);
     line.x = 0;
     line.y = 0;
-    line.expires = 1;
     line.visible = true;
     this.stage.addChild(line);
     return line;
