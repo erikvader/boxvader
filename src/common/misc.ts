@@ -97,10 +97,10 @@ export class PopArray<T = number> {
   }
 
   public pop(): T {
-    const ele = this.array.pop();
-    if (ele === undefined) {
+    const elem = this.array.pop();
+    if (elem === undefined) {
       throw new Error('no more elements to pop');
     }
-    return ele;
+    return elem;
   }
 }

@@ -76,8 +76,8 @@ export function deserializeSTC(message: ByteBuffer): ServerToClient {
   const stateNum = buf.pop();
 
   const inputAck = {};
-  const numacks = buf.pop();
-  for (let i = 0; i < numacks; i++) {
+  const numAcks = buf.pop();
+  for (let i = 0; i < numAcks; i++) {
     inputAck[i] = buf.pop();
   }
 
