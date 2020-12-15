@@ -1,5 +1,5 @@
 import { Player, Enemy } from './entity';
-import { isObjectWithKeys, NumMap } from './misc';
+import { isObjectWithKeys, NumMap, PopArray } from './misc';
 
 export default class State {
   public players: NumMap<Player> = {};
@@ -54,5 +54,29 @@ export default class State {
     }
 
     flat.push(this.wave);
+  }
+
+  public static explode(buf: PopArray): State {
+    const numPlayers = buf.pop();
+    const players = {};
+    for (let i = 0; i < numPlayers; i++) {
+      const p = Player.explode(buf);
+      players[p.id] = p;
+    }
+
+    const numEnemies = buf.pop();
+    const enemies = {};
+    for (let i = 0; i < numEnemies; i++) {
+      const e = Enemy.explode(buf);
+      enemies[e.id] = e;
+    }
+
+    const wave = buf.pop();
+
+    const state = new State();
+    state.players = players;
+    state.enemies = enemies;
+    state.wave = wave;
+    return state;
   }
 }

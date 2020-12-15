@@ -1,4 +1,4 @@
-import { isObjectWithKeys } from './misc';
+import { isObjectWithKeys, PopArray } from './misc';
 
 const WEAPONS = {
   0: {
@@ -60,5 +60,11 @@ export default class Weapon {
 
   public flatten(flat: number[]): void {
     flat.push(this._weaponType, this._timeOfLastShot);
+  }
+
+  public static explode(buf: PopArray): Weapon {
+    const w = new Weapon(buf.pop());
+    w._timeOfLastShot = buf.pop();
+    return w;
   }
 }

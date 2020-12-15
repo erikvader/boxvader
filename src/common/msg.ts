@@ -1,4 +1,4 @@
-import { Input, NumMap, compactInput, explodeInput } from './misc';
+import { Input, NumMap, compactInput, explodeInput, PopArray } from './misc';
 import State from './state';
 import { ByteBuffer } from 'bytebuffer';
 import pson from './pson';
@@ -56,7 +56,8 @@ export function serialize(
       .toArrayBuffer();
   } else {
     const msg = message as ServerToClient;
-    return pson.encode(msg).toArrayBuffer();
+    const buf = flattenSTC(msg);
+    return pson.encode(buf).toArrayBuffer();
   }
 }
 
@@ -68,10 +69,23 @@ export function deserializeCTS(message: ByteBuffer): ClientToServer {
 }
 
 export function deserializeSTC(message: ByteBuffer): ServerToClient {
-  const d = pson.decode(message);
+  let buf = pson.decode(message);
+  buf.reverse();
+  buf = new PopArray(buf);
+
+  const stateNum = buf.pop();
+
+  const inputAck = {};
+  const numacks = buf.pop();
+  for (let i = 0; i < numacks; i++) {
+    inputAck[i] = buf.pop();
+  }
+
+  const state = State.explode(buf);
+
   return {
-    inputAck: d['inputAck'],
-    stateNum: d['stateNum'],
-    state: State.revive(d['state']),
+    inputAck,
+    stateNum,
+    state,
   };
 }

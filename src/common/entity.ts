@@ -1,4 +1,4 @@
-import { Id, reviveVec2, isObjectWithKeys } from './misc';
+import { Id, reviveVec2, isObjectWithKeys, PopArray } from './misc';
 import { Body, Vec2 } from 'planck-js';
 import Weapon from './weapon';
 /**
@@ -99,6 +99,30 @@ export abstract class Entity {
       this.walking ? 1 : 0,
     );
   }
+
+  public static explode(
+    buf: PopArray,
+    construct: (id: Id, health: number, position: Vec2) => Entity,
+  ): Entity {
+    const id = buf.pop();
+    const maxHealth = buf.pop();
+    const positionx = buf.pop();
+    const positiony = buf.pop();
+    const velocityx = buf.pop();
+    const velocityy = buf.pop();
+    const directionx = buf.pop();
+    const directiony = buf.pop();
+    const _health = buf.pop();
+    const walking = buf.pop() === 1;
+
+    const entity = construct(id, maxHealth, new Vec2(positionx, positiony));
+    entity._health = _health;
+    entity.walking = walking;
+    entity.velocity = new Vec2(velocityx, velocityy);
+    entity.direction = new Vec2(directionx, directiony);
+
+    return entity;
+  }
 }
 
 /**
@@ -163,6 +187,23 @@ export class Player extends Entity {
       w.flatten(flat);
     }
   }
+
+  public static explode(buf: PopArray): Player {
+    return Entity.explode(buf, (id: Id, health: number, position: Vec2) => {
+      const p = new Player(id, health, position);
+      p.target.x = buf.pop();
+      p.target.y = buf.pop();
+      p._score = buf.pop();
+
+      const weaponsLength = buf.pop();
+      p.weapons = [];
+      for (let i = 0; i < weaponsLength; i++) {
+        p.weapons.push(Weapon.explode(buf));
+      }
+
+      return p;
+    }) as Player;
+  }
 }
 
 export class Enemy extends Entity {
@@ -210,5 +251,13 @@ export class Enemy extends Entity {
   public flatten(flat: number[]): void {
     super.flatten(flat);
     flat.push(this.damage, this.score);
+  }
+
+  public static explode(buf: PopArray): Enemy {
+    return Entity.explode(buf, (id: Id, health: number, position: Vec2) => {
+      const damage = buf.pop();
+      const score = buf.pop();
+      return new Enemy(id, health, position, damage, score);
+    }) as Enemy;
   }
 }
