@@ -15,12 +15,13 @@ function onDocumentReady(callback: () => void): void {
 }
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-function startGame({ previousScores }): void {
+function startGame(
+  previousScores?: { name: PIXI.Text; score: PIXI.Text }[],
+): void {
   const channel = geckos({ port: constants.SERVER.PORT });
 
-  const app = new PIXI.Application();
-  const renderer = app.renderer;
-  const stage = app.stage;
+  const renderer = PIXI.autoDetectRenderer();
+  const stage = new PIXI.Container();
 
   document.getElementById('game-container')!.append(renderer.view);
   renderer.backgroundColor = 0xffd700;
@@ -115,11 +116,11 @@ function startGame({ previousScores }): void {
       for (const p of Object.values(players)) {
         const player = Player.revive(p);
         const name = new PIXI.Text(player.name, style);
-        const score = new PIXI.Text(player.score, style);
+        const score = new PIXI.Text('' + player.score, style);
         scores.push({ name, score });
       }
 
-      startGame({ previousScores: scores });
+      startGame(scores);
     });
 
     channel.onDisconnect(() => {
@@ -146,4 +147,4 @@ PIXI.Loader.shared
   .add(constants.UI.PLAYER_SPRITE_PATH)
   .add(constants.UI.ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
-  .load(startGame);
+  .load(() => startGame());

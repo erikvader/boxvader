@@ -111,7 +111,7 @@ export default class ClientGame extends GameLoop {
     this.right.unsubscribe();
     this.down.unsubscribe();
     this.up.unsubscribe();
-    this.fire.unsubscibr();
+    this.fire.unsubscribe();
   }
 
   serverMsg(data: any): void {
