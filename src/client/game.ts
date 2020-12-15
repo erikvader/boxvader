@@ -12,9 +12,9 @@ import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
-import { EnemySprite } from '../client/enemySprite';
-import { CharacterSprite } from '../client/characterSprite';
-import { CustomSprite } from '../client/customSprite';
+import { EnemySprite } from './sprites/enemySprite';
+import { CharacterSprite } from './sprites/characterSprite';
+import { CustomSprite } from './sprites/customSprite';
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
