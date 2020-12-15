@@ -218,29 +218,46 @@ export default abstract class Simulation {
   }
 
   private moveEnemies(): void {
-    for (const enemy of Object.values(this.state.enemies)) {
-      let targetPlayerPosition = new Vec2(enemy.position);
-      const enemyTile = this._gameMap.positionToTile(enemy.position);
-      let maxDistance = Infinity;
-      for (const player of Object.values(this.state.players)) {
-        if (player.alive === false) {
-          continue;
+    for (const enemyAny of Object.values(this.state.enemies)) {
+      const enemy = enemyAny as Enemy;
+      const body = this.bodies.get(enemy.id);
+
+      if (body === undefined)
+        throw new Error(`Enemy ${enemy.id} does not have a body.`);
+
+      if (enemy.knockbackTime > 0) {
+        enemy.knockbackTime -= 1;
+        body.setLinearVelocity(enemy.knockbackVelocity);
+      } else {
+        let targetPlayerPosition = new Vec2(enemy.position);
+        const enemyTile = this._gameMap.positionToTile(enemy.position);
+        let maxDistance = Infinity;
+        for (const player of Object.values(this.state.players)) {
+          if (player.alive === false) {
+            continue;
+          }
+          const playerTile = this._gameMap.positionToTile(player.position);
+          if (
+            this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
+            maxDistance
+          ) {
+            maxDistance = this._gameMap.floydWarshallWeightMatrix[enemyTile][
+              playerTile
+            ];
+            targetPlayerPosition = player.position;
+          }
         }
-        const playerTile = this._gameMap.positionToTile(player.position);
-        if (
-          this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
-          maxDistance
-        ) {
-          maxDistance = this._gameMap.floydWarshallWeightMatrix[enemyTile][
-            playerTile
-          ];
-          targetPlayerPosition = player.position;
-        }
+        const newDirection = this.enemyNextMove(
+          enemy.position,
+          targetPlayerPosition,
+        );
+        const newMove = Vec2.mul(
+          newDirection,
+          constants.GAME.ENEMY_MOVEMENT_SPEED,
+        );
+        enemy.direction = newDirection;
+        body.setLinearVelocity(newMove);
       }
-      const newMove = this.enemyNextMove(enemy.position, targetPlayerPosition);
-      newMove.mul(constants.GAME.ENEMY_MOVEMENT_SPEED);
-      const body: Body = this._bodies.get(enemy.id)!;
-      body.setLinearVelocity(newMove);
     }
   }
 
@@ -259,6 +276,7 @@ export default abstract class Simulation {
     if (player.alive === false) {
       return;
     }
+
     if (input?.fire) {
       this.handleShot(body, input);
     }
@@ -349,14 +367,25 @@ export default abstract class Simulation {
 
     this.state.players[player.id].target.x = point.x;
     this.state.players[player.id].target.y = point.y;
-    const userData = fixture.getBody().getUserData() as { id: number }; ///to get id of the target
-    const enemyDead = this._state.enemies[userData?.id]?.takeDamage(
-      this.state.players[player.id].weapons[0].attack_damage,
-    );
-    if (enemyDead) {
-      this.state.players[player.id].addScore(
-        this._state.enemies[userData?.id].score,
+    const id = (fixture.getBody().getUserData() as { id: number })?.id;
+    const enemy = this.state.enemies[id];
+
+    if (enemy !== undefined) {
+      const enemyDead = enemy.takeDamage(
+        this.state.players[player.id].weapons[0].attack_damage,
       );
+
+      if (enemyDead) {
+        this.state.players[player.id].addScore(enemy.score);
+      } else {
+        const knockbackVelocity = Vec2.mul(
+          player.direction,
+          constants.GAME.KNOCKBACK_SPEED,
+        );
+        enemy.knockbackVelocity = knockbackVelocity;
+        enemy.knockbackTime =
+          constants.GAME.KNOCKBACK_DURATION * constants.SERVER.UPS;
+      }
     }
   }
 
