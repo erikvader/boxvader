@@ -75,8 +75,9 @@ export default class ClientGame extends GameLoop {
 
   protected timer(_prevStep?: number): void {
     window.requestAnimationFrame(() => {
+      if (!this.running) return;
       this.update();
-      if (this.running) this.timer();
+      this.timer();
     });
   }
 
