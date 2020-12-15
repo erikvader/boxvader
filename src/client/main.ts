@@ -13,8 +13,6 @@ function onDocumentReady(callback: () => void): void {
   }
 }
 
-PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
 function finishedResources(): void {
   const channel = geckos({ port: constants.SERVER.PORT });
 
