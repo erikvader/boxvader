@@ -13,7 +13,7 @@ import GameMap from '../common/gameMap';
 import { Weapon } from '../common/weapon';
 import * as constants from '../common/constants';
 import { EnemySprite } from '../client/enemySprite';
-import { CharacterSprite } from '../client/charachterSprite';
+import { CharacterSprite } from '../client/characterSprite';
 import { CustomSprite } from '../client/customSprite';
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
@@ -350,21 +350,18 @@ export default class ClientGame extends GameLoop {
     this.enemy_list[id] = enemy;
     this.stage.addChild(enemy);
     this.add_health_bar(enemy, scale);
-
-    //const enemy = PIXI.Sprite.from(PIXI.Loader.shared[img_filepath])
   }
 
   add_health_bar(sprite: CustomSprite, scale: number): void {
     const width = constants.UI.HP_BAR_WIDTH;
     const height = constants.UI.HP_BAR_HEIGHT;
     const flot_height = constants.UI.HP_BAR_FLOAT;
-    //const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
     total_hp.drawRect(0, 0, width, height);
     total_hp.endFill();
-    total_hp.x = sprite.x + -width / 2;
+    total_hp.x = sprite.x - width / 2;
     total_hp.y = sprite.y - flot_height;
     this.stage.addChild(total_hp);
 
