@@ -64,7 +64,7 @@ function startGame(maxMessageSize?: number): void {
     for (const p of player_list) {
       p.channel.emit(
         'game_over',
-        { gameOver: true, players: game?.getState().players },
+        { gameOver: true, players: game?.state.players },
         { reliable: true },
       );
       p.channel.close();

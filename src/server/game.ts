@@ -47,7 +47,7 @@ export default class ServerGame extends GameLoop {
     }
   }
 
-  getState(): State {
+  get state(): State {
     return this.simulation.state;
   }
 
