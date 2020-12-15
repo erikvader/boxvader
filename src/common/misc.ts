@@ -84,3 +84,23 @@ export function randomChoice<T>(ts: T[]): T | undefined {
     return ts[index];
   }
 }
+
+/**
+ * A wrapper around [[Array]] whose pop throws an error instead of returning
+ * undefined when the array is empty.
+ */
+export class PopArray<T = number> {
+  public array: T[];
+
+  constructor(array: T[]) {
+    this.array = array;
+  }
+
+  public pop(): T {
+    const ele = this.array.pop();
+    if (ele === undefined) {
+      throw new Error('no more elements to pop');
+    }
+    return ele;
+  }
+}
