@@ -105,13 +105,13 @@ export default class ClientGame extends GameLoop {
   }
 
   protected cleanup(): void {
-    // TODO: reset pixi
     this.renderer.destroy();
     this.stage.destroy({ children: true });
     this.left.unsubscribe();
     this.right.unsubscribe();
     this.down.unsubscribe();
     this.up.unsubscribe();
+    this.fire.unsubscibr();
   }
 
   serverMsg(data: any): void {
