@@ -1,4 +1,4 @@
-import { Id, reviveVec2, isObjectWithKeys, PopArray } from './misc';
+import { Id, PopArray } from './misc';
 import { Body, Vec2 } from 'planck-js';
 import Weapon from './weapon';
 /**
@@ -21,35 +21,6 @@ export abstract class Entity {
     this.position = position;
     this.velocity = Vec2.zero();
     this.direction = new Vec2(0, -1);
-  }
-
-  public static revive(
-    obj: unknown,
-    construct: (id: Id, health: number, position: Vec2) => Entity,
-  ): Entity {
-    if (
-      isObjectWithKeys(obj, [
-        'id',
-        'maxHealth',
-        'walking',
-        'position',
-        '_health',
-        'velocity',
-        'direction',
-      ])
-    ) {
-      const e = construct(
-        obj['id'],
-        obj['maxHealth'],
-        reviveVec2(obj['position']),
-      );
-      e.walking = obj['walking'];
-      e._health = obj['_health'];
-      e.velocity = reviveVec2(obj['velocity']);
-      e.direction = reviveVec2(obj['direction']);
-      return e;
-    }
-    throw new Error("couldn't revive Entity");
   }
 
   public get health(): number {
@@ -158,23 +129,6 @@ export class Player extends Entity {
     return player;
   }
 
-  public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['_score', 'target', 'weapons'])) {
-      return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
-        const p = new Player(id, health, position);
-        p._score = obj['_score'];
-        p.target = obj['target'];
-        p.weapons = [];
-        for (const weapon of obj['weapons']) {
-          p.weapons.push(Weapon.revive(weapon));
-        }
-
-        return p;
-      }) as Player;
-    }
-    throw new Error("couldn't revive Player");
-  }
-
   public flatten(flat: number[]): void {
     super.flatten(flat);
     flat.push(
@@ -235,17 +189,6 @@ export class Enemy extends Entity {
 
     enemy.velocity = this.velocity.clone();
     return enemy;
-  }
-
-  public static revive(obj: unknown): Enemy {
-    if (isObjectWithKeys(obj, ['damage', 'score'])) {
-      return Entity.revive(
-        obj,
-        (id: Id, health: number, position: Vec2) =>
-          new Enemy(id, health, position, obj['damage'], obj['score']),
-      ) as Enemy;
-    }
-    throw new Error("couldn't revive Enemy");
   }
 
   public flatten(flat: number[]): void {

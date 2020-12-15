@@ -1,5 +1,5 @@
 import { Player, Enemy } from './entity';
-import { isObjectWithKeys, NumMap, PopArray } from './misc';
+import { NumMap, PopArray } from './misc';
 
 export default class State {
   public players: NumMap<Player> = {};
@@ -21,23 +21,6 @@ export default class State {
     }
     state.wave = this.wave;
     return state;
-  }
-
-  public static revive(obj: unknown): State {
-    if (isObjectWithKeys(obj, ['players', 'enemies', 'wave'])) {
-      const r = new State();
-      for (const pid in obj['players']) {
-        r.players[pid] = Player.revive(obj['players'][pid]);
-      }
-
-      for (const pid in obj['enemies']) {
-        r.enemies[pid] = Enemy.revive(obj['enemies'][pid]);
-      }
-
-      r.wave = obj['wave'];
-      return r;
-    }
-    throw new Error("couldn't revive State");
   }
 
   public flatten(flat: number[]): void {

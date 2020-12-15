@@ -1,4 +1,4 @@
-import { isObjectWithKeys, PopArray } from './misc';
+import { PopArray } from './misc';
 
 const WEAPONS = {
   0: {
@@ -47,15 +47,6 @@ export default class Weapon {
     }
     this._weaponType = weaponType;
     this._timeOfLastShot = 0;
-  }
-
-  public static revive(obj: unknown): Weapon {
-    if (isObjectWithKeys(obj, ['_weaponType', '_timeOfLastShot'])) {
-      const weapon = new Weapon(obj['_weaponType']);
-      weapon._timeOfLastShot = obj['_timeOfLastShot'];
-      return weapon;
-    }
-    throw new Error("couldn't revive Weapon");
   }
 
   public flatten(flat: number[]): void {
