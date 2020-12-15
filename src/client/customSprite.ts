@@ -7,7 +7,7 @@ export class CustomSprite extends PIXI.Sprite {
     super(filepath);
     this.id = id;
   }
-  public setHpBar(hpBar: PIXI.Graphics) {
+  public setHpBar(hpBar: PIXI.Graphics): void {
     this.hpBar = hpBar;
   }
 }

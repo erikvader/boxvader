@@ -258,7 +258,7 @@ export default class ClientGame extends GameLoop {
 
   decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
-    let offset = 0;
+    const offset = 0;
     //Right
     if (player.direction.x === 1 && player.direction.y === 0) {
       this.player_list[player.id].rotation = offset + 0;
@@ -292,11 +292,12 @@ export default class ClientGame extends GameLoop {
     if (player.direction.x === -1 && player.direction.y === 1) {
       this.player_list[player.id].rotation = offset + (3 * pi) / 4;
     }
+    /*
     if (
-      !(player.direction.x === 0 && player.direction.y === 0) &&
+      !(player.direction.x === 0 && player.direction.y === 0) &&    This will prob be used later so dont want to remove it
       player.alive
     ) {
-    }
+    }*/
   }
 
   add_character(
@@ -335,7 +336,7 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    let enemy = new EnemySprite(
+    const enemy = new EnemySprite(
       PIXI.Loader.shared.resources[img_filepath].texture,
       id,
     );
