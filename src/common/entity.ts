@@ -147,7 +147,10 @@ export class Player extends Entity {
 
 export class Enemy extends Entity {
   public damage: number;
+  public knockbackTime: number;
+  public knockbackVelocity: Vec2;
   public score: number;
+
   public constructor(
     id: Id,
     health: number,
@@ -157,6 +160,8 @@ export class Enemy extends Entity {
   ) {
     super(id, health, position);
     this.damage = damage;
+    this.knockbackVelocity = Vec2.zero();
+    this.knockbackTime = 0;
     this.score = score;
   }
 
@@ -172,17 +177,30 @@ export class Enemy extends Entity {
       this.score,
     );
 
+    enemy.knockbackTime = this.knockbackTime;
+    enemy.knockbackVelocity = this.knockbackVelocity.clone();
     enemy.velocity = this.velocity.clone();
     return enemy;
   }
 
   public static revive(obj: unknown): Enemy {
-    if (isObjectWithKeys(obj, ['damage', 'score'])) {
-      return Entity.revive(
+    if (
+      isObjectWithKeys(obj, [
+        'damage',
+        'knockbackTime',
+        'knockbackVelocity',
+        'score',
+      ])
+    ) {
+      const e = Entity.revive(
         obj,
         (id: Id, health: number, position: Vec2) =>
           new Enemy(id, health, position, obj['damage'], obj['score']),
       ) as Enemy;
+
+      e.knockbackVelocity = reviveVec2(obj['knockbackVelocity']);
+      e.knockbackTime = obj['knockbackTime'];
+      return e;
     }
     throw new Error("couldn't revive Enemy");
   }

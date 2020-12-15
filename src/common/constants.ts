@@ -55,6 +55,12 @@ export const GAME = {
   /** Enemy movement speed in meters per second. */
   ENEMY_MOVEMENT_SPEED: 1,
 
+  /** Knockback speed. */
+  KNOCKBACK_SPEED: 0.9,
+
+  /** Knockback duration (seconds). */
+  KNOCKBACK_DURATION: 0.5,
+
   /** Duration (in seconds) of invulnearability for players. */
   PLAYER_INVULNERABILITY_TIME: 0.5,
 
