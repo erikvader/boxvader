@@ -13,9 +13,6 @@ module.exports = {
       Long: 'long/index.js',
       ByteBuffer: 'bytebuffer/index.js',
     },
-    fallback: {
-      path: require.resolve('path-browserify'),
-    },
     extensions: ['.js', '.ts'],
   },
   module: {

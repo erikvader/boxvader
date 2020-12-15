@@ -126,7 +126,10 @@ export default abstract class Simulation {
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
     this.enemyContacts.set(id, []);
-    this.timeOfDamageTaken.set(id, -constants.GAME.PLAYER_INVULNERABILITY_TIME);
+    this.timeOfDamageTaken.set(
+      id,
+      -constants.GAME.PLAYER_INVULNERABILITY_TIME * constants.SERVER.UPS,
+    );
   }
 
   //spawns in a fixed location, should probably have a vec2 array as input for location
@@ -477,7 +480,7 @@ export default abstract class Simulation {
     for (const player of Object.values(this._state.players)) {
       if (
         this.timeOfDamageTaken.get(player.id)! +
-          constants.GAME.PLAYER_INVULNERABILITY_TIME <
+          constants.GAME.PLAYER_INVULNERABILITY_TIME * constants.SERVER.UPS <
           this._stepCounter &&
         this.enemyContacts.get(player.id)!.length > 0
       ) {
