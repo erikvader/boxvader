@@ -373,18 +373,19 @@ export default class ClientGame extends GameLoop {
     hp.x = 0;
     hp.y = 0;
     total_hp.addChild(hp);
-    sprite.setHpBar(total_hp);
+    sprite.hpBar = total_hp;
     hp.width = width;
   }
 
   change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
+    if (sprite.hpBar === undefined) return
     const width = constants.UI.HP_BAR_WIDTH;
     const flot_height = constants.UI.HP_BAR_FLOAT;
-    const outerWidth = sprite.hpBar!.width;
+    const outerWidth = sprite.hpBar.width;
     const percent = current_hp / max_hp;
-    sprite.hpBar!.x = sprite.x + -width / 2;
-    sprite.hpBar!.y = sprite.y - flot_height;
-    (sprite.hpBar!.children[0] as PIXI.Graphics).width = outerWidth * percent;
+    sprite.hpBar.x = sprite.x + -width / 2;
+    sprite.hpBar.y = sprite.y - flot_height;
+    (sprite.hpBar.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
   add_shot_line(
