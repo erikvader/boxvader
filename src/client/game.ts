@@ -378,7 +378,7 @@ export default class ClientGame extends GameLoop {
   }
 
   change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
-    if (sprite.hpBar === undefined) return
+    if (sprite.hpBar === undefined) return;
     const width = constants.UI.HP_BAR_WIDTH;
     const flot_height = constants.UI.HP_BAR_FLOAT;
     const outerWidth = sprite.hpBar.width;

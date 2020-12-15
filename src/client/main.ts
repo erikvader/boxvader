@@ -12,7 +12,7 @@ function onDocumentReady(callback: () => void): void {
     document.addEventListener('DOMContentLoaded', callback);
   }
 }
-
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 function finishedResources(): void {
   const channel = geckos({ port: constants.SERVER.PORT });
 
