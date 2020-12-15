@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
 import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
+import { Player } from '../common/entity';
 
 function onDocumentReady(callback: () => void): void {
   // https://codetonics.com/javascript/detect-document-ready/
@@ -15,7 +16,7 @@ function onDocumentReady(callback: () => void): void {
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-function finishedResources(): void {
+function finishedResources({ previousScores }): void {
   const channel = geckos({ port: constants.SERVER.PORT });
   const renderer = PIXI.autoDetectRenderer();
   const stage = new PIXI.Container();
@@ -31,6 +32,24 @@ function finishedResources(): void {
   window.addEventListener('beforeunload', () => {
     channel.close();
   });
+
+  const marginLeft = 10;
+  const gap = marginLeft + 120;
+  const offsetDistance = 24;
+
+  if (previousScores) {
+    stage.addChild(new PIXI.Text('NAME')).position.set(marginLeft, 0);
+    stage.addChild(new PIXI.Text('SCORE')).position.set(gap, 0);
+    let offset = 1;
+    for (const previousScore of previousScores) {
+      stage.addChild(previousScore.name);
+      previousScore.name.position.set(marginLeft, offset * offsetDistance);
+      stage.addChild(previousScore.score);
+      previousScore.score.position.set(gap, offset * offsetDistance);
+      offset += 1;
+    }
+    renderer.render(stage);
+  }
 
   channel.onConnect(error => {
     if (error) {
@@ -76,7 +95,6 @@ function finishedResources(): void {
     });
 
     channel.on('game_over', data => {
-      console.info('Game over');
       game?.stop();
       game = undefined;
       channel.close();
@@ -87,7 +105,20 @@ function finishedResources(): void {
         button.innerText = ':-(';
         button.hidden = false;
       }
-      finishedResources();
+      const scores: { name: PIXI.Text; score: PIXI.Text }[] = [];
+      const style = new PIXI.TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 20,
+      });
+      const players = data['players'];
+      for (const p of Object.values(players)) {
+        const player = Player.revive(p);
+        const name = new PIXI.Text(player.name, style);
+        const score = new PIXI.Text(player.score, style);
+        scores.push({ name, score });
+      }
+
+      finishedResources({ previousScores: scores });
     });
 
     channel.onDisconnect(() => {

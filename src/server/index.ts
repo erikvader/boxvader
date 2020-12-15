@@ -61,11 +61,15 @@ function startGame(maxMessageSize?: number): void {
 
   game.start().then(() => {
     console.info('game done');
-    game = undefined;
     for (const p of player_list) {
-      p.channel.emit('game_over', { gameOver: true }, { reliable: true });
+      p.channel.emit(
+        'game_over',
+        { gameOver: true, players: game?.getState().players },
+        { reliable: true },
+      );
       p.channel.close();
     }
+    game = undefined;
   });
 }
 

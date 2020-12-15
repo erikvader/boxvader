@@ -8,6 +8,7 @@ import Deque from '../common/deque';
 import * as constants from '../common/constants';
 import ServerSimulation from './serverSimulation';
 import GameMap from '../common/gameMap';
+import State from '../common/state';
 
 /**
  * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
@@ -44,6 +45,10 @@ export default class ServerGame extends GameLoop {
       this.simulation.addPlayer(p, 'TODO');
       this.playerInputs[p] = new Deque();
     }
+  }
+
+  getState(): State {
+    return this.simulation.state;
   }
 
   clientMsg(player_id: Id, data: any): void {
