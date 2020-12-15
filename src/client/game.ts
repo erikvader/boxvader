@@ -374,7 +374,7 @@ export default class ClientGame extends GameLoop {
     hp.y = 0;
     total_hp.addChild(hp);
     sprite.setHpBar(total_hp);
-    hp.width = width; //* new_scale;
+    hp.width = width; 
   }
 
   change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
