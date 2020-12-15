@@ -251,9 +251,10 @@ export default abstract class Simulation {
           enemy.position,
           targetPlayerPosition,
         );
-        const newMove = newDirection
-          .clone()
-          .mul(constants.GAME.ENEMY_MOVEMENT_SPEED);
+        const newMove = Vec2.mul(
+          newDirection,
+          constants.GAME.ENEMY_MOVEMENT_SPEED,
+        );
         enemy.direction = newDirection;
         body.setLinearVelocity(newMove);
       }
@@ -379,10 +380,10 @@ export default abstract class Simulation {
       if (enemyDead) {
         this.state.players[player.id].addScore(enemy.score);
       } else {
-        const knockbackVelocity = player.direction
-          .clone()
-          .mul(constants.GAME.KNOCKBACK_SPEED);
-
+        const knockbackVelocity = Vec2.mul(
+          player.direction,
+          constants.GAME.KNOCKBACK_SPEED,
+        );
         enemy.knockbackVelocity = knockbackVelocity;
         enemy.knockbackTime =
           constants.GAME.KNOCKBACK_DURATION * constants.SERVER.UPS;
