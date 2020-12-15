@@ -227,7 +227,7 @@ export default class ClientGame extends GameLoop {
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
-      
+
       this.enemy_list[enemy.id].y = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.y,
       );
@@ -238,14 +238,14 @@ export default class ClientGame extends GameLoop {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
-        this.stage.removeChild(this.enemy_list[enemy_id].hpBar)
+        this.stage.removeChild(this.enemy_list[enemy_id].hpBar);
         delete this.enemy_list[enemy_id];
       }
     }
 
     for (const player_id in this.player_list) {
       if (!newState.players[player_id].alive) {
-        this.stage.removeChild(this.player_list[player_id].hpBar)
+        this.stage.removeChild(this.player_list[player_id].hpBar);
         this.player_list[player_id].visible = false;
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
@@ -258,45 +258,44 @@ export default class ClientGame extends GameLoop {
 
   decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
-    let offset = 0
+    let offset = 0;
     //Right
     if (player.direction.x === 1 && player.direction.y === 0) {
-      this.player_list[player.id].rotation = offset + 0
+      this.player_list[player.id].rotation = offset + 0;
     }
     //Down
     if (player.direction.x === 0 && player.direction.y === 1) {
-      this.player_list[player.id].rotation = offset + pi/2
+      this.player_list[player.id].rotation = offset + pi / 2;
     }
     //Up
     if (player.direction.x === 0 && player.direction.y === -1) {
-      this.player_list[player.id].rotation = offset - pi/2
+      this.player_list[player.id].rotation = offset - pi / 2;
     }
     //Left
     if (player.direction.x === -1 && player.direction.y === 0) {
-      this.player_list[player.id].rotation = offset + pi
+      this.player_list[player.id].rotation = offset + pi;
     }
     //Right Up
     if (player.direction.x === 1 && player.direction.y === -1) {
-      this.player_list[player.id].rotation = offset - pi/4
+      this.player_list[player.id].rotation = offset - pi / 4;
     }
     //Right Down
     if (player.direction.x === 1 && player.direction.y === 1) {
-      this.player_list[player.id].rotation = offset + pi/4
+      this.player_list[player.id].rotation = offset + pi / 4;
     }
 
     //Left Up
     if (player.direction.x === -1 && player.direction.y === -1) {
-      this.player_list[player.id].rotation = offset - 3*pi/4
+      this.player_list[player.id].rotation = offset - (3 * pi) / 4;
     }
     //Left Down
     if (player.direction.x === -1 && player.direction.y === 1) {
-      this.player_list[player.id].rotation = offset + 3*pi/4
+      this.player_list[player.id].rotation = offset + (3 * pi) / 4;
     }
     if (
       !(player.direction.x === 0 && player.direction.y === 0) &&
       player.alive
     ) {
-      
     }
   }
 
@@ -308,7 +307,10 @@ export default class ClientGame extends GameLoop {
     id: number,
     weapon: Weapon,
   ): void {
-    const character = new CharacterSprite(PIXI.Loader.shared.resources["imgs/b_yoda.png"].texture, id)//load_zombie(img_filepath);
+    const character = new CharacterSprite(
+      PIXI.Loader.shared.resources['imgs/b_yoda.png'].texture,
+      id,
+    ); //load_zombie(img_filepath);
     //character.width = 1000;
     const scale = target_width / character.width;
 
@@ -334,8 +336,10 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    
-    let enemy = new EnemySprite(PIXI.Loader.shared.resources[img_filepath].texture, id);
+    let enemy = new EnemySprite(
+      PIXI.Loader.shared.resources[img_filepath].texture,
+      id,
+    );
     const scale = target_width / enemy.width;
 
     enemy.position.set(x, y);
@@ -348,7 +352,6 @@ export default class ClientGame extends GameLoop {
     this.add_health_bar(enemy, scale);
 
     //const enemy = PIXI.Sprite.from(PIXI.Loader.shared[img_filepath])
-    
   }
 
   add_health_bar(sprite: CustomSprite, scale: number): void {
@@ -359,31 +362,31 @@ export default class ClientGame extends GameLoop {
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
-    total_hp.drawRect(0, 0,  width,  height);
+    total_hp.drawRect(0, 0, width, height);
     total_hp.endFill();
-    total_hp.x = sprite.x +(-width ) / 2;
-    total_hp.y = sprite.y-flot_height;
+    total_hp.x = sprite.x + -width / 2;
+    total_hp.y = sprite.y - flot_height;
     this.stage.addChild(total_hp);
 
     const hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
     hp.beginFill(0x32cd32);
-    hp.drawRect(0, 0, width , height );
+    hp.drawRect(0, 0, width, height);
     hp.endFill();
     hp.x = 0;
     hp.y = 0;
     total_hp.addChild(hp);
-    sprite.setHpBar(total_hp)
-    hp.width = width //* new_scale;
+    sprite.setHpBar(total_hp);
+    hp.width = width; //* new_scale;
   }
 
   change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
     const width = constants.UI.HP_BAR_WIDTH;
     const flot_height = constants.UI.HP_BAR_FLOAT;
     const outerWidth = sprite.hpBar!.width;
-    const percent = current_hp / max_hp; 
-    sprite.hpBar!.x = sprite.x+(-width ) / 2;
-    sprite.hpBar!.y = sprite.y -flot_height;
+    const percent = current_hp / max_hp;
+    sprite.hpBar!.x = sprite.x + -width / 2;
+    sprite.hpBar!.y = sprite.y - flot_height;
     (sprite.hpBar!.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
@@ -497,5 +500,5 @@ function load_zombie(img_filepath): any {
       stripSize * 7 + walkOffset + walkAnimationLength,
     ],
   };*/
-  return PIXI.Loader.shared.resources["imgs/yoda.png"];
+  return PIXI.Loader.shared.resources['imgs/yoda.png'];
 }

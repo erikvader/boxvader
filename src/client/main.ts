@@ -18,10 +18,10 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 function finishedResources(): void {
   //console.log(PIXI.Loader.shared.resources);
   const channel = geckos({ port: constants.SERVER.PORT });
-  
+
   const app = new PIXI.Application();
   const renderer = app.renderer;
-  const stage = app.stage
+  const stage = app.stage;
 
   document.getElementById('game-container')!.append(renderer.view);
   renderer.backgroundColor = 0xffd700;
