@@ -1,5 +1,6 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
+import 'pixi-sound';
 import geckos from '@geckos.io/client';
 import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
@@ -99,4 +100,7 @@ PIXI.Loader.shared
   .add(constants.UI.PLAYER_SPRITE_PATH)
   .add(constants.UI.ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
+  .add('dubstep', 'sound/bensound-dubstep.mp3')
+  .add('pew', 'sound/pew.mp3')
+  .add('die', 'sound/baby_yoda_die.mp3')
   .load(finishedResources);

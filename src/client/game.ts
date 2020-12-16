@@ -67,6 +67,8 @@ export default class ClientGame extends GameLoop {
   }
 
   public start(): Promise<void> {
+    console.log(PIXI.Loader.shared.resources['dubstep']);
+    //  PIXI.Loader.shared.resources['dubstep'].sound.play();
     display_map(this.stage, this.map);
     this.create_scoreboard();
     this.key_presses();
@@ -237,6 +239,9 @@ export default class ClientGame extends GameLoop {
   remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
+        const baby_yoda_die = PIXI.Loader.shared.resources['die'].sound;
+        baby_yoda_die.volume = 0.1;
+        baby_yoda_die.play();
         this.stage.removeChild(this.enemy_list[enemy_id]);
         this.stage.removeChild(this.enemy_list[enemy_id].hpBar);
         delete this.enemy_list[enemy_id];
@@ -401,6 +406,9 @@ export default class ClientGame extends GameLoop {
     line.y = 0;
     line.visible = true;
     this.stage.addChild(line);
+    const pew_sound = PIXI.Loader.shared.resources['pew'].sound;
+    pew_sound.volume = 0.1;
+    pew_sound.play();
     return line;
   }
 
