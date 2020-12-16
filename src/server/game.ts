@@ -8,6 +8,7 @@ import Deque from '../common/deque';
 import * as constants from '../common/constants';
 import ServerSimulation from './serverSimulation';
 import GameMap from '../common/gameMap';
+import State from '../common/state';
 
 /**
  * [[Input]], but it also remembers on which [[ServerGame.stateNum]] it was
@@ -46,32 +47,38 @@ export default class ServerGame extends GameLoop {
     }
   }
 
+  get state(): State {
+    return this.simulation.state;
+  }
+
   clientMsg(player_id: Id, data: any): void {
     if (!this.running) return;
 
     data = deserializeCTS(data);
 
-    const pi = this.playerInputs[player_id]!;
+    const playerInput = this.playerInputs[player_id]!;
     const newInputs = data.inputs.map_mut(i => {
       const j = i as TimedInput;
       j.stateNum = this.stateNum;
       return j;
     });
-    pi.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
-    this.inputAcks[player_id] = pi.last;
+    playerInput.merge_back(newInputs); // TODO: check if playerInput and data.inputs are disjunct
+    this.inputAcks[player_id] = playerInput.last;
   }
 
   doUpdate(): void {
     const inputs = new Map<Id, Input>();
-
+    let someoneIsStillAlive = false;
     for (const p in this.simulation.state.players) {
       const player = this.simulation.state.players[p];
       const inp = this.getNextInput(p);
       if (inp !== undefined) {
         inputs.set(player.id, inp);
       }
+      if (player.alive) {
+        someoneIsStillAlive = true;
+      }
     }
-
     this.simulation.update(inputs);
 
     if (this.stateNum % constants.SERVER.BROADCAST_RATE === 0) {
@@ -82,6 +89,10 @@ export default class ServerGame extends GameLoop {
           state: this.simulation.state,
         }),
       );
+    }
+
+    if (!someoneIsStillAlive) {
+      this.stop();
     }
     this.stateNum += 1;
   }

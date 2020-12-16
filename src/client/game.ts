@@ -75,8 +75,9 @@ export default class ClientGame extends GameLoop {
 
   protected timer(_prevStep?: number): void {
     window.requestAnimationFrame(() => {
+      if (!this.running) return;
       this.update();
-      if (this.running) this.timer();
+      this.timer();
     });
   }
 
@@ -105,11 +106,13 @@ export default class ClientGame extends GameLoop {
   }
 
   protected cleanup(): void {
-    // TODO: reset pixi
+    this.renderer.destroy();
+    this.stage.destroy({ children: true });
     this.left.unsubscribe();
     this.right.unsubscribe();
     this.down.unsubscribe();
     this.up.unsubscribe();
+    this.fire.unsubscribe();
   }
 
   serverMsg(data: any): void {
@@ -122,7 +125,6 @@ export default class ClientGame extends GameLoop {
 
     const prevState = this.states.last_elem();
     const newState = message.state;
-
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
     this.update_scoreboard(newState);

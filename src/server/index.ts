@@ -61,6 +61,14 @@ function startGame(maxMessageSize?: number): void {
 
   game.start().then(() => {
     console.info('game done');
+    for (const p of player_list) {
+      p.channel.emit(
+        'game_over',
+        { players: game?.state.players },
+        { reliable: true },
+      );
+      p.channel.close();
+    }
     game = undefined;
   });
 }
