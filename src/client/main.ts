@@ -3,7 +3,6 @@ import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
 import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
-import { Player } from '../common/entity';
 
 function onDocumentReady(callback: () => void): void {
   // https://codetonics.com/javascript/detect-document-ready/
@@ -30,6 +29,7 @@ function startGame(
   const { maxMessageSize } = channel;
   let game;
   let readyStatus = false;
+  let playerNames = {};
 
   window.addEventListener('beforeunload', () => {
     channel.close();
@@ -66,6 +66,8 @@ function startGame(
       if (button !== null) {
         button.hidden = true;
       }
+
+      playerNames = data['names'];
 
       const map = new GameMap(data['map'], data['tileset']);
       const [
@@ -112,11 +114,11 @@ function startGame(
         fontFamily: 'Arial',
         fontSize: 20,
       });
+
       const players = data['players'];
-      for (const p of Object.values(players)) {
-        const player = Player.revive(p);
-        const name = new PIXI.Text(player.name, style);
-        const score = new PIXI.Text('' + player.score, style);
+      for (const p of players) {
+        const name = new PIXI.Text(playerNames[p.id], style);
+        const score = new PIXI.Text('' + p.score, style);
         scores.push({ name, score });
       }
 
@@ -136,7 +138,11 @@ function startGame(
           if (game !== undefined) return;
           readyStatus = !readyStatus;
           button.innerText = ':-' + (readyStatus ? ')' : '(');
-          channel.emit('ready', { status: readyStatus }, { reliable: true });
+          channel.emit(
+            'ready',
+            { status: readyStatus, name: 'Borgov uwu' },
+            { reliable: true },
+          );
         });
       }
     });
