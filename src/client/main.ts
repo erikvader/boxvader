@@ -3,7 +3,6 @@ import * as PIXI from 'pixi.js';
 import geckos from '@geckos.io/client';
 import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
-import { Player } from '../common/entity';
 
 function onDocumentReady(callback: () => void): void {
   // https://codetonics.com/javascript/detect-document-ready/
