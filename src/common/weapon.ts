@@ -49,6 +49,10 @@ export default class Weapon {
     this._timeOfLastShot = 0;
   }
 
+  public clone(): Weapon {
+    return new Weapon(this._weaponType);
+  }
+
   public flatten(flat: number[]): void {
     flat.push(this._weaponType, this._timeOfLastShot);
   }
