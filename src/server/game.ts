@@ -62,7 +62,7 @@ export default class ServerGame extends GameLoop {
       j.stateNum = this.stateNum;
       return j;
     });
-    playerInput.merge_back(newInputs); // TODO: check if pi and data.inputs are disjunct
+    playerInput.merge_back(newInputs); // TODO: check if playerInput and data.inputs are disjunct
     this.inputAcks[player_id] = playerInput.last;
   }
 
