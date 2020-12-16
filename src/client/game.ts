@@ -6,19 +6,19 @@ import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
 
-import SpriteUtilities from './spriteUtilities';
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
 import display_map from './renderMap';
 import GameMap from '../common/gameMap';
 import Weapon from '../common/weapon';
 import * as constants from '../common/constants';
-const su = new SpriteUtilities(PIXI);
-
+import { EnemySprite } from './sprites/enemySprite';
+import { CharacterSprite } from './sprites/characterSprite';
+import { CustomSprite } from './sprites/customSprite';
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
-  stage: PIXI.Stage;
+  stage: PIXI.Container;
   map: GameMap;
   my_id: number;
 }
@@ -75,8 +75,9 @@ export default class ClientGame extends GameLoop {
 
   protected timer(_prevStep?: number): void {
     window.requestAnimationFrame(() => {
+      if (!this.running) return;
       this.update();
-      if (this.running) this.timer();
+      this.timer();
     });
   }
 
@@ -105,11 +106,13 @@ export default class ClientGame extends GameLoop {
   }
 
   protected cleanup(): void {
-    // TODO: reset pixi
+    this.renderer.destroy();
+    this.stage.destroy({ children: true });
     this.left.unsubscribe();
     this.right.unsubscribe();
     this.down.unsubscribe();
     this.up.unsubscribe();
+    this.fire.unsubscribe();
   }
 
   serverMsg(data: any): void {
@@ -122,7 +125,6 @@ export default class ClientGame extends GameLoop {
 
     const prevState = this.states.last_elem();
     const newState = message.state;
-
     this.update_player_sprites(prevState, newState);
     this.update_enemy_sprites(prevState, newState);
     this.update_scoreboard(newState);
@@ -227,6 +229,7 @@ export default class ClientGame extends GameLoop {
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
+
       this.enemy_list[enemy.id].y = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.y,
       );
@@ -237,12 +240,14 @@ export default class ClientGame extends GameLoop {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
         this.stage.removeChild(this.enemy_list[enemy_id]);
+        this.stage.removeChild(this.enemy_list[enemy_id].hpBar);
         delete this.enemy_list[enemy_id];
       }
     }
 
     for (const player_id in this.player_list) {
       if (!newState.players[player_id].alive) {
+        this.stage.removeChild(this.player_list[player_id].hpBar);
         this.player_list[player_id].visible = false;
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
@@ -255,63 +260,46 @@ export default class ClientGame extends GameLoop {
 
   decide_direction(player: Player, newState: State): void {
     const pi = Math.PI;
-    let walkingAnimation;
-    let standingAnimation;
+    const offset = 0;
     //Right
     if (player.direction.x === 1 && player.direction.y === 0) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkRight;
-      standingAnimation = this.player_list[player.id].animationStates.right;
+      this.player_list[player.id].rotation = offset + 0;
     }
     //Down
     if (player.direction.x === 0 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkDown;
-      standingAnimation = this.player_list[player.id].animationStates.down;
+      this.player_list[player.id].rotation = offset + pi / 2;
     }
     //Up
     if (player.direction.x === 0 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkUp;
-      standingAnimation = this.player_list[player.id].animationStates.up;
+      this.player_list[player.id].rotation = offset - pi / 2;
     }
     //Left
     if (player.direction.x === -1 && player.direction.y === 0) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkLeft;
-      standingAnimation = this.player_list[player.id].animationStates.left;
+      this.player_list[player.id].rotation = offset + pi;
     }
     //Right Up
     if (player.direction.x === 1 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkRightUp;
-      standingAnimation = this.player_list[player.id].animationStates.upRight;
+      this.player_list[player.id].rotation = offset - pi / 4;
     }
     //Right Down
     if (player.direction.x === 1 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkRightDown;
-      standingAnimation = this.player_list[player.id].animationStates.rightDown;
+      this.player_list[player.id].rotation = offset + pi / 4;
     }
 
     //Left Up
     if (player.direction.x === -1 && player.direction.y === -1) {
-      walkingAnimation = this.player_list[player.id].animationStates.walkLeftUp;
-      standingAnimation = this.player_list[player.id].animationStates.leftUp;
+      this.player_list[player.id].rotation = offset - (3 * pi) / 4;
     }
     //Left Down
     if (player.direction.x === -1 && player.direction.y === 1) {
-      walkingAnimation = this.player_list[player.id].animationStates
-        .walkLeftDown;
-      standingAnimation = this.player_list[player.id].animationStates.leftDown;
+      this.player_list[player.id].rotation = offset + (3 * pi) / 4;
     }
+    /*
     if (
-      !(player.direction.x === 0 && player.direction.y === 0) &&
+      !(player.direction.x === 0 && player.direction.y === 0) &&    This will prob be used later so dont want to remove it
       player.alive
     ) {
-      this.walking_animation(
-        player.walking,
-        player.id,
-        walkingAnimation,
-        standingAnimation,
-      );
-    }
+    }*/
   }
 
   add_character(
@@ -322,8 +310,10 @@ export default class ClientGame extends GameLoop {
     id: number,
     weapon: Weapon,
   ): void {
-    const character = load_zombie(img_filepath);
-
+    const character = new CharacterSprite(
+      PIXI.Loader.shared.resources['imgs/b_yoda.png'].texture,
+      id,
+    );
     const scale = target_width / character.width;
 
     character.position.set(x, y);
@@ -332,7 +322,7 @@ export default class ClientGame extends GameLoop {
     character.anchor.set(0.5, 0.5);
     this.player_list[id] = character;
     this.stage.addChild(character);
-    character.show(character.animationStates.down);
+
     character.shot_line = this.add_shot_line(
       weapon,
       { x: x, y: y },
@@ -348,13 +338,14 @@ export default class ClientGame extends GameLoop {
     img_filepath: string,
     id: number,
   ): void {
-    const enemy = su.sprite(img_filepath);
-
+    const enemy = new EnemySprite(
+      PIXI.Loader.shared.resources[img_filepath].texture,
+      id,
+    );
     const scale = target_width / enemy.width;
 
     enemy.position.set(x, y);
-    enemy.vx = 0;
-    enemy.vy = 0;
+
     enemy.id = id;
     enemy.scale.set(scale, scale);
     enemy.anchor.set(0.5, 0.5);
@@ -363,35 +354,40 @@ export default class ClientGame extends GameLoop {
     this.add_health_bar(enemy, scale);
   }
 
-  add_health_bar(sprite: PIXI.Graphics, scale: number): void {
+  add_health_bar(sprite: CustomSprite, scale: number): void {
     const width = constants.UI.HP_BAR_WIDTH;
     const height = constants.UI.HP_BAR_HEIGHT;
     const flot_height = constants.UI.HP_BAR_FLOAT;
-    const new_scale = 1 / scale;
     const total_hp = new PIXI.Graphics();
     total_hp.lineStyle(0, 0x000000, 0);
     total_hp.beginFill(0xff3300);
-    total_hp.drawRect(0, 0, new_scale * width, new_scale * height);
+    total_hp.drawRect(0, 0, width, height);
     total_hp.endFill();
-    total_hp.x = (-width * new_scale) / 2;
-    total_hp.y = -flot_height * new_scale;
-    sprite.addChild(total_hp);
+    total_hp.x = sprite.x - width / 2;
+    total_hp.y = sprite.y - flot_height;
+    this.stage.addChild(total_hp);
 
     const hp = new PIXI.Graphics();
     hp.lineStyle(0, 0xff3300, 0);
     hp.beginFill(0x32cd32);
-    hp.drawRect(0, 0, width * new_scale, height * new_scale);
+    hp.drawRect(0, 0, width, height);
     hp.endFill();
     hp.x = 0;
     hp.y = 0;
     total_hp.addChild(hp);
-    hp.width = width * new_scale;
+    sprite.hpBar = total_hp;
+    hp.width = width;
   }
 
-  change_hp(sprite: PIXI.Graphics, max_hp: number, current_hp: number): void {
-    const outerWidth = sprite.children[0].width;
+  change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
+    if (sprite.hpBar === undefined) return;
+    const width = constants.UI.HP_BAR_WIDTH;
+    const flot_height = constants.UI.HP_BAR_FLOAT;
+    const outerWidth = sprite.hpBar.width;
     const percent = current_hp / max_hp;
-    sprite.children[0].children[0].width = outerWidth * percent;
+    sprite.hpBar.x = sprite.x + -width / 2;
+    sprite.hpBar.y = sprite.y - flot_height;
+    (sprite.hpBar.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
   add_shot_line(
@@ -405,7 +401,6 @@ export default class ClientGame extends GameLoop {
     line.lineTo(start.x, start.y);
     line.x = 0;
     line.y = 0;
-    line.expires = 1;
     line.visible = true;
     this.stage.addChild(line);
     return line;
@@ -454,56 +449,4 @@ export default class ClientGame extends GameLoop {
     this.score.text = 'Score: ' + state.players[this.my_id].score;
     this.waveNumber.text = 'Wave: ' + state.wave;
   }
-}
-function load_zombie(img_filepath): any {
-  const frames = su.filmstrip(img_filepath, 128, 128);
-  const animation = su.sprite(frames);
-  const stripSize = 36;
-  const walkOffset = 4;
-  const walkAnimationLength = 7;
-
-  animation.fps = 12;
-  animation.animationStates = {
-    left: 0,
-    leftUp: stripSize,
-    up: stripSize * 2,
-    upRight: stripSize * 3,
-    right: stripSize * 4,
-    rightDown: stripSize * 5,
-    down: stripSize * 6,
-    leftDown: stripSize * 7,
-    walkLeftDown: [
-      stripSize * 0 + walkOffset,
-      stripSize * 0 + walkOffset + walkAnimationLength,
-    ],
-    walkLeft: [
-      stripSize * 1 + walkOffset,
-      stripSize * 1 + walkOffset + walkAnimationLength,
-    ],
-    walkLeftUp: [
-      stripSize * 2 + walkOffset,
-      stripSize * 2 + walkOffset + walkAnimationLength,
-    ],
-    walkUp: [
-      stripSize * 3 + walkOffset,
-      stripSize * 3 + walkOffset + walkAnimationLength,
-    ],
-    walkRightUp: [
-      stripSize * 4 + walkOffset,
-      stripSize * 4 + walkOffset + walkAnimationLength,
-    ],
-    walkRight: [
-      stripSize * 5 + walkOffset,
-      stripSize * 5 + walkOffset + walkAnimationLength,
-    ],
-    walkRightDown: [
-      stripSize * 6 + walkOffset,
-      stripSize * 6 + walkOffset + walkAnimationLength,
-    ],
-    walkDown: [
-      stripSize * 7 + walkOffset,
-      stripSize * 7 + walkOffset + walkAnimationLength,
-    ],
-  };
-  return animation;
 }

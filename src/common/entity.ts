@@ -162,7 +162,10 @@ export class Player extends Entity {
 
 export class Enemy extends Entity {
   public damage: number;
+  public knockbackTime: number;
+  public knockbackVelocity: Vec2;
   public score: number;
+
   public constructor(
     id: Id,
     health: number,
@@ -172,6 +175,8 @@ export class Enemy extends Entity {
   ) {
     super(id, health, position);
     this.damage = damage;
+    this.knockbackVelocity = Vec2.zero();
+    this.knockbackTime = 0;
     this.score = score;
   }
 
@@ -187,20 +192,32 @@ export class Enemy extends Entity {
       this.score,
     );
 
+    enemy.knockbackTime = this.knockbackTime;
+    enemy.knockbackVelocity = this.knockbackVelocity.clone();
     enemy.velocity = this.velocity.clone();
     return enemy;
   }
 
   public flatten(flat: number[]): void {
     super.flatten(flat);
-    flat.push(this.damage, this.score);
+    flat.push(
+      this.damage,
+      this.score,
+      Math.fround(this.knockbackVelocity.x),
+      Math.fround(this.knockbackVelocity.y),
+      this.knockbackTime,
+    );
   }
 
   public static explode(buf: PopArray): Enemy {
     return Entity.explode(buf, (id: Id, health: number, position: Vec2) => {
       const damage = buf.pop();
       const score = buf.pop();
-      return new Enemy(id, health, position, damage, score);
+      const e = new Enemy(id, health, position, damage, score);
+      e.knockbackVelocity.x = buf.pop();
+      e.knockbackVelocity.y = buf.pop();
+      e.knockbackTime = buf.pop();
+      return e;
     }) as Enemy;
   }
 }

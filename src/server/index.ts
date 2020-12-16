@@ -67,6 +67,23 @@ function startGame(maxMessageSize?: number): void {
 
   game.start().then(() => {
     console.info('game done');
+    if (game === undefined) {
+      throw new Error("game can't possibly be undefined here");
+    }
+
+    const playersToSend: { id: number; score: number }[] = [];
+    for (const p of Object.values(game.state.players)) {
+      playersToSend.push({ id: p.id, score: p.score });
+    }
+
+    for (const p of player_list) {
+      p.channel.emit(
+        'game_over',
+        { players: playersToSend },
+        { reliable: true },
+      );
+      p.channel.close();
+    }
     game = undefined;
   });
 }
@@ -108,7 +125,6 @@ io.onConnection(channel => {
       if (player_list.length === 0) {
         game?.stop();
         client_id = 0;
-        game = undefined;
       }
     }
   });

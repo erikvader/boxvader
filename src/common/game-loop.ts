@@ -107,8 +107,9 @@ export default abstract class GameLoop {
    */
   protected timer(prevStep?: number): void {
     setTimeout(() => {
+      if (!this.running) return;
       const step = this.update();
-      if (this.running) this.timer(step);
+      this.timer(step);
     }, Math.max(0, this.fps - (prevStep || 0)));
   }
 
