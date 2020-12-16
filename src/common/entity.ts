@@ -197,7 +197,13 @@ export class Enemy extends Entity {
    */
   public clone(): Enemy {
     return super.clone(() => {
-      const e = new Enemy(this.id, this.health, this.position.clone(), this.damage, this.score);
+      const e = new Enemy(
+        this.id,
+        this.health,
+        this.position.clone(),
+        this.damage,
+        this.score,
+      );
       e.knockbackTime = this.knockbackTime;
       e.knockbackVelocity = this.knockbackVelocity.clone();
       return e;
