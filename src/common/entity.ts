@@ -11,8 +11,10 @@ export abstract class Entity {
   public position: Vec2;
   public velocity: Vec2;
   public direction: Vec2;
-  private _health: number;
   public walking: boolean;
+
+  private _health: number;
+
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
     this.maxHealth = health;
@@ -21,6 +23,16 @@ export abstract class Entity {
     this.position = position;
     this.velocity = Vec2.zero();
     this.direction = new Vec2(0, -1);
+  }
+
+  public clone(construct: () => Entity): Entity {
+    const e = construct();
+    // id, position, and _health are cloned by the children's clone() functions
+    e.velocity = this.velocity;
+    e.direction = this.direction;
+    e.walking = this.walking;
+
+    return e;
   }
 
   public get health(): number {
@@ -101,8 +113,9 @@ export abstract class Entity {
  */
 export class Player extends Entity {
   public target: Vec2;
-  private _score: number;
   public weapons: Weapon[];
+
+  private _score: number;
 
   public constructor(id: Id, health: number, position: Vec2) {
     super(id, health, position);
@@ -123,10 +136,9 @@ export class Player extends Entity {
    * Returns a deep copy of a `Player`.
    */
   public clone(): Player {
-    const player = new Player(this.id, this.health, this.position.clone());
-
-    player.velocity = this.velocity.clone();
-    return player;
+    return super.clone(() => {
+      return new Player(this.id, this.health, this.position.clone());
+    }) as Player;
   }
 
   public flatten(flat: number[]): void {
@@ -184,18 +196,12 @@ export class Enemy extends Entity {
    * Returns a deep copy of an `Enemy`.
    */
   public clone(): Enemy {
-    const enemy = new Enemy(
-      this.id,
-      this.health,
-      this.position.clone(),
-      this.damage,
-      this.score,
-    );
-
-    enemy.knockbackTime = this.knockbackTime;
-    enemy.knockbackVelocity = this.knockbackVelocity.clone();
-    enemy.velocity = this.velocity.clone();
-    return enemy;
+    return super.clone(() => {
+      const e = new Enemy(this.id, this.health, this.position.clone(), this.damage, this.score);
+      e.knockbackTime = this.knockbackTime;
+      e.knockbackVelocity = this.knockbackVelocity.clone();
+      return e;
+    }) as Enemy;
   }
 
   public flatten(flat: number[]): void {
