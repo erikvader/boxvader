@@ -339,7 +339,7 @@ export default class ClientGame extends GameLoop {
     );
     this.add_health_bar(character, scale);
   }
-  add_blood_splatter(x: number, y: number) {
+  add_blood_splatter(x: number, y: number): void {
     const splatter = Math.floor(Math.random() * 3) + 1;
     const blood = new PIXI.Sprite(
       PIXI.Loader.shared.resources[
