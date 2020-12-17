@@ -28,8 +28,8 @@ export abstract class Entity {
   public clone(construct: () => Entity): Entity {
     const e = construct();
     // id, position, and _health are cloned by the children's clone() functions
-    e.velocity = this.velocity;
-    e.direction = this.direction;
+    e.velocity = this.velocity.clone();
+    e.direction = this.direction.clone();
     e.walking = this.walking;
 
     return e;
