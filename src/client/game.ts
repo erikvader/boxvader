@@ -256,7 +256,6 @@ export default class ClientGame extends GameLoop {
           this.player_list[player_id].x,
           this.player_list[player_id].y,
         );
-        
 
         this.player_list[player_id].hpBar.visible = false;
 
