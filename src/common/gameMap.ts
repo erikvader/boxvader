@@ -1,5 +1,6 @@
 import Tileset, { Tile } from './tileset';
 import scifi_1 from '../../levels/vov-scifi-1.json';
+import scifi_2 from '../../levels/vov-scifi-2.json';
 import { Vec2 } from 'planck-js';
 import * as misc from './misc';
 import * as constants from './constants';
@@ -279,10 +280,13 @@ export default class GameMap {
 
 function getJson(name: string): MapJson {
   // should we do a case-insensitive comparison?
-  if (name === 'scifi-1') {
-    return scifi_1;
-  } else {
-    throw new Error(`No map '${name}' found.`);
+  switch (name) {
+    case 'scifi-1':
+      return scifi_1;
+    case 'scifi-2':
+      return scifi_2;
+    default:
+      throw new Error(`No map '${name}' found.`);
   }
 }
 
