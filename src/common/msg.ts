@@ -26,17 +26,22 @@ export interface ServerToClient {
 }
 
 function flattenSTC(stc: ServerToClient): number[] {
+  const numPlayers = Object.values(stc.state.players).length;
+  const numAcks = Object.values(stc.inputAck).length;
+
   const flattened: number[] = [];
   flattened.push(stc.stateNum);
 
-  const numacks = Object.values(stc.inputAck).length;
-  flattened.push(numacks);
-  for (let i = 0; i < numacks; i++) {
+  flattened.push(numPlayers);
+  for (let i = 0; i < numPlayers; i++) {
     const ia = stc.inputAck[i];
-    if (ia === undefined) {
+    if (ia === undefined && numPlayers === numAcks) {
       throw new Error('player IDs are not continous it seems');
     }
-    flattened.push(ia);
+    if (ia !== undefined && ia < 0) {
+      throw new Error("inputAck shouldn't be negative");
+    }
+    flattened.push(ia ?? -1);
   }
 
   stc.state.flatten(flattened);
@@ -78,7 +83,10 @@ export function deserializeSTC(message: ByteBuffer): ServerToClient {
   const inputAck = {};
   const numAcks = buf.pop();
   for (let i = 0; i < numAcks; i++) {
-    inputAck[i] = buf.pop();
+    const ia = buf.pop();
+    if (ia >= 0) {
+      inputAck[i] = ia;
+    }
   }
 
   const state = State.explode(buf);
