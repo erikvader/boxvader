@@ -59,6 +59,7 @@ export default class ClientGame extends GameLoop {
     this.sendInputFun = args.sendInputFun;
     this.renderer = args.renderer;
     this.stage = args.stage;
+    this.stage.sortableChildren = true;
     this.states = new Deque();
     this.inputHistory = new Deque();
     this.lastSentInput = -1;
@@ -239,6 +240,10 @@ export default class ClientGame extends GameLoop {
   remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
+        this.add_blood_splatter(
+          this.enemy_list[enemy_id].x,
+          this.enemy_list[enemy_id].y,
+        );
         this.stage.removeChild(this.enemy_list[enemy_id]);
         this.stage.removeChild(this.enemy_list[enemy_id].hpBar);
         delete this.enemy_list[enemy_id];
@@ -247,7 +252,13 @@ export default class ClientGame extends GameLoop {
 
     for (const player_id in this.player_list) {
       if (!newState.players[player_id].alive) {
+        this.add_blood_splatter(
+          this.player_list[player_id].x,
+          this.player_list[player_id].y,
+        );
+
         this.player_list[player_id].hpBar.visible = false;
+
         this.player_list[player_id].visible = false;
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
@@ -318,7 +329,7 @@ export default class ClientGame extends GameLoop {
       id,
     );
     const scale = target_width / character.width;
-
+    character.zIndex = 2;
     character.position.set(x, y);
     character.id = id;
     character.scale.set(scale, scale);
@@ -333,7 +344,18 @@ export default class ClientGame extends GameLoop {
     );
     this.add_health_bar(character, scale);
   }
-
+  add_blood_splatter(x: number, y: number): void {
+    const splatter = Math.floor(Math.random() * 3) + 1;
+    const blood = new PIXI.Sprite(
+      PIXI.Loader.shared.resources[
+        'imgs/blood/splatter' + splatter + '.png'
+      ].texture,
+    );
+    blood.anchor.set(0.5, 0.5);
+    blood.position.set(x, y);
+    blood.zIndex = 0;
+    this.stage.addChild(blood);
+  }
   add_enemy(
     x: number,
     y: number,
@@ -346,7 +368,7 @@ export default class ClientGame extends GameLoop {
       id,
     );
     const scale = target_width / enemy.width;
-
+    enemy.zIndex = 2;
     enemy.position.set(x, y);
 
     enemy.id = id;
@@ -366,6 +388,7 @@ export default class ClientGame extends GameLoop {
     total_hp.beginFill(0xff3300);
     total_hp.drawRect(0, 0, width, height);
     total_hp.endFill();
+    total_hp.zIndex = 2;
     total_hp.x = sprite.x - width / 2;
     total_hp.y = sprite.y - flot_height;
     this.stage.addChild(total_hp);

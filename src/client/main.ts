@@ -155,4 +155,7 @@ PIXI.Loader.shared
   .add(constants.UI.PLAYER_SPRITE_PATH)
   .add(constants.UI.ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
+  .add('imgs/blood/splatter1.png')
+  .add('imgs/blood/splatter2.png')
+  .add('imgs/blood/splatter3.png')
   .load(() => startGame());
