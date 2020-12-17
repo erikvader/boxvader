@@ -50,7 +50,9 @@ export default class Weapon {
   }
 
   public clone(): Weapon {
-    return new Weapon(this._weaponType);
+    const w = new Weapon(this._weaponType);
+    w._timeOfLastShot = this._timeOfLastShot;
+    return w;
   }
 
   public flatten(flat: number[]): void {
