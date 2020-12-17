@@ -247,13 +247,16 @@ export default class ClientGame extends GameLoop {
 
     for (const player_id in this.player_list) {
       if (!newState.players[player_id].alive) {
-        this.stage.removeChild(this.player_list[player_id].hpBar);
+        this.player_list[player_id].hpBar.visible = false;
         this.player_list[player_id].visible = false;
         if (this.player_list[player_id].shot_line !== undefined) {
           this.player_list[player_id].shot_line.visible = false;
         }
       } else {
-        this.player_list[player_id].visible = true;
+        if (this.player_list[player_id].visible === false) {
+          this.player_list[player_id].visible = true;
+          this.player_list[player_id].hpBar.visible = true;
+        }
       }
     }
   }
