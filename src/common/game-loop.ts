@@ -1,9 +1,4 @@
-// NOTE: performance resides in different places in Node and browsers.
-/* eslint-disable @typescript-eslint/no-var-requires */
-const performance =
-  process.env.BROWSER === 'yes'
-    ? window.performance
-    : require('perf_hooks').performance;
+import { performance } from './misc';
 
 export interface GameLoopOpt {
   ups?: number;

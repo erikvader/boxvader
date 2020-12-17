@@ -1,5 +1,12 @@
 import { Vec2 } from 'planck-js';
 
+// NOTE: performance resides in different places in Node and browsers.
+/* eslint-disable @typescript-eslint/no-var-requires */
+export const performance =
+  process.env.BROWSER === 'yes'
+    ? window.performance
+    : require('perf_hooks').performance;
+
 export type Id = number;
 
 export interface NumMap<T> {
