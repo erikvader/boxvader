@@ -34,6 +34,13 @@ export default class Wave {
     this._alive = 0;
   }
 
+  public clone(): Wave {
+    const w = new Wave(this.waveNumber, this._unspawned, this.enemyHealth);
+    w.clearStep = this.clearStep;
+    w._alive = this._alive;
+    return w;
+  }
+
   /** Mark a single enemy in this wave as spawned. */
   public spawnSingle(): void {
     this._unspawned = Math.max(this._unspawned - 1, 0);
