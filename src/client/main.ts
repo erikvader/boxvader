@@ -93,6 +93,7 @@ function startGame(
         stage,
         map,
         my_id: data['id'],
+        seed: data['random_seed'],
       });
 
       game.start().then(() => {

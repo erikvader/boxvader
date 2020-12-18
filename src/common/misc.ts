@@ -1,4 +1,5 @@
 import { Vec2 } from 'planck-js';
+import seedrandom from 'seedrandom';
 
 // NOTE: performance resides in different places in Node and browsers.
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -76,11 +77,12 @@ export function isObjectWithKeys(
 }
 
 /** Select a random element from an array. Returns `undefined` if the array is empty. */
-export function randomChoice<T>(ts: T[]): T | undefined {
+export function randomChoice<T>(ts: T[], rng?: seedrandom.prng): T | undefined {
   if (ts.length === 0) return undefined;
   else if (ts.length === 1) return ts[0];
   else {
-    const index = Math.floor(Math.random() * ts.length);
+    const r = rng !== undefined ? rng() : Math.random();
+    const index = Math.floor(r * ts.length);
     return ts[index];
   }
 }
@@ -103,4 +105,14 @@ export class PopArray<T = number> {
     }
     return elem;
   }
+}
+
+export function randomString(length: number): string {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
 }

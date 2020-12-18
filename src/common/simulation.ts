@@ -5,6 +5,7 @@ import { Body, Box, Circle, Vec2, World, Fixture, Contact } from 'planck-js';
 import { Enemy, Entity, Player } from './entity';
 import * as constants from './constants';
 import Wave from './wave';
+import seedrandom from 'seedrandom';
 
 export default abstract class Simulation {
   public readonly updateStep: number;
@@ -17,6 +18,7 @@ export default abstract class Simulation {
   protected _enemyIdCounter: number;
   protected _wave: Wave;
   protected _numPlayers: number;
+  protected _random: seedrandom.prng;
 
   public timeOfDamageTaken: Map<Id, number>;
   public enemyContacts: Map<Id, Id[]>;
@@ -44,8 +46,16 @@ export default abstract class Simulation {
    * @param map The map to use
    * @param updateStep How big an update step is in seconds.
    * @param numPlayers The number of players.
+   * @param seed A string for the RNG
    */
-  constructor(map: GameMap, updateStep: number, numPlayers: number) {
+  constructor(
+    map: GameMap,
+    updateStep: number,
+    numPlayers: number,
+    seed: string,
+    seedrandomOptions?: seedrandom.seedRandomOptions,
+  ) {
+    this._random = seedrandom(seed, seedrandomOptions);
     this.updateStep = updateStep;
     this._world = this.createWorld(map);
     this._bodies = new Map<Id, Body>();
@@ -116,7 +126,7 @@ export default abstract class Simulation {
     if (id in this.state.enemies)
       throw new Error(`ID ${id} is already taken (by an enemy).`);
 
-    const position = this._gameMap.randomPlayerSpawn();
+    const position = this._gameMap.randomPlayerSpawn(this._random);
     const player = new Player(id, constants.GAME.PLAYER_HEALTH_MAX, position);
     this.state.players[id] = player;
     this.bodies.set(id, createBody(this.world, player));
@@ -141,7 +151,7 @@ export default abstract class Simulation {
         `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
       );
 
-    const position = this._gameMap.randomEnemySpawn();
+    const position = this._gameMap.randomEnemySpawn(this._random);
     const enemy_damage = 1; //Snälla Dark Vader, blunda när du ser detta. Det är tillfälligt och bör ändras om vi har olika typer av fiender...
     const enemy_score = 10; // ――″――
     const enemy = new Enemy(
@@ -182,16 +192,12 @@ export default abstract class Simulation {
       const player = p as Player;
 
       if (!player.alive) {
-        player.respawn(this.map.randomPlayerSpawn());
+        player.respawn(this.map.randomPlayerSpawn(this._random));
         this.bodies.set(player.id, createBody(this.world, player));
       } else {
         player.giveMaxHealth();
       }
     }
-  }
-
-  public snapshot(): State {
-    return this.state.clone();
   }
 
   protected updateState(): void {

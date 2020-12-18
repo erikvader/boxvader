@@ -29,6 +29,7 @@ export default class ServerGame extends GameLoop {
     map: GameMap,
     broadcast: (buf: ByteBuffer) => void,
     players: Array<Id>,
+    seed: string,
   ) {
     super({ ups: constants.SERVER.UPS, fps: constants.SERVER.FPS });
     this.broadcast = broadcast;
@@ -39,6 +40,7 @@ export default class ServerGame extends GameLoop {
       map,
       this.ups / 1000,
       players.length,
+      seed,
     );
 
     for (const p of players) {

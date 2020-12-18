@@ -4,6 +4,7 @@ import scifi_2 from '../../levels/vov-scifi-2.json';
 import { Vec2 } from 'planck-js';
 import * as misc from './misc';
 import * as constants from './constants';
+import seedrandom from 'seedrandom';
 
 interface MapJson {
   width: number;
@@ -48,11 +49,9 @@ export class Region {
   }
 
   /** Return a random point within the region. */
-  public randomPoint(): Vec2 {
-    return Vec2.add(
-      this.position,
-      Vec2(Math.random() * this.size.x, Math.random() * this.size.y),
-    );
+  public randomPoint(rng?: seedrandom.prng): Vec2 {
+    const r = rng !== undefined ? rng() : Math.random();
+    return Vec2.add(this.position, Vec2(r * this.size.x, r * this.size.y));
   }
 }
 export default class GameMap {
@@ -264,17 +263,17 @@ export default class GameMap {
   }
 
   /** Return a random point where a player can spawn. */
-  public randomPlayerSpawn(): Vec2 {
+  public randomPlayerSpawn(rng?: seedrandom.prng): Vec2 {
     const tmp = misc.randomChoice(this.playerSpawns);
     if (tmp === undefined) throw new Error("there aren't any spawn locations");
-    return tmp.randomPoint();
+    return tmp.randomPoint(rng);
   }
 
   /** Return a random point where an enemy can spawn. */
-  public randomEnemySpawn(): Vec2 {
+  public randomEnemySpawn(rng?: seedrandom.prng): Vec2 {
     const tmp = misc.randomChoice(this.enemySpawns);
     if (tmp === undefined) throw new Error("there aren't any spawn locations");
-    return tmp.randomPoint();
+    return tmp.randomPoint(rng);
   }
 }
 

@@ -1,13 +1,24 @@
 import GameMap from '../common/gameMap';
 import { Input } from '../common/misc';
 import Simulation, { createBody } from '../common/simulation';
+import seedrandom from 'seedrandom';
 
 import State from '../common/state';
 import { Body } from 'planck-js';
 
+export interface SimState {
+  state: State;
+  rngState: seedrandom.State;
+}
+
 export default class ClientSimulation extends Simulation {
-  constructor(map: GameMap, updateStep: number, numPlayers: number) {
-    super(map, updateStep, numPlayers);
+  constructor(
+    map: GameMap,
+    updateStep: number,
+    numPlayers: number,
+    seed: string,
+  ) {
+    super(map, updateStep, numPlayers, seed, { state: true });
   }
 
   public update(body: Body, input: Input): void {
@@ -15,7 +26,10 @@ export default class ClientSimulation extends Simulation {
     //this.handlePlayerInput(body, input);
   }
 
-  public reset(state: State): void {
+  public reset(simState: SimState): void {
+    this._random = seedrandom('', { state: simState.rngState });
+    const state = simState.state;
+
     const newPlayerIds = new Array<string>();
     for (const id in state.players)
       if (!(id in this.state.players)) newPlayerIds.push(id);
@@ -56,5 +70,12 @@ export default class ClientSimulation extends Simulation {
     }
 
     this._state = state.clone();
+  }
+
+  public snapshot(): SimState {
+    return {
+      state: this.state.clone(),
+      rngState: this._random.state(),
+    };
   }
 }
