@@ -127,15 +127,15 @@ export default class GameMap {
   }
 
   private floydWarshallAlgorithm(): void {
-    for (let i = 0; i < this.width * this.height; i++) {
-      this.floydWarshallWeightMatrix[i] = [];
-      this.floydWarshallMatrix[i] = [];
-      for (let j = 0; j < this.height * this.width; j++) {
-        this.floydWarshallWeightMatrix[i][j] = Infinity;
-        if (this.tiles[j].walkable) {
-          this.floydWarshallMatrix[i][j] = j;
+    for (let row = 0; row < this.width * this.height; row++) {
+      this.floydWarshallWeightMatrix[row] = [];
+      this.floydWarshallMatrix[row] = [];
+      for (let col = 0; col < this.height * this.width; col++) {
+        this.floydWarshallWeightMatrix[row][col] = Infinity;
+        if (this.tiles[col].walkable) {
+          this.floydWarshallMatrix[row][col] = col;
         } else {
-          this.floydWarshallMatrix[i][j] = NaN;
+          this.floydWarshallMatrix[row][col] = NaN;
         }
       }
     }
@@ -146,6 +146,7 @@ export default class GameMap {
         //checks north
         if (i - this.width >= 0 && this.tiles[i - this.width].walkable) {
           this.floydWarshallWeightMatrix[i][i - this.width] = 1;
+          this.floydWarshallMatrix[i][i - this.width] = i - this.width;
         }
         //checks south
         if (
@@ -153,6 +154,7 @@ export default class GameMap {
           this.tiles[i + this.width].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i + this.width] = 1;
+          this.floydWarshallMatrix[i][i + this.width] = i + this.width;
         }
         //checks west
         if (
@@ -160,10 +162,12 @@ export default class GameMap {
           this.tiles[i - 1].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i - 1] = 1;
+          this.floydWarshallMatrix[i][i - 1] = i - 1;
         }
         //checks east
         if ((i + 1) % this.width !== 0 && this.tiles[i + 1].walkable) {
           this.floydWarshallWeightMatrix[i][i + 1] = 1;
+          this.floydWarshallMatrix[i][i + 1] = i + 1;
         }
         //checks northeast
         if (
@@ -174,6 +178,7 @@ export default class GameMap {
           this.tiles[i + 1].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i - this.width + 1] = Math.sqrt(2);
+          this.floydWarshallMatrix[i][i - this.width + 1] = i - this.width + 1;
         }
         //checks northwest
         if (
@@ -184,6 +189,7 @@ export default class GameMap {
           this.tiles[i - 1].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i - this.width - 1] = Math.sqrt(2);
+          this.floydWarshallMatrix[i][i - this.width - 1] = i - this.width - 1;
         }
         //checks southeast
         if (
@@ -194,6 +200,7 @@ export default class GameMap {
           this.tiles[i + 1].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i + this.width + 1] = Math.sqrt(2);
+          this.floydWarshallMatrix[i][i + this.width + 1] = i + this.width + 1;
         }
         //checks southwest
         if (
@@ -204,12 +211,13 @@ export default class GameMap {
           this.tiles[i - 1].walkable
         ) {
           this.floydWarshallWeightMatrix[i][i + this.width - 1] = Math.sqrt(2);
+          this.floydWarshallMatrix[i][i + this.width - 1] = i + this.width - 1;
         }
       }
     }
     for (let k = 0; k < this.width * this.height; k++) {
-      for (let j = 0; j < this.width * this.height; j++) {
-        for (let i = 0; i < this.width * this.height; i++) {
+      for (let i = 0; i < this.width * this.height; i++) {
+        for (let j = 0; j < this.width * this.height; j++) {
           if (
             this.floydWarshallWeightMatrix[i][j] >
             this.floydWarshallWeightMatrix[i][k] +
@@ -238,7 +246,7 @@ export default class GameMap {
       position.y / constants.MAP.TILE_LOGICAL_SIZE,
     );
 
-    return this.height * heightCoord + widthCoord;
+    return this.width * heightCoord + widthCoord;
   }
 
   public tileToPosition(tilePosition: number): Vec2 {
@@ -246,7 +254,7 @@ export default class GameMap {
       Math.floor(tilePosition % this.width) * constants.MAP.TILE_LOGICAL_SIZE +
       constants.MAP.TILE_LOGICAL_SIZE / 2;
     const y =
-      Math.floor(tilePosition / this.height) * constants.MAP.TILE_LOGICAL_SIZE +
+      Math.floor(tilePosition / this.width) * constants.MAP.TILE_LOGICAL_SIZE +
       constants.MAP.TILE_LOGICAL_SIZE / 2;
 
     return new Vec2(x, y);
