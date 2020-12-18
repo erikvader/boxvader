@@ -1,5 +1,6 @@
 import path from 'path';
 import { SERVER } from '../common/constants';
+import { randomString } from '../common/misc';
 
 import express from 'express';
 import http from 'http';
@@ -33,6 +34,8 @@ const player_list: Player[] = [];
 let game: ServerGame | undefined;
 
 function startGame(maxMessageSize?: number): void {
+  const random_seed = randomString(10);
+
   // normalize the players' IDs
   for (let i = 0; i < player_list.length; i++) {
     player_list[i].player_id = i;
@@ -49,6 +52,7 @@ function startGame(maxMessageSize?: number): void {
       io.raw.room().emit(x);
     },
     Array.from(player_list.map(p => p.player_id)),
+    random_seed,
   );
 
   const all_names = {};
@@ -59,7 +63,13 @@ function startGame(maxMessageSize?: number): void {
   for (const p of player_list) {
     p.channel.emit(
       'start',
-      { id: p.player_id, map: 'scifi-1', tileset: 'scifi', names: all_names },
+      {
+        id: p.player_id,
+        map: 'scifi-1',
+        tileset: 'scifi',
+        names: all_names,
+        random_seed: random_seed,
+      },
       { reliable: true },
     );
     p.channel.onRaw(data => game?.clientMsg(p.player_id, data));

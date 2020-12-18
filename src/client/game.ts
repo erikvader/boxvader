@@ -15,12 +15,14 @@ import * as constants from '../common/constants';
 import { EnemySprite } from './sprites/enemySprite';
 import { CharacterSprite } from './sprites/characterSprite';
 import { CustomSprite } from './sprites/customSprite';
+
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
   renderer: PIXI.Renderer;
   stage: PIXI.Container;
   map: GameMap;
   my_id: number;
+  seed: string;
 }
 
 export default class ClientGame extends GameLoop {

@@ -5,8 +5,13 @@ import GameMap from '../common/gameMap';
 export default class ServerSimulation extends Simulation {
   public difficulty: number;
 
-  constructor(gameMap: GameMap, updateStep: number, numPlayers: number) {
-    super(gameMap, updateStep, numPlayers);
+  constructor(
+    gameMap: GameMap,
+    updateStep: number,
+    numPlayers: number,
+    seed: string,
+  ) {
+    super(gameMap, updateStep, numPlayers, seed);
     this.difficulty = 0;
   }
 
