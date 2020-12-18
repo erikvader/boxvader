@@ -156,6 +156,7 @@ export default class ClientGame extends GameLoop {
         this.player_list[player.id],
         player.maxHealth,
         player.health,
+        true,
       );
       this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.x,
@@ -225,7 +226,12 @@ export default class ClientGame extends GameLoop {
           enemy.id,
         );
       }
-      this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
+      this.change_hp(
+        this.enemy_list[enemy.id],
+        enemy.maxHealth,
+        enemy.health,
+        false,
+      );
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
@@ -239,9 +245,7 @@ export default class ClientGame extends GameLoop {
   remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
-        const baby_yoda_die = PIXI.Loader.shared.resources['die'].sound;
-        baby_yoda_die.volume = 0.1;
-        baby_yoda_die.play();
+        playSound('die', 0.1);
         this.stage.removeChild(this.enemy_list[enemy_id]);
         this.stage.removeChild(this.enemy_list[enemy_id].hpBar);
         delete this.enemy_list[enemy_id];
@@ -382,7 +386,12 @@ export default class ClientGame extends GameLoop {
     hp.width = width;
   }
 
-  change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
+  change_hp(
+    sprite: CustomSprite,
+    max_hp: number,
+    current_hp: number,
+    isPlayer: boolean,
+  ): void {
     if (sprite.hpBar === undefined) return;
     const width = constants.UI.HP_BAR_WIDTH;
     const flot_height = constants.UI.HP_BAR_FLOAT;
@@ -390,6 +399,11 @@ export default class ClientGame extends GameLoop {
     const percent = current_hp / max_hp;
     sprite.hpBar.x = sprite.x + -width / 2;
     sprite.hpBar.y = sprite.y - flot_height;
+    const oldHp = (sprite.hpBar.children[0] as PIXI.Graphics).width;
+    const newHp = outerWidth * percent;
+    if (isPlayer && newHp < oldHp) {
+      playSound('huh', 0.1);
+    }
     (sprite.hpBar.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
@@ -406,9 +420,7 @@ export default class ClientGame extends GameLoop {
     line.y = 0;
     line.visible = true;
     this.stage.addChild(line);
-    const pew_sound = PIXI.Loader.shared.resources['pew'].sound;
-    pew_sound.volume = 0.1;
-    pew_sound.play();
+    playSound('pew', 0.1);
     return line;
   }
 
@@ -455,4 +467,9 @@ export default class ClientGame extends GameLoop {
     this.score.text = 'Score: ' + state.players[this.my_id].score;
     this.waveNumber.text = 'Wave: ' + state.wave;
   }
+}
+function playSound(soundId: string, volume: number): void {
+  const sound = PIXI.Loader.shared.resources[soundId].sound;
+  sound.volume = volume;
+  sound.play();
 }

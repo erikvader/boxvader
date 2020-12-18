@@ -103,4 +103,5 @@ PIXI.Loader.shared
   .add('dubstep', 'sound/bensound-dubstep.mp3')
   .add('pew', 'sound/pew.mp3')
   .add('die', 'sound/baby_yoda_die.mp3')
+  .add('huh', 'sound/huh.mp3')
   .load(finishedResources);
