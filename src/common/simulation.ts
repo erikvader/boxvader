@@ -232,6 +232,7 @@ export default abstract class Simulation {
             continue;
           }
           const playerTile = this._gameMap.positionToTile(player.position);
+
           if (
             this._gameMap.floydWarshallWeightMatrix[enemyTile][playerTile] <
             maxDistance
@@ -239,6 +240,7 @@ export default abstract class Simulation {
             maxDistance = this._gameMap.floydWarshallWeightMatrix[enemyTile][
               playerTile
             ];
+
             targetPlayerPosition = player.position;
           }
         }
@@ -261,7 +263,6 @@ export default abstract class Simulation {
       currentPosition,
       targetPosition,
     );
-
     const x = Math.sign(nextPosition.x - currentPosition.x);
     const y = Math.sign(nextPosition.y - currentPosition.y);
     return new Vec2(x, y);
