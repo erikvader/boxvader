@@ -1,6 +1,7 @@
-import { Id, PopArray } from './misc';
+import { Id, PopArray, floatEq, arrayEq } from './misc';
 import { Body, Vec2 } from 'planck-js';
 import Weapon from './weapon';
+
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
@@ -23,6 +24,21 @@ export abstract class Entity {
     this.position = position;
     this.velocity = Vec2.zero();
     this.direction = new Vec2(0, -1);
+  }
+
+  public isSimilarTo(other: Entity, tolerance: number): boolean {
+    return (
+      this.id === other.id &&
+      this.maxHealth === other.maxHealth &&
+      this.walking === other.walking &&
+      this._health === other._health &&
+      floatEq(this.position.x, other.position.x, tolerance) &&
+      floatEq(this.position.y, other.position.y, tolerance) &&
+      floatEq(this.velocity.x, other.velocity.x, tolerance) &&
+      floatEq(this.velocity.y, other.velocity.y, tolerance) &&
+      floatEq(this.direction.x, other.direction.x, tolerance) &&
+      floatEq(this.direction.y, other.direction.y, tolerance)
+    );
   }
 
   public clone(construct: () => Entity): Entity {
@@ -132,6 +148,18 @@ export class Player extends Entity {
     this._score += points;
   }
 
+  public isSimilarTo(other: Entity, tolerance: number): boolean {
+    if (!(other instanceof Player)) return false;
+    const o = other as Player;
+    return (
+      super.isSimilarTo(other, tolerance) &&
+      this._score === o._score &&
+      floatEq(this.target.x, o.target.x, tolerance) &&
+      floatEq(this.target.y, o.target.y, tolerance) &&
+      arrayEq(this.weapons, o.weapons, (w1, w2) => w1.equals(w2))
+    );
+  }
+
   /**
    * Returns a deep copy of a `Player`.
    */
@@ -190,6 +218,19 @@ export class Enemy extends Entity {
     this.knockbackVelocity = Vec2.zero();
     this.knockbackTime = 0;
     this.score = score;
+  }
+
+  public isSimilarTo(other: Entity, tolerance: number): boolean {
+    if (!(other instanceof Enemy)) return false;
+    const o = other as Enemy;
+    return (
+      super.isSimilarTo(other, tolerance) &&
+      this.damage === o.damage &&
+      this.knockbackTime === o.knockbackTime &&
+      this.score === o.score &&
+      floatEq(this.knockbackVelocity.x, o.knockbackVelocity.x, tolerance) &&
+      floatEq(this.knockbackVelocity.y, o.knockbackVelocity.y, tolerance)
+    );
   }
 
   /**

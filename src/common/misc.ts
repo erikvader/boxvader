@@ -116,3 +116,19 @@ export function randomString(length: number): string {
   }
   return result;
 }
+
+export function floatEq(f1: number, f2: number, tolerance: number): boolean {
+  return Math.abs(f1 - f2) <= tolerance;
+}
+
+export function arrayEq<A, B>(
+  arr1: A[],
+  arr2: B[],
+  comparator: (A, B) => boolean,
+): boolean {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (!comparator(arr1[i], arr2[i])) return false;
+  }
+  return true;
+}

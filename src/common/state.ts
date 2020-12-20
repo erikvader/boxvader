@@ -1,5 +1,5 @@
 import { Player, Enemy } from './entity';
-import { NumMap, PopArray } from './misc';
+import { NumMap, PopArray, arrayEq } from './misc';
 
 export default class State {
   public players: NumMap<Player> = {};
@@ -61,5 +61,26 @@ export default class State {
     state.enemies = enemies;
     state.wave = wave;
     return state;
+  }
+
+  public isSimilarTo(other: State, tolerance: number): boolean {
+    // NOTE: this.wave is only used to display a number on the screen. It is not
+    // worth it to say that these two states are different solely because of
+    // wave.
+    const myStuff = [
+      ...Object.values(this.players),
+      ...Object.values(this.enemies),
+    ];
+    const otherStuff = [
+      ...Object.values(other.players),
+      ...Object.values(other.enemies),
+    ];
+
+    if (myStuff.length !== otherStuff.length) return false;
+
+    myStuff.sort((a, b) => a.id - b.id);
+    otherStuff.sort((a, b) => a.id - b.id);
+
+    return arrayEq(myStuff, otherStuff, (m, o) => m.isSimilarTo(o, tolerance));
   }
 }

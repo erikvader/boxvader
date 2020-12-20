@@ -38,6 +38,34 @@ export const CLIENT = {
   MAX_INPUTS: 20,
 };
 
+/** Map and tile constants. */
+export const MAP = {
+  /**
+   * How big a tile should be drawn as. This determines the final scale of the
+   * game and is the only constant expressed in pixels.
+   */
+  TILE_TARGET_SIZE_PIXELS: 48,
+
+  /**
+   * How big a tile or square is logically. Everything else will be dependent on
+   * this. The unit is in meters.
+   */
+  TILE_LOGICAL_SIZE: 1,
+
+  /** Turn a logical unit (meters) to its corresponding pixel size. */
+  LOGICAL_TO_PIXELS: (logical: number): number =>
+    (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE,
+
+  /** Name of the tile layer that holds the tile data of a map. */
+  TILE_LAYER_LAYER_NAME: 'Map',
+
+  /** Name of the object group layer that holds spawn positions of players. */
+  PLAYER_SPAWN_LAYER_NAME: 'Player spawn',
+
+  /** Name of the object group layer that holds spawn positions of enemies. */
+  ENEMY_SPAWN_LAYER_NAME: 'Enemy spawn',
+};
+
 /** Game constants. */
 export const GAME = {
   /** Maximum and initial health of a player. */
@@ -72,34 +100,12 @@ export const GAME = {
 
   /** Delay (in seconds) between waves. */
   WAVE_COOLDOWN: 3,
-};
-
-/** Map and tile constants. */
-export const MAP = {
-  /**
-   * How big a tile should be drawn as. This determines the final scale of the
-   * game and is the only constant expressed in pixels.
-   */
-  TILE_TARGET_SIZE_PIXELS: 48,
 
   /**
-   * How big a tile or square is logically. Everything else will be dependent on
-   * this. The unit is in meters.
+   * How many meters is considered "too different" on entity positions when
+   * comparing two states.
    */
-  TILE_LOGICAL_SIZE: 1,
-
-  /** Turn a logical unit (meters) to its corresponding pixel size. */
-  LOGICAL_TO_PIXELS: (logical: number): number =>
-    (logical * MAP.TILE_TARGET_SIZE_PIXELS) / MAP.TILE_LOGICAL_SIZE,
-
-  /** Name of the tile layer that holds the tile data of a map. */
-  TILE_LAYER_LAYER_NAME: 'Map',
-
-  /** Name of the object group layer that holds spawn positions of players. */
-  PLAYER_SPAWN_LAYER_NAME: 'Player spawn',
-
-  /** Name of the object group layer that holds spawn positions of enemies. */
-  ENEMY_SPAWN_LAYER_NAME: 'Enemy spawn',
+  TOLERANCE: MAP.TILE_LOGICAL_SIZE / (MAP.TILE_TARGET_SIZE_PIXELS * 5),
 };
 
 /** UI constants. */
@@ -125,3 +131,5 @@ export const UI = {
   /** How many pixels an hp bar is. */
   HP_BAR_FLOAT: 30,
 };
+
+export default { UI, MAP, CLIENT, SERVER, GAME };
