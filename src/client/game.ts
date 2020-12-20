@@ -5,6 +5,7 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
+import CSP from './csp';
 
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
@@ -23,6 +24,7 @@ export interface ClientGameOpt extends GameLoopOpt {
   map: GameMap;
   my_id: number;
   seed: string;
+  numPlayers: number;
 }
 
 export default class ClientGame extends GameLoop {
@@ -30,11 +32,7 @@ export default class ClientGame extends GameLoop {
   private stage;
   private map;
 
-  // predicted states where the first one always is a `true` state from the
-  // server.
-  private states: Deque<State>;
-  // inputs that caused all states in `states`.
-  // private statesInputs: Deque<Input>
+  private predictor;
 
   // inputs not confirmed by server
   private inputHistory: Deque<Input>;
@@ -62,11 +60,11 @@ export default class ClientGame extends GameLoop {
     this.renderer = args.renderer;
     this.stage = args.stage;
     this.stage.sortableChildren = true;
-    this.states = new Deque();
     this.inputHistory = new Deque();
     this.lastSentInput = -1;
     this.my_id = args.my_id;
     this.map = args.map;
+    this.predictor = new CSP(this.map, args.numPlayers, args.seed);
   }
 
   public start(): Promise<void> {
@@ -95,8 +93,6 @@ export default class ClientGame extends GameLoop {
   }
 
   doUpdate(): void {
-    if (this.my_sprite === undefined) return;
-
     const inp: Input = {
       up: this.up.isDown,
       left: this.left.isDown,
@@ -106,6 +102,14 @@ export default class ClientGame extends GameLoop {
     };
 
     this.inputHistory.push_back(inp);
+
+    this.predictor.predict(inp);
+    const newState = this.predictor.state;
+    const stateNum = this.predictor.stateNum;
+
+    this.update_player_sprites(newState, stateNum);
+    this.update_enemy_sprites(newState);
+    this.update_scoreboard(newState);
   }
 
   protected cleanup(): void {
@@ -126,15 +130,10 @@ export default class ClientGame extends GameLoop {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
-    const prevState = this.states.last_elem();
-    const newState = message.state;
-    this.update_player_sprites(prevState, newState);
-    this.update_enemy_sprites(prevState, newState);
-    this.update_scoreboard(newState);
-    this.states.reset(newState, message.stateNum);
+    this.predictor.setTruth(message.state, message.stateNum);
   }
 
-  update_player_sprites(prevState: State | undefined, newState: State): void {
+  update_player_sprites(newState: State, stateNum: number): void {
     // spawn new players
     this.remove_entity_sprites(newState);
     for (const player of Object.values(newState.players)) {
@@ -168,10 +167,10 @@ export default class ClientGame extends GameLoop {
       );
       if (
         player.weapons[0].timeOfLastShot <
-          this.states.last + constants.SERVER.BROADCAST_RATE &&
+          stateNum + constants.SERVER.BROADCAST_RATE &&
         player.weapons[0].timeOfLastShot +
           player.weapons[0].projectileVisibiltyDuration >
-          this.states.last + constants.SERVER.BROADCAST_RATE
+          stateNum + constants.SERVER.BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
@@ -215,7 +214,7 @@ export default class ClientGame extends GameLoop {
       this.player_list[player_id].walk = false;
     }
   }
-  update_enemy_sprites(prevState: State | undefined, newState: State): void {
+  update_enemy_sprites(newState: State): void {
     this.remove_entity_sprites(newState);
 
     for (const enemy of Object.values(newState.enemies)) {
