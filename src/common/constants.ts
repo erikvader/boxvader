@@ -1,9 +1,12 @@
 /** Server constants. */
 export const SERVER = {
-  /** Number of server updates per second. */
+  /** Number of server updates per second. How fast the game runs. */
   UPS: 60,
 
-  /** Number of server frames per second. */
+  /**
+   * How many times the server checks whether is should update. Should be the
+   * same as it's UPS.
+   */
   FPS: 60,
 
   /** Server port. */
@@ -28,10 +31,16 @@ export const SERVER = {
 
 /** Client constants. */
 export const CLIENT = {
-  /** Number of client updates per second. */
+  /**
+   * How many times per second the client should send inputs and update its
+   * predictor. This should be the same as the server's UPS.
+   */
   UPS: 60,
 
-  /** Number of client frames per second. */
+  /**
+   * Number of client frames per second. This doesn't do anything at the moment
+   * since the actual FPS is determined by the browser
+   */
   FPS: 60,
 
   /** Maximum number of inputs to send to the server at a time. */
