@@ -8,6 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const port = SERVER.PORT;
 
+import { delay } from './laggyGeckos';
 import geckos, { ServerChannel, iceServers } from '@geckos.io/server';
 const io = geckos({
   iceServers: process.env.NODE_ENV === 'production' ? iceServers : [],
@@ -43,14 +44,14 @@ function startGame(maxMessageSize?: number): void {
 
   game = new ServerGame(
     new GameMap('scifi-1', 'scifi'),
-    x => {
+    delay(SERVER.DELAY, x => {
       if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
         console.warn(
           `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
         );
       }
       io.raw.room().emit(x);
-    },
+    }),
     Array.from(player_list.map(p => p.player_id)),
     random_seed,
   );
@@ -72,7 +73,9 @@ function startGame(maxMessageSize?: number): void {
       },
       { reliable: true },
     );
-    p.channel.onRaw(data => game?.clientMsg(p.player_id, data));
+    p.channel.onRaw(
+      delay(SERVER.DELAY, data => game?.clientMsg(p.player_id, data)),
+    );
   }
 
   game.start().then(() => {

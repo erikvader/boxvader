@@ -27,6 +27,9 @@ export const SERVER = {
    * many updates without getting popped.
    */
   INPUT_QUEUE_MAX_AGE: 3,
+
+  /** Amount of one-way networking delay in milliseconds */
+  DELAY: 0,
 };
 
 /** Client constants. */
