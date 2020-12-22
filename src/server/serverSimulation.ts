@@ -3,8 +3,6 @@ import Simulation from '../common/simulation';
 import GameMap from '../common/gameMap';
 
 export default class ServerSimulation extends Simulation {
-  public difficulty: number;
-
   constructor(
     gameMap: GameMap,
     updateStep: number,
@@ -12,13 +10,10 @@ export default class ServerSimulation extends Simulation {
     seed: string,
   ) {
     super(gameMap, updateStep, numPlayers, seed);
-    this.difficulty = 0;
   }
 
   public update(inputs: Map<Id, Input>): void {
     this.commonUpdate();
-    // update players based on their inputs
-    // TODO: handle 'fire' input
 
     for (const id in this.state.players) {
       const idNum = parseInt(id);
@@ -29,6 +24,6 @@ export default class ServerSimulation extends Simulation {
 
     this.world.step(this.updateStep);
 
-    super.updateState();
+    this.updateState();
   }
 }

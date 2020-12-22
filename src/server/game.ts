@@ -44,7 +44,6 @@ export default class ServerGame extends GameLoop {
     );
 
     for (const p of players) {
-      this.simulation.addPlayer(p);
       this.playerInputs[p] = new Deque();
     }
   }

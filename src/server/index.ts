@@ -52,7 +52,7 @@ function startGame(maxMessageSize?: number): void {
       }
       io.raw.room().emit(x);
     }),
-    Array.from(player_list.map(p => p.player_id)),
+    player_list.map(p => p.player_id),
     random_seed,
   );
 

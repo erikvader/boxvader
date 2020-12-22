@@ -1,10 +1,9 @@
 import GameMap from '../common/gameMap';
-import { Input } from '../common/misc';
+import { Input, Id } from '../common/misc';
 import Simulation, { createBody } from '../common/simulation';
 import seedrandom from 'seedrandom';
 
 import State from '../common/state';
-import { Body } from 'planck-js';
 
 export interface SimState {
   state: State;
@@ -21,9 +20,20 @@ export default class ClientSimulation extends Simulation {
     super(map, updateStep, numPlayers, seed, { state: true });
   }
 
-  public update(body: Body, input: Input): void {
+  public update(me: Id, input: Input): void {
     this.commonUpdate();
-    //this.handlePlayerInput(body, input);
+
+    const my_body = this.bodies.get(me);
+    if (my_body === undefined) {
+      throw new Error("I don't exists?");
+    }
+    this.handlePlayerInput(my_body, this.state.players[me], input);
+    // TODO: move the other players in the same direction as they were walking
+    // in before
+
+    this.world.step(this.updateStep);
+
+    this.updateState();
   }
 
   public reset(simState: SimState): void {
@@ -42,12 +52,12 @@ export default class ClientSimulation extends Simulation {
     this.bodies.forEach((body, id) => {
       if (id in state.players) {
         const player = state.players[id];
-        body.setPosition(player.position.clone());
-        body.setLinearVelocity(player.velocity.clone());
+        body.setPosition(player.position);
+        body.setLinearVelocity(player.velocity);
       } else if (id in state.enemies) {
         const enemy = state.enemies[id];
-        body.setPosition(enemy.position.clone());
-        body.setLinearVelocity(enemy.velocity.clone());
+        body.setPosition(enemy.position);
+        body.setLinearVelocity(enemy.velocity);
       } else {
         deletedIds.push(id);
       }

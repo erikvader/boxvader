@@ -71,6 +71,10 @@ export default abstract class Simulation {
     this._numPlayers = numPlayers;
     this.timeOfDamageTaken = new Map<Id, Id>();
     this.enemyContacts = new Map<Id, Id[]>();
+
+    for (let i = 0; i < numPlayers; i++) {
+      this.addPlayer(i);
+    }
   }
 
   public commonUpdate(): void {
