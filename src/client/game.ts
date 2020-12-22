@@ -67,8 +67,6 @@ export default class ClientGame extends GameLoop {
   }
 
   public start(): Promise<void> {
-    console.log(PIXI.Loader.shared.resources['dubstep']);
-    //  PIXI.Loader.shared.resources['dubstep'].sound.play();
     display_map(this.stage, this.map);
     this.create_scoreboard();
     this.key_presses();
