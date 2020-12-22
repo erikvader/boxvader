@@ -1,5 +1,12 @@
 import { Vec2 } from 'planck-js';
 
+// NOTE: performance resides in different places in Node and browsers.
+/* eslint-disable @typescript-eslint/no-var-requires */
+export const performance =
+  process.env.BROWSER === 'yes'
+    ? window.performance
+    : require('perf_hooks').performance;
+
 export type Id = number;
 
 export interface NumMap<T> {
@@ -55,13 +62,6 @@ export function interpolate(src: Vec2, dst: Vec2, delta: number): Vec2 {
   return Vec2.add(x, y);
 }
 
-export function reviveVec2(obj: unknown): Vec2 {
-  if (isObjectWithKeys(obj, ['x', 'y'])) {
-    return new Vec2(obj['x'], obj['y']);
-  }
-  throw new Error("can't revive Vec2");
-}
-
 export function isObjectWithKeys(
   obj: unknown,
   keys: Array<string>,
@@ -82,5 +82,25 @@ export function randomChoice<T>(ts: T[]): T | undefined {
   else {
     const index = Math.floor(Math.random() * ts.length);
     return ts[index];
+  }
+}
+
+/**
+ * A wrapper around [[Array]] whose pop throws an error instead of returning
+ * undefined when the array is empty.
+ */
+export class PopArray<T = number> {
+  public array: T[];
+
+  constructor(array: T[]) {
+    this.array = array;
+  }
+
+  public pop(): T {
+    const elem = this.array.pop();
+    if (elem === undefined) {
+      throw new Error('no more elements to pop');
+    }
+    return elem;
   }
 }

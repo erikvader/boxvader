@@ -1,9 +1,4 @@
-// NOTE: performance resides in different places in Node and browsers.
-/* eslint-disable @typescript-eslint/no-var-requires */
-const performance =
-  process.env.BROWSER === 'yes'
-    ? window.performance
-    : require('perf_hooks').performance;
+import { performance } from './misc';
 
 export interface GameLoopOpt {
   ups?: number;
@@ -107,8 +102,9 @@ export default abstract class GameLoop {
    */
   protected timer(prevStep?: number): void {
     setTimeout(() => {
+      if (!this.running) return;
       const step = this.update();
-      if (this.running) this.timer(step);
+      this.timer(step);
     }, Math.max(0, this.fps - (prevStep || 0)));
   }
 

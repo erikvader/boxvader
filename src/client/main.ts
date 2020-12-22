@@ -13,13 +13,17 @@ function onDocumentReady(callback: () => void): void {
     document.addEventListener('DOMContentLoaded', callback);
   }
 }
+
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-function finishedResources(): void {
+PIXI.settings.FAIL_IF_MAJOR_PERFORMANCE_CAVEAT = false;
+
+function startGame(
+  previousScores?: { name: PIXI.Text; score: PIXI.Text }[],
+): void {
   const channel = geckos({ port: constants.SERVER.PORT });
 
-  const app = new PIXI.Application();
-  const renderer = app.renderer;
-  const stage = app.stage;
+  const renderer = PIXI.autoDetectRenderer();
+  const stage = new PIXI.Container();
 
   document.getElementById('game-container')!.append(renderer.view);
   renderer.backgroundColor = 0xffd700;
@@ -28,10 +32,29 @@ function finishedResources(): void {
   const { maxMessageSize } = channel;
   let game;
   let readyStatus = false;
+  let playerNames = {};
 
   window.addEventListener('beforeunload', () => {
     channel.close();
   });
+
+  const marginLeft = 10;
+  const gap = marginLeft + 120;
+  const offsetDistance = 24;
+
+  if (previousScores) {
+    stage.addChild(new PIXI.Text('NAME')).position.set(marginLeft, 0);
+    stage.addChild(new PIXI.Text('SCORE')).position.set(gap, 0);
+    let offset = 1;
+    for (const previousScore of previousScores) {
+      stage.addChild(previousScore.name);
+      previousScore.name.position.set(marginLeft, offset * offsetDistance);
+      stage.addChild(previousScore.score);
+      previousScore.score.position.set(gap, offset * offsetDistance);
+      offset += 1;
+    }
+    renderer.render(stage);
+  }
 
   channel.onConnect(error => {
     if (error) {
@@ -44,8 +67,10 @@ function finishedResources(): void {
     channel.on('start', data => {
       const button = document.getElementById('btn-ready');
       if (button !== null) {
-        button.remove();
+        button.hidden = true;
       }
+
+      playerNames = data['names'];
 
       const map = new GameMap(data['map'], data['tileset']);
       const [
@@ -76,6 +101,33 @@ function finishedResources(): void {
       });
     });
 
+    channel.on('game_over', data => {
+      game?.stop();
+      game = undefined;
+      channel.close();
+      document.getElementById('game')?.remove();
+
+      const button = document.getElementById('btn-ready');
+      if (button !== null) {
+        button.innerText = ':-(';
+        button.hidden = false;
+      }
+      const scores: { name: PIXI.Text; score: PIXI.Text }[] = [];
+      const style = new PIXI.TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 20,
+      });
+
+      const players = data['players'];
+      for (const p of players) {
+        const name = new PIXI.Text(playerNames[p.id], style);
+        const score = new PIXI.Text('' + p.score, style);
+        scores.push({ name, score });
+      }
+
+      startGame(scores);
+    });
+
     channel.onDisconnect(() => {
       console.info('Disconnected from the server');
       game?.stop();
@@ -89,7 +141,11 @@ function finishedResources(): void {
           if (game !== undefined) return;
           readyStatus = !readyStatus;
           button.innerText = ':-' + (readyStatus ? ')' : '(');
-          channel.emit('ready', { status: readyStatus }, { reliable: true });
+          channel.emit(
+            'ready',
+            { status: readyStatus, name: 'Borgov uwu' },
+            { reliable: true },
+          );
         });
       }
     });
@@ -100,8 +156,10 @@ PIXI.Loader.shared
   .add(constants.UI.PLAYER_SPRITE_PATH)
   .add(constants.UI.ENEMY_SPRITE_PATH)
   .add('imgs/tilesheets/scifitiles-sheet.png') // TODO: load from map somehow
-  .add('dubstep', 'sound/bensound-dubstep.mp3')
+  .add('imgs/blood/splatter1.png')
+  .add('imgs/blood/splatter2.png')
+  .add('imgs/blood/splatter3.png')
   .add('pew', 'sound/pew.mp3')
   .add('die', 'sound/baby_yoda_die.mp3')
   .add('huh', 'sound/huh.mp3')
-  .load(finishedResources);
+  .load(() => startGame());

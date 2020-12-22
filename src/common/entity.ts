@@ -1,6 +1,6 @@
-import { Id, reviveVec2, isObjectWithKeys } from './misc';
+import { Id, PopArray } from './misc';
 import { Body, Vec2 } from 'planck-js';
-import * as Weapon from './weapon';
+import Weapon from './weapon';
 /**
  * A generic entity. It has health, a position, and a velocity.
  */
@@ -11,8 +11,10 @@ export abstract class Entity {
   public position: Vec2;
   public velocity: Vec2;
   public direction: Vec2;
-  private _health: number;
   public walking: boolean;
+
+  private _health: number;
+
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
     this.maxHealth = health;
@@ -23,33 +25,14 @@ export abstract class Entity {
     this.direction = new Vec2(0, -1);
   }
 
-  public static revive(
-    obj: unknown,
-    construct: (id: Id, health: number, position: Vec2) => Entity,
-  ): Entity {
-    if (
-      isObjectWithKeys(obj, [
-        'id',
-        'maxHealth',
-        'walking',
-        'position',
-        '_health',
-        'velocity',
-        'direction',
-      ])
-    ) {
-      const e = construct(
-        obj['id'],
-        obj['maxHealth'],
-        reviveVec2(obj['position']),
-      );
-      e.walking = obj['walking'];
-      e._health = obj['_health'];
-      e.velocity = reviveVec2(obj['velocity']);
-      e.direction = reviveVec2(obj['direction']);
-      return e;
-    }
-    throw new Error("couldn't revive Entity");
+  public clone(construct: () => Entity): Entity {
+    const e = construct();
+    // id, position, and _health are cloned by the children's clone() functions
+    e.velocity = this.velocity.clone();
+    e.direction = this.direction.clone();
+    e.walking = this.walking;
+
+    return e;
   }
 
   public get health(): number {
@@ -84,24 +67,61 @@ export abstract class Entity {
     this.velocity = Vec2.zero();
     this.walking = false;
   }
+
+  public flatten(flat: number[]): void {
+    flat.push(
+      this.id,
+      this.maxHealth,
+      Math.fround(this.position.x),
+      Math.fround(this.position.y),
+      Math.fround(this.velocity.x),
+      Math.fround(this.velocity.y),
+      Math.fround(this.direction.x),
+      Math.fround(this.direction.y),
+      this._health,
+      this.walking ? 1 : 0,
+    );
+  }
+
+  public static explode(
+    buf: PopArray,
+    construct: (id: Id, health: number, position: Vec2) => Entity,
+  ): Entity {
+    const id = buf.pop();
+    const maxHealth = buf.pop();
+    const positionx = buf.pop();
+    const positiony = buf.pop();
+    const velocityx = buf.pop();
+    const velocityy = buf.pop();
+    const directionx = buf.pop();
+    const directiony = buf.pop();
+    const _health = buf.pop();
+    const walking = buf.pop() === 1;
+
+    const entity = construct(id, maxHealth, new Vec2(positionx, positiony));
+    entity._health = _health;
+    entity.walking = walking;
+    entity.velocity = new Vec2(velocityx, velocityy);
+    entity.direction = new Vec2(directionx, directiony);
+
+    return entity;
+  }
 }
 
 /**
- * A player with a name and score. An extension of `Entity`.
+ * A player with a score. An extension of `Entity`.
  */
 export class Player extends Entity {
-  public readonly name: string;
-
   public target: Vec2;
-  private _score: number;
-  public weapons: Weapon.Weapon[];
+  public weapons: Weapon[];
 
-  public constructor(id: Id, health: number, position: Vec2, name: string) {
+  private _score: number;
+
+  public constructor(id: Id, health: number, position: Vec2) {
     super(id, health, position);
-    this.name = name;
     this._score = 0;
     this.target = new Vec2(0, 0);
-    this.weapons = [new Weapon.E11_blaster_rifle()];
+    this.weapons = [new Weapon(0)];
   }
 
   public get score(): number {
@@ -116,32 +136,39 @@ export class Player extends Entity {
    * Returns a deep copy of a `Player`.
    */
   public clone(): Player {
-    const player = new Player(
-      this.id,
-      this.health,
-      this.position.clone(),
-      this.name, // name is NOT deep-copied
-    );
-
-    player.velocity = this.velocity.clone();
-    return player;
+    return super.clone(() => {
+      return new Player(this.id, this.health, this.position.clone());
+    }) as Player;
   }
 
-  public static revive(obj: unknown): Player {
-    if (isObjectWithKeys(obj, ['name', '_score', 'target', 'weapons'])) {
-      return Entity.revive(obj, (id: Id, health: number, position: Vec2) => {
-        const p = new Player(id, health, position, obj['name']);
-        p._score = obj['_score'];
-        p.target = obj['target'];
-        p.weapons = [];
-        for (const weapon of obj['weapons']) {
-          p.weapons.push(Weapon[weapon['_weaponType']].revive(weapon));
-        }
-
-        return p;
-      }) as Player;
+  public flatten(flat: number[]): void {
+    super.flatten(flat);
+    flat.push(
+      Math.fround(this.target.x),
+      Math.fround(this.target.y),
+      this._score,
+      this.weapons.length,
+    );
+    for (const w of this.weapons) {
+      w.flatten(flat);
     }
-    throw new Error("couldn't revive Player");
+  }
+
+  public static explode(buf: PopArray): Player {
+    return Entity.explode(buf, (id: Id, health: number, position: Vec2) => {
+      const p = new Player(id, health, position);
+      p.target.x = buf.pop();
+      p.target.y = buf.pop();
+      p._score = buf.pop();
+
+      const weaponsLength = buf.pop();
+      p.weapons = [];
+      for (let i = 0; i < weaponsLength; i++) {
+        p.weapons.push(Weapon.explode(buf));
+      }
+
+      return p;
+    }) as Player;
   }
 }
 
@@ -169,39 +196,40 @@ export class Enemy extends Entity {
    * Returns a deep copy of an `Enemy`.
    */
   public clone(): Enemy {
-    const enemy = new Enemy(
-      this.id,
-      this.health,
-      this.position.clone(),
-      this.damage,
-      this.score,
-    );
-
-    enemy.knockbackTime = this.knockbackTime;
-    enemy.knockbackVelocity = this.knockbackVelocity.clone();
-    enemy.velocity = this.velocity.clone();
-    return enemy;
+    return super.clone(() => {
+      const e = new Enemy(
+        this.id,
+        this.health,
+        this.position.clone(),
+        this.damage,
+        this.score,
+      );
+      e.knockbackTime = this.knockbackTime;
+      e.knockbackVelocity = this.knockbackVelocity.clone();
+      return e;
+    }) as Enemy;
   }
 
-  public static revive(obj: unknown): Enemy {
-    if (
-      isObjectWithKeys(obj, [
-        'damage',
-        'knockbackTime',
-        'knockbackVelocity',
-        'score',
-      ])
-    ) {
-      const e = Entity.revive(
-        obj,
-        (id: Id, health: number, position: Vec2) =>
-          new Enemy(id, health, position, obj['damage'], obj['score']),
-      ) as Enemy;
+  public flatten(flat: number[]): void {
+    super.flatten(flat);
+    flat.push(
+      this.damage,
+      this.score,
+      Math.fround(this.knockbackVelocity.x),
+      Math.fround(this.knockbackVelocity.y),
+      this.knockbackTime,
+    );
+  }
 
-      e.knockbackVelocity = reviveVec2(obj['knockbackVelocity']);
-      e.knockbackTime = obj['knockbackTime'];
+  public static explode(buf: PopArray): Enemy {
+    return Entity.explode(buf, (id: Id, health: number, position: Vec2) => {
+      const damage = buf.pop();
+      const score = buf.pop();
+      const e = new Enemy(id, health, position, damage, score);
+      e.knockbackVelocity.x = buf.pop();
+      e.knockbackVelocity.y = buf.pop();
+      e.knockbackTime = buf.pop();
       return e;
-    }
-    throw new Error("couldn't revive Enemy");
+    }) as Enemy;
   }
 }

@@ -1,4 +1,4 @@
-import { Input, NumMap, compactInput, explodeInput } from './misc';
+import { Input, NumMap, compactInput, explodeInput, PopArray } from './misc';
 import State from './state';
 import { ByteBuffer } from 'bytebuffer';
 import pson from './pson';
@@ -25,6 +25,29 @@ export interface ServerToClient {
   state: State;
 }
 
+function flattenSTC(stc: ServerToClient): number[] {
+  const numPlayers = Object.values(stc.state.players).length;
+  const numAcks = Object.values(stc.inputAck).length;
+
+  const flattened: number[] = [];
+  flattened.push(stc.stateNum);
+
+  flattened.push(numPlayers);
+  for (let i = 0; i < numPlayers; i++) {
+    const ia = stc.inputAck[i];
+    if (ia === undefined && numPlayers === numAcks) {
+      throw new Error('player IDs are not continous it seems');
+    }
+    if (ia !== undefined && ia < 0) {
+      throw new Error("inputAck shouldn't be negative");
+    }
+    flattened.push(ia ?? -1);
+  }
+
+  stc.state.flatten(flattened);
+  return flattened;
+}
+
 export function serialize(
   message: ServerToClient | ClientToServer,
 ): ByteBuffer {
@@ -38,7 +61,8 @@ export function serialize(
       .toArrayBuffer();
   } else {
     const msg = message as ServerToClient;
-    return pson.encode(msg).toArrayBuffer();
+    const buf = flattenSTC(msg);
+    return pson.encode(buf).toArrayBuffer();
   }
 }
 
@@ -50,10 +74,26 @@ export function deserializeCTS(message: ByteBuffer): ClientToServer {
 }
 
 export function deserializeSTC(message: ByteBuffer): ServerToClient {
-  const d = pson.decode(message);
+  let buf = pson.decode(message);
+  buf.reverse();
+  buf = new PopArray(buf);
+
+  const stateNum = buf.pop();
+
+  const inputAck = {};
+  const numAcks = buf.pop();
+  for (let i = 0; i < numAcks; i++) {
+    const ia = buf.pop();
+    if (ia >= 0) {
+      inputAck[i] = ia;
+    }
+  }
+
+  const state = State.explode(buf);
+
   return {
-    inputAck: d['inputAck'],
-    stateNum: d['stateNum'],
-    state: State.revive(d['state']),
+    inputAck,
+    stateNum,
+    state,
   };
 }
