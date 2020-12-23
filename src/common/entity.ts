@@ -137,7 +137,11 @@ export class Player extends Entity {
    */
   public clone(): Player {
     return super.clone(() => {
-      return new Player(this.id, this.health, this.position.clone());
+      const p = new Player(this.id, this.health, this.position.clone());
+      p.target = this.target.clone();
+      p.weapons = this.weapons.map(w => w.clone());
+      p._score = this._score;
+      return p;
     }) as Player;
   }
 
