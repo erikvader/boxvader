@@ -30,6 +30,9 @@ export const SERVER = {
 
   /** Amount of one-way networking delay in milliseconds */
   DELAY: 0,
+
+  /** The chance that an incoming or outgoing package will be dropped. [0, 1] */
+  DROP: 0,
 };
 
 /** Client constants. */

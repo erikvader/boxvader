@@ -20,3 +20,24 @@ export function delay(
     setTimeout(() => func.apply(this, args), ms);
   };
 }
+
+/**
+ * Takes a function `func` and converts it to version that randomly is not run.
+ * @param drop_chance a number between 0 and 1, the chance that `func` is not run.
+ * @param func the function to drop
+ * @returns a function that will, when executed, call `func` with all passed
+ * parameters, sometimes.
+ */
+export function drop<T>(
+  drop_chance: number,
+  func: (...args) => T,
+): (...args) => T | undefined {
+  if (drop_chance === 0) {
+    return func;
+  }
+
+  return function(this: unknown, ...args) {
+    if (Math.random() > drop_chance) return func.apply(this, args);
+    return undefined;
+  };
+}
