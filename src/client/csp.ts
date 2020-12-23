@@ -1,11 +1,36 @@
 import Deque from '../common/deque';
-import { Input } from '../common/misc';
+import { Input, Id } from '../common/misc';
 import State from '../common/state';
 import constants from '../common/constants';
-import ClientSimulation from './clientSimulation';
+import ClientSimulation, { SimState } from './clientSimulation';
 import GameMap from '../common/gameMap';
 
-export default class CSP {
+export interface Predictor {
+  predict(input: Input): void;
+  setTruth(state: State, stateNum: number): void;
+  stateNum: number;
+  state: State;
+}
+
+export class Dummy implements Predictor {
+  public state;
+  public stateNum;
+
+  constructor() {
+    this.stateNum = 0;
+    this.state = new State();
+  }
+  public predict(input: Input): void {
+    input;
+  }
+
+  public setTruth(state: State, stateNum: number): void {
+    this.state = state;
+    this.stateNum = stateNum;
+  }
+}
+
+export class Smarty implements Predictor {
   // predicted states where the first one always is a `true` state from the
   // server.
   private states: Deque<State>;

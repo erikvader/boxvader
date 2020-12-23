@@ -51,6 +51,9 @@ export const CLIENT = {
 
   /** Maximum number of inputs to send to the server at a time. */
   MAX_INPUTS: 20,
+
+  /** Whether to use Client Side Prediction or not. */
+  CSP: false,
 };
 
 /** Map and tile constants. */

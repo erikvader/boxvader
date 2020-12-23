@@ -5,7 +5,7 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
-import CSP from './csp';
+import * as CSP from './csp';
 
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
@@ -32,7 +32,7 @@ export default class ClientGame extends GameLoop {
   private stage;
   private map;
 
-  private predictor;
+  private predictor: CSP.Predictor;
 
   // inputs not confirmed by server
   private inputHistory: Deque<Input>;
@@ -64,7 +64,12 @@ export default class ClientGame extends GameLoop {
     this.lastSentInput = -1;
     this.my_id = args.my_id;
     this.map = args.map;
-    this.predictor = new CSP(this.map, args.numPlayers, args.seed);
+
+    if (constants.CLIENT.CSP) {
+      this.predictor = new CSP.Smarty(this.map, args.numPlayers, args.seed);
+    } else {
+      this.predictor = new CSP.Dummy();
+    }
   }
 
   public start(): Promise<void> {
@@ -473,7 +478,7 @@ export default class ClientGame extends GameLoop {
   }
 
   update_scoreboard(state: State): void {
-    this.score.text = 'Score: ' + state.players[this.my_id].score;
+    this.score.text = 'Score: ' + state.players[this.my_id]?.score;
     this.waveNumber.text = 'Wave: ' + state.wave;
   }
 }
