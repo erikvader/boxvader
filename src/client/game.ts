@@ -66,7 +66,12 @@ export default class ClientGame extends GameLoop {
     this.map = args.map;
 
     if (constants.CLIENT.CSP) {
-      this.predictor = new CSP.Smarty(this.map, args.numPlayers, args.seed);
+      this.predictor = new CSP.Smarty(
+        this.map,
+        args.numPlayers,
+        args.seed,
+        args.my_id,
+      );
     } else {
       this.predictor = new CSP.Dummy();
     }
@@ -108,7 +113,7 @@ export default class ClientGame extends GameLoop {
 
     this.inputHistory.push_back(inp);
 
-    this.predictor.predict(inp);
+    this.predictor.predict(this.inputHistory);
     const newState = this.predictor.state;
     const stateNum = this.predictor.stateNum;
 
@@ -135,7 +140,7 @@ export default class ClientGame extends GameLoop {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
-    this.predictor.setTruth(message.state, message.stateNum);
+    this.predictor.setTruth(message.state, this.inputHistory);
   }
 
   update_player_sprites(newState: State, stateNum: number): void {
