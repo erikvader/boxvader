@@ -140,7 +140,7 @@ export default class ClientGame extends GameLoop {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
-    this.predictor.setTruth(message.state, this.inputHistory);
+    this.predictor.setTruth(message.state, message.stateNum, this.inputHistory);
   }
 
   update_player_sprites(newState: State, stateNum: number): void {

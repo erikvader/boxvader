@@ -7,6 +7,7 @@ import State from '../common/state';
 
 export interface SimState {
   state: State;
+  stepCounter: number;
   rngState: seedrandom.State;
 }
 
@@ -36,6 +37,7 @@ export default class ClientSimulation extends Simulation {
   }
 
   public reset(simState: SimState): void {
+    this._stepCounter = simState.stepCounter;
     this._random = seedrandom('', { state: simState.rngState });
     const state = simState.state;
 
@@ -85,6 +87,7 @@ export default class ClientSimulation extends Simulation {
     return {
       state: this.state.clone(),
       rngState: this._random.state(),
+      stepCounter: this._stepCounter,
     };
   }
 }

@@ -2,12 +2,12 @@ import Deque from '../common/deque';
 import { Input, Id } from '../common/misc';
 import State from '../common/state';
 import constants from '../common/constants';
-import ClientSimulation from './clientSimulation';
+import ClientSimulation, { SimState } from './clientSimulation';
 import GameMap from '../common/gameMap';
 
 export interface Predictor {
   predict(inputs: Deque<Input>): void;
-  setTruth(state: State, inputs: Deque<Input>): void;
+  setTruth(state: State, stateNum: number, inputs: Deque<Input>): void;
   stateNum: number;
   state: State;
 }
@@ -20,25 +20,24 @@ export class Dummy implements Predictor {
     this.stateNum = 0;
     this.state = new State();
   }
-  public predict(inputs: Deque<Input>): void {
-    inputs;
+
+  public predict(_inputs: Deque<Input>): void {
+    return;
   }
 
-  public setTruth(state: State, inputs: Deque<Input>): void {
+  public setTruth(state: State, stateNum: number, _inputs: Deque<Input>): void {
     this.state = state;
-    this.stateNum = inputs.first - 1;
+    this.stateNum = stateNum;
   }
 }
 
 export class Smarty implements Predictor {
   // predicted states where the first one always is a `true` state from the
   // server.
-  private states: Deque<State>;
+  private states: Deque<SimState>;
   private sim: ClientSimulation;
   private my_id: number;
-
-  // TODO: handle rngState properly
-  private readonly rngState;
+  private truthStateNum;
 
   constructor(map: GameMap, numPlayers: number, seed: string, my_id: Id) {
     this.my_id = my_id;
@@ -49,20 +48,18 @@ export class Smarty implements Predictor {
       numPlayers,
       seed,
     );
-
-    const snap = this.sim.snapshot();
-    this.states.push_back(snap.state);
-    this.rngState = snap.rngState;
+    this.states.push_back(this.sim.snapshot());
+    this.truthStateNum = this.states.last;
   }
 
   public get state(): State {
     const last = this.states.last_elem();
     if (last === undefined) throw new Error("this can't be empty");
-    return last;
+    return last.state;
   }
 
   public get stateNum(): number {
-    return this.states.last;
+    return this.sim.stepCounter;
   }
 
   public predict(inputs: Deque<Input>): void {
@@ -76,51 +73,33 @@ export class Smarty implements Predictor {
       const input = inputs.retrieve(i);
       if (input === undefined) break;
       this.sim.update(this.my_id, input);
-      this.states.push_back(this.sim.snapshot().state);
+      this.states.push_back(this.sim.snapshot());
     }
   }
 
-  public setTruth(state: State, inputs: Deque<Input>): void {
+  public setTruth(state: State, stateNum: number, inputs: Deque<Input>): void {
+    if (stateNum <= this.truthStateNum) return;
+    this.truthStateNum = stateNum;
     this.states.discard_front_until(inputs.first - 2);
 
     const first = this.states.first_elem();
+    if (first !== undefined)
+      state.translateTimestamps(first.stepCounter - stateNum);
     if (
       first !== undefined &&
-      first.isSimilarTo(state, constants.GAME.TOLERANCE)
+      first.state.isSimilarTo(state, constants.GAME.TOLERANCE)
     ) {
       return;
     }
 
-    this.states.reset(state, inputs.first - 1);
-    this.sim.reset({ rngState: this.rngState, state: this.state });
+    const prev = this.states.retrieve(inputs.first - 1) ?? this.sim.snapshot();
+    prev.state = state;
+
+    this.states.reset(prev, inputs.first - 1);
+    this.sim.reset(prev);
     for (const inp of inputs) {
       this.sim.update(this.my_id, inp);
-      this.states.push_back(this.sim.snapshot().state);
+      this.states.push_back(this.sim.snapshot());
     }
   }
-
-  // TODO: disable when production
-  // private checkInvariants(): void {
-  //   if (this.inputs.length > 0 && this.states.first !== this.inputs.first)
-  //     console.error(
-  //       'the values of first are incorrect',
-  //       this.inputs.length,
-  //       this.inputs.first,
-  //       this.states.first,
-  //     );
-
-  //   if (this.inputs.length === 0 && this.states.length !== 1)
-  //     console.error(
-  //       'inputs is empty but states is long',
-  //       this.inputs.length,
-  //       this.states.length,
-  //     );
-
-  //   if (this.states.length !== this.inputs.length + 1)
-  //     console.error(
-  //       'the lengths are incorrect',
-  //       this.states.length,
-  //       this.inputs.length,
-  //     );
-  // }
 }

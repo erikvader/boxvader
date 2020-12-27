@@ -88,4 +88,12 @@ export default class State {
 
     return arrayEq(myStuff, otherStuff, (m, o) => m.isSimilarTo(o, tolerance));
   }
+
+  public translateTimestamps(translate: number): void {
+    for (const p of Object.values(this.players)) {
+      for (const w of p.weapons) {
+        w.timeOfLastShot += translate;
+      }
+    }
+  }
 }
