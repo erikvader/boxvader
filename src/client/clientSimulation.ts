@@ -24,10 +24,9 @@ export default class ClientSimulation extends Simulation {
     this.commonUpdate();
 
     const my_body = this.bodies.get(me);
-    if (my_body === undefined) {
-      throw new Error("I don't exists?");
+    if (my_body !== undefined) {
+      this.handlePlayerInput(my_body, this.state.players[me], input);
     }
-    this.handlePlayerInput(my_body, this.state.players[me], input);
     // TODO: move the other players in the same direction as they were walking
     // in before
 
