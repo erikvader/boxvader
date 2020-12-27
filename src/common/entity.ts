@@ -7,7 +7,6 @@ import Weapon from './weapon';
  */
 export abstract class Entity {
   public readonly id: Id;
-  public readonly maxHealth: number;
 
   public position: Vec2;
   public velocity: Vec2;
@@ -15,6 +14,7 @@ export abstract class Entity {
   public walking: boolean;
 
   private _health: number;
+  public maxHealth: number;
 
   public constructor(id: Id, health: number, position: Vec2) {
     this.id = id;
@@ -47,6 +47,7 @@ export abstract class Entity {
     e.velocity = this.velocity.clone();
     e.direction = this.direction.clone();
     e.walking = this.walking;
+    e.maxHealth = this.maxHealth;
 
     return e;
   }
