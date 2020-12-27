@@ -15,7 +15,6 @@ export default abstract class Simulation {
   protected _bodies: Map<Id, Body>;
   protected _state: State;
   protected _stepCounter: number;
-  protected _enemyIdCounter: number;
   protected _wave: Wave;
   protected _numPlayers: number;
   protected _random: seedrandom.prng;
@@ -61,7 +60,7 @@ export default abstract class Simulation {
     this._bodies = new Map<Id, Body>();
     this._state = new State();
     this._stepCounter = 0;
-    this._enemyIdCounter = numPlayers;
+    this.state.enemyIdCounter = numPlayers;
     this._gameMap = map;
     this._wave = new Wave(
       1,
@@ -145,29 +144,29 @@ export default abstract class Simulation {
   // Should probably have a type of enemy as well for later
 
   public addEnemy(health: number): void {
-    if (this._enemyIdCounter in this.state.players)
+    if (this.state.enemyIdCounter in this.state.players)
       throw new Error(
-        `ID ${this._enemyIdCounter} is already taken (by a player).`,
+        `ID ${this.state.enemyIdCounter} is already taken (by a player).`,
       );
 
-    if (this._enemyIdCounter in this.state.enemies)
+    if (this.state.enemyIdCounter in this.state.enemies)
       throw new Error(
-        `ID ${this._enemyIdCounter} is already taken (by an enemy).`,
+        `ID ${this.state.enemyIdCounter} is already taken (by an enemy).`,
       );
 
     const position = this._gameMap.randomEnemySpawn(this._random);
     const enemy_damage = 1; //Snälla Dark Vader, blunda när du ser detta. Det är tillfälligt och bör ändras om vi har olika typer av fiender...
     const enemy_score = 10; // ――″――
     const enemy = new Enemy(
-      this._enemyIdCounter,
+      this.state.enemyIdCounter,
       health,
       position,
       enemy_damage,
       enemy_score,
     );
-    this.state.enemies[this._enemyIdCounter] = enemy;
-    this.bodies.set(this._enemyIdCounter, createBody(this.world, enemy));
-    this._enemyIdCounter += 1;
+    this.state.enemies[this.state.enemyIdCounter] = enemy;
+    this.bodies.set(this.state.enemyIdCounter, createBody(this.world, enemy));
+    this.state.enemyIdCounter += 1;
   }
 
   private despawnEntities(): number {
