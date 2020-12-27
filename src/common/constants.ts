@@ -50,7 +50,7 @@ export const CLIENT = {
   FPS: 60,
 
   /** Maximum number of inputs to send to the server at a time. */
-  MAX_INPUTS: 20,
+  MAX_INPUTS: 100,
 
   /** Whether to use Client Side Prediction or not. */
   CSP: false,
@@ -123,7 +123,7 @@ export const GAME = {
    * How many meters is considered "too different" on entity positions when
    * comparing two states.
    */
-  TOLERANCE: MAP.TILE_LOGICAL_SIZE / (MAP.TILE_TARGET_SIZE_PIXELS * 5),
+  TOLERANCE: MAP.TILE_LOGICAL_SIZE / MAP.TILE_TARGET_SIZE_PIXELS,
 };
 
 /** UI constants. */
