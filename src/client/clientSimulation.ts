@@ -1,6 +1,7 @@
 import GameMap from '../common/gameMap';
 import { Input, Id } from '../common/misc';
 import Simulation, { createBody } from '../common/simulation';
+import { Vec2 } from 'planck-js';
 
 import State from '../common/state';
 
@@ -25,6 +26,14 @@ export default class ClientSimulation extends Simulation {
     return;
   }
 
+  private predictOtherPlayers(me: Id): void {
+    for (const [id, body] of this._bodies) {
+      if (!(id in this.state.players) || id === me) return;
+      // don't predict other players
+      body.setLinearVelocity(Vec2.zero());
+    }
+  }
+
   public update(me: Id, input: Input): void {
     this.commonUpdate();
 
@@ -32,8 +41,8 @@ export default class ClientSimulation extends Simulation {
     if (my_body !== undefined) {
       this.handlePlayerInput(my_body, this.state.players[me], input);
     }
-    // TODO: move the other players in the same direction as they were walking
-    // in before
+
+    this.predictOtherPlayers(me);
 
     this.world.step(this.updateStep);
 
