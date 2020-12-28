@@ -17,7 +17,7 @@ export default abstract class Simulation {
   protected _stepCounter: number;
   protected _wave: Wave;
   protected _numPlayers: number;
-  protected _random: seedrandom.prng;
+  protected _random: undefined; //seedrandom.prng;
 
   public timeOfDamageTaken: Map<Id, number>;
   public enemyContacts: Map<Id, Id[]>;
@@ -54,7 +54,8 @@ export default abstract class Simulation {
     seed: string,
     seedrandomOptions?: seedrandom.seedRandomOptions,
   ) {
-    this._random = seedrandom(seed, seedrandomOptions);
+    // NOTE: intentionally ignored
+    this._random = undefined; //seedrandom(seed, seedrandomOptions);
     this.updateStep = updateStep;
     this._world = this.createWorld(map);
     this._bodies = new Map<Id, Body>();

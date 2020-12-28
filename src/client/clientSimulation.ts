@@ -1,14 +1,14 @@
 import GameMap from '../common/gameMap';
 import { Input, Id } from '../common/misc';
 import Simulation, { createBody } from '../common/simulation';
-import seedrandom from 'seedrandom';
 
 import State from '../common/state';
 
 export interface SimState {
   state: State;
   stepCounter: number;
-  rngState: seedrandom.State;
+  // NOTE: intentionally ignored
+  rngState: undefined; //seedrandom.State;
 }
 
 export default class ClientSimulation extends Simulation {
@@ -38,7 +38,8 @@ export default class ClientSimulation extends Simulation {
 
   public reset(simState: SimState): void {
     this._stepCounter = simState.stepCounter;
-    this._random = seedrandom('', { state: simState.rngState });
+    // NOTE: intentionally ignored
+    // this._random = seedrandom('', { state: simState.rngState });
     const state = simState.state;
 
     const newPlayerIds = new Array<string>();
@@ -86,7 +87,8 @@ export default class ClientSimulation extends Simulation {
   public snapshot(): SimState {
     return {
       state: this.state.clone(),
-      rngState: this._random.state(),
+      // NOTE: intentionally ignored
+      rngState: undefined, //this._random.state(),
       stepCounter: this._stepCounter,
     };
   }
