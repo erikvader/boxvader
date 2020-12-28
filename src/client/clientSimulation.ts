@@ -21,6 +21,10 @@ export default class ClientSimulation extends Simulation {
     super(map, updateStep, numPlayers, seed, { state: true });
   }
 
+  protected updateWave(_killed: number): void {
+    return;
+  }
+
   public update(me: Id, input: Input): void {
     this.commonUpdate();
 

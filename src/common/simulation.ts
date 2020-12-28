@@ -77,12 +77,7 @@ export default abstract class Simulation {
     }
   }
 
-  public commonUpdate(): void {
-    this._stepCounter += 1;
-
-    this.playerTakeDamage();
-
-    const killed = this.despawnEntities();
+  protected updateWave(killed: number): void {
     this._wave.kill(killed);
 
     if (this._wave.finished) {
@@ -114,6 +109,15 @@ export default abstract class Simulation {
         this._wave.spawnSingle();
       }
     }
+  }
+
+  public commonUpdate(): void {
+    this._stepCounter += 1;
+
+    this.playerTakeDamage();
+
+    const killed = this.despawnEntities();
+    this.updateWave(killed);
 
     this.moveEnemies();
   }
