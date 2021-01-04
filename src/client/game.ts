@@ -154,7 +154,7 @@ export default class ClientGame extends GameLoop {
           this.my_sprite = this.player_list[this.my_id];
         }
       }
-      
+
       this.decide_direction(player);
       this.change_hp(
         this.player_list[player.id],
@@ -311,12 +311,11 @@ export default class ClientGame extends GameLoop {
     if (player.direction.x === -1 && player.direction.y === 1) {
       this.player_list[player.id].rotation = offset + (3 * pi) / 4;
     }
-    if(player.walking){
+    if (player.walking) {
       this.player_list[player.id].play();
+    } else {
+      this.player_list[player.id].stop();
     }
-    else{
-      this.player_list[player.id].stop()
-    }   
   }
 
   add_character(
@@ -327,10 +326,7 @@ export default class ClientGame extends GameLoop {
     id: number,
     weapon: Weapon,
   ): void {
-    const character = new CharacterAnimatedSprite(
-      'imgs/stormtrooper.json',
-      id,
-    );
+    const character = new CharacterAnimatedSprite('imgs/stormtrooper.json', id);
     const scale = target_width / character.width;
     character.zIndex = 2;
     character.position.set(x, y);
