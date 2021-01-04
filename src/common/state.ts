@@ -1,10 +1,11 @@
 import { Player, Enemy } from './entity';
-import { NumMap, PopArray } from './misc';
+import { NumMap, PopArray, arrayEq } from './misc';
 
 export default class State {
   public players: NumMap<Player> = {};
   public enemies: NumMap<Enemy> = {};
   public wave = 1;
+  public enemyIdCounter = 0;
 
   /**
    * Returns a deep copy of this `State`.
@@ -20,6 +21,7 @@ export default class State {
       state.enemies[id] = this.enemies[id].clone();
     }
     state.wave = this.wave;
+    state.enemyIdCounter = this.enemyIdCounter;
     return state;
   }
 
@@ -37,6 +39,7 @@ export default class State {
     }
 
     flat.push(this.wave);
+    flat.push(this.enemyIdCounter);
   }
 
   public static explode(buf: PopArray): State {
@@ -55,11 +58,42 @@ export default class State {
     }
 
     const wave = buf.pop();
+    const enemyIdCounter = buf.pop();
 
     const state = new State();
     state.players = players;
     state.enemies = enemies;
     state.wave = wave;
+    state.enemyIdCounter = enemyIdCounter;
     return state;
+  }
+
+  public isSimilarTo(other: State, tolerance: number): boolean {
+    // NOTE: this.wave is only used to display a number on the screen. It is not
+    // worth it to say that these two states are different solely because of
+    // wave. Same with this.enemyIdCounter
+    const myStuff = [
+      ...Object.values(this.players),
+      ...Object.values(this.enemies),
+    ];
+    const otherStuff = [
+      ...Object.values(other.players),
+      ...Object.values(other.enemies),
+    ];
+
+    if (myStuff.length !== otherStuff.length) return false;
+
+    myStuff.sort((a, b) => a.id - b.id);
+    otherStuff.sort((a, b) => a.id - b.id);
+
+    return arrayEq(myStuff, otherStuff, (m, o) => m.isSimilarTo(o, tolerance));
+  }
+
+  public translateTimestamps(translate: number): void {
+    for (const p of Object.values(this.players)) {
+      for (const w of p.weapons) {
+        w.timeOfLastShot += translate;
+      }
+    }
   }
 }

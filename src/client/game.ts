@@ -5,6 +5,7 @@ import ByteBuffer from 'bytebuffer';
 import Deque from '../common/deque';
 import { Input } from '../common/misc';
 import { Player } from '../common/entity';
+import * as CSP from './csp';
 
 import { deserializeSTC, serialize } from '../common/msg';
 import State from '../common/state';
@@ -23,6 +24,7 @@ export interface ClientGameOpt extends GameLoopOpt {
   map: GameMap;
   my_id: number;
   seed: string;
+  numPlayers: number;
 }
 
 export default class ClientGame extends GameLoop {
@@ -30,11 +32,7 @@ export default class ClientGame extends GameLoop {
   private stage;
   private map;
 
-  // predicted states where the first one always is a `true` state from the
-  // server.
-  private states: Deque<State>;
-  // inputs that caused all states in `states`.
-  // private statesInputs: Deque<Input>
+  private predictor: CSP.Predictor;
 
   // inputs not confirmed by server
   private inputHistory: Deque<Input>;
@@ -62,11 +60,21 @@ export default class ClientGame extends GameLoop {
     this.renderer = args.renderer;
     this.stage = args.stage;
     this.stage.sortableChildren = true;
-    this.states = new Deque();
     this.inputHistory = new Deque();
     this.lastSentInput = -1;
     this.my_id = args.my_id;
     this.map = args.map;
+
+    if (constants.CLIENT.ENABLE_CSP) {
+      this.predictor = new CSP.Smarty(
+        this.map,
+        args.numPlayers,
+        args.seed,
+        args.my_id,
+      );
+    } else {
+      this.predictor = new CSP.Dummy();
+    }
   }
 
   public start(): Promise<void> {
@@ -95,8 +103,6 @@ export default class ClientGame extends GameLoop {
   }
 
   doUpdate(): void {
-    if (this.my_sprite === undefined) return;
-
     const inp: Input = {
       up: this.up.isDown,
       left: this.left.isDown,
@@ -106,6 +112,14 @@ export default class ClientGame extends GameLoop {
     };
 
     this.inputHistory.push_back(inp);
+
+    this.predictor.predict(this.inputHistory);
+    const newState = this.predictor.state;
+    const stateNum = this.predictor.stateNum;
+
+    this.update_player_sprites(newState, stateNum);
+    this.update_enemy_sprites(newState);
+    this.update_scoreboard(newState);
   }
 
   protected cleanup(): void {
@@ -126,15 +140,10 @@ export default class ClientGame extends GameLoop {
       this.inputHistory.discard_front_until(message.inputAck[this.my_id]);
     }
 
-    const prevState = this.states.last_elem();
-    const newState = message.state;
-    this.update_player_sprites(prevState, newState);
-    this.update_enemy_sprites(prevState, newState);
-    this.update_scoreboard(newState);
-    this.states.reset(newState, message.stateNum);
+    this.predictor.setTruth(message.state, message.stateNum, this.inputHistory);
   }
 
-  update_player_sprites(prevState: State | undefined, newState: State): void {
+  update_player_sprites(newState: State, stateNum: number): void {
     // spawn new players
     this.remove_entity_sprites(newState);
     for (const player of Object.values(newState.players)) {
@@ -159,6 +168,7 @@ export default class ClientGame extends GameLoop {
         this.player_list[player.id],
         player.maxHealth,
         player.health,
+        true,
       );
       this.player_list[player.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         player.position.x,
@@ -168,10 +178,10 @@ export default class ClientGame extends GameLoop {
       );
       if (
         player.weapons[0].timeOfLastShot <
-          this.states.last + constants.SERVER.BROADCAST_RATE &&
+          stateNum + constants.SERVER.BROADCAST_RATE &&
         player.weapons[0].timeOfLastShot +
           player.weapons[0].projectileVisibiltyDuration >
-          this.states.last + constants.SERVER.BROADCAST_RATE
+          stateNum + constants.SERVER.BROADCAST_RATE
       ) {
         this.player_list[player.id].shot_line.visible = false;
         this.stage.removeChild(this.player_list[player.id].shot_line);
@@ -215,7 +225,7 @@ export default class ClientGame extends GameLoop {
       this.player_list[player_id].walk = false;
     }
   }
-  update_enemy_sprites(prevState: State | undefined, newState: State): void {
+  update_enemy_sprites(newState: State): void {
     this.remove_entity_sprites(newState);
 
     for (const enemy of Object.values(newState.enemies)) {
@@ -228,7 +238,12 @@ export default class ClientGame extends GameLoop {
           enemy.id,
         );
       }
-      this.change_hp(this.enemy_list[enemy.id], enemy.maxHealth, enemy.health);
+      this.change_hp(
+        this.enemy_list[enemy.id],
+        enemy.maxHealth,
+        enemy.health,
+        false,
+      );
       this.enemy_list[enemy.id].x = constants.MAP.LOGICAL_TO_PIXELS(
         enemy.position.x,
       );
@@ -242,6 +257,7 @@ export default class ClientGame extends GameLoop {
   remove_entity_sprites(newState: State): void {
     for (const enemy_id in this.enemy_list) {
       if (newState.enemies[enemy_id] === undefined) {
+        playSound('die', 0.1);
         this.add_blood_splatter(
           this.enemy_list[enemy_id].x,
           this.enemy_list[enemy_id].y,
@@ -403,7 +419,12 @@ export default class ClientGame extends GameLoop {
     hp.width = width;
   }
 
-  change_hp(sprite: CustomSprite, max_hp: number, current_hp: number): void {
+  change_hp(
+    sprite: CustomSprite,
+    max_hp: number,
+    current_hp: number,
+    isPlayer: boolean,
+  ): void {
     if (sprite.hpBar === undefined) return;
     const width = constants.UI.HP_BAR_WIDTH;
     const flot_height = constants.UI.HP_BAR_FLOAT;
@@ -411,6 +432,11 @@ export default class ClientGame extends GameLoop {
     const percent = current_hp / max_hp;
     sprite.hpBar.x = sprite.x + -width / 2;
     sprite.hpBar.y = sprite.y - flot_height;
+    const oldHp = (sprite.hpBar.children[0] as PIXI.Graphics).width;
+    const newHp = outerWidth * percent;
+    if (isPlayer && newHp < oldHp) {
+      playSound('huh', 0.1);
+    }
     (sprite.hpBar.children[0] as PIXI.Graphics).width = outerWidth * percent;
   }
 
@@ -427,6 +453,7 @@ export default class ClientGame extends GameLoop {
     line.y = 0;
     line.visible = true;
     this.stage.addChild(line);
+    playSound('pew', 0.1);
     return line;
   }
 
@@ -470,7 +497,12 @@ export default class ClientGame extends GameLoop {
   }
 
   update_scoreboard(state: State): void {
-    this.score.text = 'Score: ' + state.players[this.my_id].score;
+    this.score.text = 'Score: ' + state.players[this.my_id]?.score;
     this.waveNumber.text = 'Wave: ' + state.wave;
   }
+}
+function playSound(soundId: string, volume: number): void {
+  const sound = PIXI.Loader.shared.resources[soundId].sound;
+  sound.volume = volume;
+  sound.play();
 }

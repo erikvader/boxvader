@@ -1,5 +1,6 @@
 import ClientGame from './game';
 import * as PIXI from 'pixi.js';
+import 'pixi-sound';
 import geckos from '@geckos.io/client';
 import * as constants from '../common/constants';
 import GameMap from '../common/gameMap';
@@ -94,6 +95,7 @@ function startGame(
         map,
         my_id: data['id'],
         seed: data['random_seed'],
+        numPlayers: Object.values(playerNames).length,
       });
 
       game.start().then(() => {
@@ -161,4 +163,7 @@ PIXI.Loader.shared
   .add('imgs/blood/splatter3.png')
   .add('imgs/stormtrooper.png')
   .add('imgs/stormtrooper.json')
+  .add('pew', 'sound/pew.mp3')
+  .add('die', 'sound/baby_yoda_die.mp3')
+  .add('huh', 'sound/huh.mp3')
   .load(() => startGame());

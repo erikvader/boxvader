@@ -64,4 +64,11 @@ export default class Weapon {
     w._timeOfLastShot = buf.pop();
     return w;
   }
+
+  public equals(other: Weapon): boolean {
+    return (
+      this._timeOfLastShot === other._timeOfLastShot &&
+      this._weaponType === other._weaponType
+    );
+  }
 }
