@@ -95,6 +95,7 @@ function startGame(
         map,
         my_id: data['id'],
         seed: data['random_seed'],
+        numPlayers: Object.values(playerNames).length,
       });
 
       game.start().then(() => {

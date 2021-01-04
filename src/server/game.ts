@@ -44,7 +44,6 @@ export default class ServerGame extends GameLoop {
     );
 
     for (const p of players) {
-      this.simulation.addPlayer(p);
       this.playerInputs[p] = new Deque();
     }
   }
@@ -65,7 +64,6 @@ export default class ServerGame extends GameLoop {
       return j;
     });
     playerInput.merge_back(newInputs); // TODO: check if playerInput and data.inputs are disjunct
-    this.inputAcks[player_id] = playerInput.last;
   }
 
   doUpdate(): void {
@@ -106,8 +104,11 @@ export default class ServerGame extends GameLoop {
   private getNextInput(p: string): TimedInput {
     const playerInput = this.playerInputs[p];
     let input;
+    let inputNum;
     while (playerInput.length > 0) {
-      input = playerInput.pop_front()[0];
+      const tmp = playerInput.pop_front();
+      input = tmp[0];
+      inputNum = tmp[1];
       if (
         playerInput.length === 0 ||
         !this.isOld(input.stateNum) ||
@@ -116,6 +117,8 @@ export default class ServerGame extends GameLoop {
         break;
       }
     }
+
+    if (inputNum !== undefined) this.inputAcks[p] = inputNum;
     return input;
   }
 

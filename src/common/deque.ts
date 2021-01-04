@@ -133,6 +133,31 @@ export default class Deque<T> {
   }
 
   /**
+   * Shifts all values forward until `this.first` is equal to `newFirst`. It can
+   * only shift forwards.
+   * @param newFirst the new value of first
+   */
+  public shift_forward(newFirst: number): void {
+    const len = this.length;
+    if ((len === 0 && newFirst <= this._first) || newFirst < this._first)
+      throw new Error('shift_forward cannot shift backwards');
+
+    this._first = newFirst;
+    if (this._last === null) {
+      this._first -= 1;
+      return;
+    }
+
+    let oldLast = this._last;
+    this._last = this._first + len - 1;
+    for (let i = this._last; i >= this._first; i--) {
+      this.data[i] = this.data[oldLast];
+      delete this.data[oldLast];
+      oldLast -= 1;
+    }
+  }
+
+  /**
    * @returns The values of this deque in an [[Array]].
    */
   public toArray(): T[] {
