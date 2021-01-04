@@ -54,7 +54,8 @@ export class Smarty implements Predictor {
 
   public get state(): State {
     const last = this.states.last_elem();
-    if (last === undefined) throw new Error("this can't be empty");
+    if (last === undefined)
+      throw new Error('there should always be at least one state');
     return last.state;
   }
 
