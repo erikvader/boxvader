@@ -45,8 +45,8 @@ function startGame(maxMessageSize?: number): void {
   game = new ServerGame(
     new GameMap('scifi-1', 'scifi'),
     drop(
-      SERVER.DROP,
-      delay(SERVER.DELAY, x => {
+      SERVER.NETWORK_DROP_CHANCE,
+      delay(SERVER.NETWORK_DELAY, x => {
         if (maxMessageSize !== undefined && x.byteLength > maxMessageSize) {
           console.warn(
             `Message probably too big! ${x.byteLength} > ${maxMessageSize}`,
@@ -78,8 +78,8 @@ function startGame(maxMessageSize?: number): void {
     );
     p.channel.onRaw(
       drop(
-        SERVER.DROP,
-        delay(SERVER.DELAY, data => game?.clientMsg(p.player_id, data)),
+        SERVER.NETWORK_DROP_CHANCE,
+        delay(SERVER.NETWORK_DELAY, data => game?.clientMsg(p.player_id, data)),
       ),
     );
   }

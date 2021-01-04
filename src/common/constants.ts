@@ -29,10 +29,10 @@ export const SERVER = {
   INPUT_QUEUE_MAX_AGE: 3,
 
   /** Amount of one-way networking delay in milliseconds */
-  DELAY: 0,
+  NETWORK_DELAY: 0,
 
   /** The chance that an incoming or outgoing package will be dropped. [0, 1] */
-  DROP: 0,
+  NETWORK_DROP_CHANCE: 0,
 };
 
 /** Client constants. */
@@ -53,7 +53,7 @@ export const CLIENT = {
   MAX_INPUTS: 100,
 
   /** Whether to use Client Side Prediction or not. */
-  CSP: false,
+  ENABLE_CSP: false,
 };
 
 /** Map and tile constants. */

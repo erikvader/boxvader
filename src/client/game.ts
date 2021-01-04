@@ -65,7 +65,7 @@ export default class ClientGame extends GameLoop {
     this.my_id = args.my_id;
     this.map = args.map;
 
-    if (constants.CLIENT.CSP) {
+    if (constants.CLIENT.ENABLE_CSP) {
       this.predictor = new CSP.Smarty(
         this.map,
         args.numPlayers,
