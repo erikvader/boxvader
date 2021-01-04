@@ -159,4 +159,6 @@ PIXI.Loader.shared
   .add('imgs/blood/splatter1.png')
   .add('imgs/blood/splatter2.png')
   .add('imgs/blood/splatter3.png')
+  .add('imgs/stormtrooper.png')
+  .add('imgs/stormtrooper.json')
   .load(() => startGame());

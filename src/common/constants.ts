@@ -114,7 +114,7 @@ export const UI = {
   ENEMY_SIZE: MAP.LOGICAL_TO_PIXELS(1),
 
   /** How many pixels wide a player sprite is. */
-  PLAYER_SIZE: MAP.LOGICAL_TO_PIXELS(1),
+  PLAYER_SIZE: MAP.LOGICAL_TO_PIXELS(2),
 
   /** How many pixels wide a hp bar is. */
   HP_BAR_WIDTH: 30,
