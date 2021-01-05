@@ -14,8 +14,8 @@ import GameMap from '../common/gameMap';
 import Weapon from '../common/weapon';
 import * as constants from '../common/constants';
 import { EnemySprite } from './sprites/enemySprite';
-import { CharacterSprite } from './sprites/characterSprite';
 import { CustomSprite } from './sprites/customSprite';
+import { CharacterAnimatedSprite } from './sprites/characterAnimatedSprite';
 
 export interface ClientGameOpt extends GameLoopOpt {
   sendInputFun: (buf: ByteBuffer) => void;
@@ -163,7 +163,7 @@ export default class ClientGame extends GameLoop {
         }
       }
 
-      this.decide_direction(player, newState);
+      this.decide_direction(player);
       this.change_hp(
         this.player_list[player.id],
         player.maxHealth,
@@ -290,7 +290,7 @@ export default class ClientGame extends GameLoop {
     }
   }
 
-  decide_direction(player: Player, newState: State): void {
+  decide_direction(player: Player): void {
     const pi = Math.PI;
     const offset = 0;
     //Right
@@ -326,12 +326,11 @@ export default class ClientGame extends GameLoop {
     if (player.direction.x === -1 && player.direction.y === 1) {
       this.player_list[player.id].rotation = offset + (3 * pi) / 4;
     }
-    /*
-    if (
-      !(player.direction.x === 0 && player.direction.y === 0) &&    This will prob be used later so dont want to remove it
-      player.alive
-    ) {
-    }*/
+    if (player.walking) {
+      this.player_list[player.id].play();
+    } else {
+      this.player_list[player.id].stop();
+    }
   }
 
   add_character(
@@ -342,10 +341,7 @@ export default class ClientGame extends GameLoop {
     id: number,
     weapon: Weapon,
   ): void {
-    const character = new CharacterSprite(
-      PIXI.Loader.shared.resources['imgs/b_yoda.png'].texture,
-      id,
-    );
+    const character = new CharacterAnimatedSprite('imgs/stormtrooper.json', id);
     const scale = target_width / character.width;
     character.zIndex = 2;
     character.position.set(x, y);

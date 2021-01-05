@@ -161,6 +161,8 @@ PIXI.Loader.shared
   .add('imgs/blood/splatter1.png')
   .add('imgs/blood/splatter2.png')
   .add('imgs/blood/splatter3.png')
+  .add('imgs/stormtrooper.png')
+  .add('imgs/stormtrooper.json')
   .add('pew', 'sound/pew.mp3')
   .add('die', 'sound/baby_yoda_die.mp3')
   .add('huh', 'sound/huh.mp3')
